@@ -1,8 +1,8 @@
-SELECT DISTINCT ?swerik_id ?wiki_id
+SELECT DISTINCT ?person_id ?wiki_id
 WHERE
 {
     ?wiki_id wdt:P31 wd:Q5;
-             wdt:P12192 ?swerik_id.
+             wdt:P12192 ?person_id.
     {
     # Members of parliament
     VALUES ?chamber { wd:Q10655178 wd:Q33071890 wd:Q81531912 }

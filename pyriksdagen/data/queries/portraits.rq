@@ -1,9 +1,9 @@
-SELECT ?swerik_id ?portrait
+SELECT ?person_id ?portrait
 WHERE
 {
         ?wiki_id wdt:P31 wd:Q5;
                  wdt:P18 ?portrait;
-                 wdt:P12192 ?swerik_id.
+                 wdt:P12192 ?person_id.
     {
         PLACEHOLDER
     }

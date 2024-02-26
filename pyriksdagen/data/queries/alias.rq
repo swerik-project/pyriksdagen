@@ -1,8 +1,8 @@
-SELECT DISTINCT ?swerik_id ?alias
+SELECT DISTINCT ?person_id ?alias
 WHERE
 {
   ?wiki_id wdt:P31 wd:Q5;
-           wdt:P12192 ?swerik_id.
+           wdt:P12192 ?person_id.
   ?wiki_id p:P2561 ?nameSwedishPMp.
   ?nameSwedishPMp ps:P2561 ?alias;
                   pq:P3831 wd:Q110382440.

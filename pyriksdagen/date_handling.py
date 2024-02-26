@@ -266,7 +266,7 @@ def _get_parliament_years(start, end, start_year, end_year, start_p, end_p, year
 
 def yearize_date(date, riksmote):
     """
-    takes a date and a dataframe of corpus/metadata/riksdage_start-end.csv
+    takes a date and a dataframe of riksdagen-politicians/data/riksdag-year.csv
     """
     parliament_years = riksmote["parliament_year"].unique()
     parliament_years = [str(_) for _ in parliament_years]
@@ -298,17 +298,17 @@ def yearize_mandates(debug_id=None):
 
     """
     print("Yearizing mandates... this will take a moment.")
-    riksmote = pd.read_csv("corpus/metadata/riksdag_start-end.csv")
-    mep = pd.read_csv("corpus/metadata/member_of_parliament.csv")
-    minister = pd.read_csv("corpus/metadata/minister.csv")
-    speaker = pd.read_csv("corpus/metadata/speaker.csv")
-    government = pd.read_csv("corpus/metadata/government.csv")
+    riksmote = pd.read_csv("data/riksdag-year.csv")
+    mep = pd.read_csv("data/member_of_parliament.csv")
+    minister = pd.read_csv("data/minister.csv")
+    speaker = pd.read_csv("data/speaker.csv")
+    government = pd.read_csv("data/government.csv")
     parliament_years = riksmote["parliament_year"].unique()
     parliament_years = [str(_) for _ in parliament_years]
     rows = []
     slen = []
     elen = []
-    cols = ["swerik_id", "start", "end", "role", "parliament_year"]
+    cols = ["person_id", "start", "end", "role", "parliament_year"]
     for k, df in {"member_of_parliament":mep, "minister": minister, "speaker": speaker}.items():
         if k == "minister":
             df = impute_minister_date(impute_date(df), government)
@@ -316,7 +316,7 @@ def yearize_mandates(debug_id=None):
             df = impute_speaker_date(impute_date(df))
         for i, r in tqdm(df.iterrows(), total=len(df)):
 
-            if debug_id and r['swerik_id'] == debug_id:
+            if debug_id and r['person_id'] == debug_id:
                 print(r)
 
             start = r["start"]
@@ -379,11 +379,11 @@ def yearize_mandates(debug_id=None):
                         print(r, len(end))
 
             if start_y and 1866 < int(start_y[:4]) < 2025:
-                if debug_id and debug_id == r["swerik_id"]:
+                if debug_id and debug_id == r["person_id"]:
                     pys = _get_parliament_years(start, end, start_y, end_y, start_p, end_p, parliament_years, riksmote, True)
                 else:
                     pys = _get_parliament_years(start, end, start_y, end_y, start_p, end_p, parliament_years, riksmote, None)
-                if debug_id and r['swerik_id'] == debug_id:
+                if debug_id and r['person_id'] == debug_id:
                     print(start_y, end_y, pys, start_p, end_p)
                 for ix, py in enumerate(pys):
                     if int(py) < 202324:
@@ -404,19 +404,19 @@ def yearize_mandates(debug_id=None):
                             end = py_end
 
                         if len(pys) == 1:
-                            rows.append([r["swerik_id"], start, end, r["role"], int(py)])
+                            rows.append([r["person_id"], start, end, r["role"], int(py)])
                         else:
                             if ix == 0:
-                                rows.append([r["swerik_id"], start, py_end, r["role"], int(py)])
+                                rows.append([r["person_id"], start, py_end, r["role"], int(py)])
                             elif ix == len(pys)-1:
-                                rows.append([r["swerik_id"], py_start, end, r["role"], int(py)])
+                                rows.append([r["person_id"], py_start, end, r["role"], int(py)])
                             else:
-                                rows.append([r["swerik_id"], py_start, py_end, r["role"], int(py)])
+                                rows.append([r["person_id"], py_start, py_end, r["role"], int(py)])
 
             else:
                 pass
     df = pd.DataFrame(rows, columns=cols)
-    df.sort_values(by="swerik_id", inplace=True)
+    df.sort_values(by="person_id", inplace=True)
     return df
 
 
@@ -430,7 +430,7 @@ def test_yearize_mandates():
 
 
 def test_yearize_date():
-    riksmote = pd.read_csv("corpus/metadata/riksdag_start-end.csv")
+    riksmote = pd.read_csv("data/riksdag-year.csv")
     print(yearize_date("1982-04-13", riksmote))
     print(yearize_date("1982-12-05", riksmote))
     print(yearize_date("1882-04-13", riksmote))

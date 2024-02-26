@@ -141,12 +141,12 @@ def _add_party(r, J):
         return False
 
 
-def jsonize_person_data(swerik_id, Corpus_metadata, peripheral_metadata, v, now):
+def jsonize_person_data(person_id, Corpus_metadata, peripheral_metadata, v, now):
     """
     Return a json object of all a n individual's info.
 
     Args:
-    - swerik_id           - str
+    - person_id           - str
     - Corpus_metadata     - corpus metadata (pyriksdagen.metadata.Corpus)
     - peripheral metadata - metadata dict from non-core queries
     - v                   - data versionversion
@@ -155,27 +155,27 @@ def jsonize_person_data(swerik_id, Corpus_metadata, peripheral_metadata, v, now)
     - Dict object
     """
     C = Corpus_metadata                 # for convenience
-    J = _json_template(swerik_id, v, now)
+    J = _json_template(person_id, v, now)
 
     # process core metadata
     primary_name = C.loc[C["primary_name"] == True, 'name'].unique()
     if len(primary_name) == 1:
         J["name"] = primary_name[0]
     elif len(primary_name) == 0:
-        print(f">>{swerik_id} -- NO PRIMARY NAME")
+        print(f">>{person_id} -- NO PRIMARY NAME")
     else:
-        print(f">>{swerik_id} -- MULTIPLE PRIMARY NAMES : {len(primary_name)} : {primary_name}")
+        print(f">>{person_id} -- MULTIPLE PRIMARY NAMES : {len(primary_name)} : {primary_name}")
 
     born = C.loc[pd.notnull(C["born"]), "born"].unique()
     if len(born) > 1:
-        print(f">>{swerik_id} -- MULTIPLE BIRTHDATES : {len(born)} : {born}")
+        print(f">>{person_id} -- MULTIPLE BIRTHDATES : {len(born)} : {born}")
         J["DOB"] = str(born[0])
     elif len(born) == 1:
         J["DOB"] = str(born[0])
 
     dead = C.loc[pd.notnull(C["dead"]), "dead"].unique()
     if len(dead) > 1:
-        print(f">>{swerik_id} -- MULTIPLE DEATHDATES : {len(dead)} : {dead}")
+        print(f">>{person_id} -- MULTIPLE DEATHDATES : {len(dead)} : {dead}")
         J["DOD"] = str(dead[0])
     elif len(dead) == 1:
         J["DOD"] = str(dead[0])
@@ -239,15 +239,15 @@ def jsonize_person_data(swerik_id, Corpus_metadata, peripheral_metadata, v, now)
         return None
 
 
-def write_J(J, swerik_id, website_path):
+def write_J(J, person_id, website_path):
     """
     Write a json file for each swerik ID with person's info.
     """
-    with open(f"{website_path}_data/_person-catalog/{swerik_id}.json", "w+") as outj:
+    with open(f"{website_path}_data/_person-catalog/{person_id}.json", "w+") as outj:
         json.dump(J, outj, ensure_ascii=False, indent=2)
 
 
-def write_md(swerik_id, website_path):
+def write_md(person_id, website_path):
     """
     writes markwown file for each swerik ID
     """
@@ -255,9 +255,9 @@ def write_md(swerik_id, website_path):
 layout: catalog
 title: SWERIK Person Catalog
 ---
-{{% assign p = site.data._person-catalog.{swerik_id} %}}
+{{% assign p = site.data._person-catalog.{person_id} %}}
 {{% include person-catalog.html p=p %}}
 
 """
-    with open(f"{website_path}_person-catalog/{swerik_id}.md", "w+") as md:
+    with open(f"{website_path}_person-catalog/{person_id}.md", "w+") as md:
         md.write(markdown)

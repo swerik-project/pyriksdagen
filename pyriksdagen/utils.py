@@ -236,7 +236,7 @@ def download_corpus(path="./"):
 
     """
     p = Path(path)
-    url = "https://github.com/welfare-state-analytics/riksdagen-corpus/releases/latest/download/corpus.zip"
+    url = "https://github.com/swerik-project/riksdagen-records/releases/latest/download/corpus.zip"
     zip_path = p / "corpus.zip"
     corpus_path = p / "corpus"
     if corpus_path.exists():

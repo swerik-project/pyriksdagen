@@ -161,7 +161,7 @@ def impute_party(db, party):
 		db['party'] = pd.Series(dtype=str)
 	data = []
 	for i, row in db[db['party'].isnull()].iterrows():	
-		parties = party[party['swerik_id'] == row['swerik_id']]
+		parties = party[party['person_id'] == row['person_id']]
 		if len(set(parties['party'])) == 1:
 			db.loc[i,'party'] = parties['party'].iloc[0]
 		if len(set(parties['party'])) >= 2:
@@ -244,7 +244,7 @@ class Corpus(pd.DataFrame):
 			party_df = pd.read_csv(f"{metadata_folder}/party_affiliation.csv")
 			party_df = party_df[party_df["start"].notnull()]
 			party_df = party_df[party_df["end"].notnull()]
-			df = df.merge(party_df, on=["swerik_id", "start", "end"], how="left")
+			df = df.merge(party_df, on=["person_id", "start", "end"], how="left")
 			df = df[columns]
 			print(df)
 			print(df[df["party"].notnull()])
@@ -271,15 +271,15 @@ class Corpus(pd.DataFrame):
 
 	def add_persons(self, metadata_folder="corpus/metadata"):
 		df = self._load_metadata('person', metadata_folder=metadata_folder)
-		return self.merge(df, on='swerik_id', how='left')
+		return self.merge(df, on='person_id', how='left')
 
 	def add_location_specifiers(self, metadata_folder="corpus/metadata"):
 		df = self._load_metadata('location_specifier', metadata_folder=metadata_folder)
-		return self.merge(df, on='swerik_id', how='left')
+		return self.merge(df, on='person_id', how='left')
 
 	def add_names(self, metadata_folder="corpus/metadata"):
 		df = self._load_metadata('name', metadata_folder=metadata_folder)
-		return self.merge(df, on='swerik_id', how='left')
+		return self.merge(df, on='person_id', how='left')
 	
 	def impute_dates(self, metadata_folder="corpus/metadata"):
 		return impute_date(self, metadata_folder)
@@ -295,7 +295,7 @@ class Corpus(pd.DataFrame):
 
 	def add_twitter(self, metadata_folder="corpus/metadata"):
 		df = self._load_metadata('twitter', metadata_folder=metadata_folder)
-		return self.merge(df, on='swerik_id', how='left')
+		return self.merge(df, on='person_id', how='left')
 
 	def clean_names(self):
 		return clean_name(self)
@@ -336,7 +336,7 @@ def load_Corpus_metadata(metadata_folder="corpus/metadata"):
 		})
 
 	# Temporary ids
-	corpus['person_id'] = corpus['swerik_id']
+	corpus['person_id'] = corpus['person_id']
 
 	# Drop individuals with missing names
 	corpus = corpus[corpus['name'].notna()]
@@ -344,6 +344,6 @@ def load_Corpus_metadata(metadata_folder="corpus/metadata"):
 	# Remove redundancy and split file
 	corpus = corpus.drop_duplicates()
 	corpus = corpus.dropna(subset=['name', 'start', 'end'])
-	corpus = corpus.sort_values(['swerik_id', 'start', 'end', 'name'])
+	corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
 
 	return corpus

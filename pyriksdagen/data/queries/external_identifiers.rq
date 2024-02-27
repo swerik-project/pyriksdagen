@@ -1,8 +1,8 @@
-SELECT ?swerik_id ?wiki_id ?SwePaPeGUID ?RiPeID ?SwePoArID ?DiSweNaBiID ?UpUnAlID
+SELECT ?person_id ?wiki_id ?SwePaPeGUID ?RiPeID ?SwePoArID ?DiSweNaBiID ?UpUnAlID
 WHERE
 {
     ?wiki_id wdt:P31 wd:Q5;
-             wdt:P12192 ?swerik_id.
+             wdt:P12192 ?person_id.
     OPTIONAL { ?wiki_id p:P8388/ps:P8388 ?SwePaPeGUID. }.
     OPTIONAL { ?wiki_id p:P1214/ps:P1214 ?RiPeID. }.
     OPTIONAL { ?wiki_id p:P4819/ps:P4819 ?SwePoArID. }.

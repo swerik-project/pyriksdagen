@@ -3,6 +3,7 @@ import re
 from .match_mp import multiple_replace
 from functools import partial
 import datetime
+import calendar
 
 def increase_date_precision(date, start=True):
 	if pd.isna(date):
@@ -40,7 +41,7 @@ def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
 	return db
 
 
-def impute_member_dates(db):
+def impute_member_dates(db, metadata_folder):
 	def _impute_start(date, **kwargs):
 		riksmote = kwargs['riksmote']
 		if len(date) == 10:
@@ -68,8 +69,9 @@ def impute_member_dates(db):
 			if len(s) > 0:
 				return s[0]
 			else:
-				last_day = calendar.monthrange(int(date[0]), int(date[1]))[1]
-				return date + f'-{last_day}'
+				date_year, date_month = date.split("-")
+				last_day_of_the_month = calendar.monthrange(int(date_year), int(date_month))[1]
+				return date + f'-{last_day_of_the_month}'
 		else:
 			s = sorted(list(riksmote.loc[riksmote['end'].str.startswith(date, na=False), 'end']), reverse=True)
 			if len(s) > 0:
@@ -78,7 +80,7 @@ def impute_member_dates(db):
 				print(f"Problem with end date: {date} not in riksmote")
 				return date + '-12-31'
 
-	riksmote = pd.read_csv("corpus/metadata/riksdag_start-end.csv")
+	riksmote = pd.read_csv(f"{metadata_folder}/riksdag_start-end.csv")
 	riksmote[['start', 'end']] = riksmote[['start', 'end']].astype(str)
 
 	idx = (db['source'] == 'member_of_parliament') &\
@@ -123,19 +125,19 @@ def impute_speaker_date(db):
 	return db
 
 
-def impute_date(db):
+def impute_date(db, metadata_folder):
 	db[["start", "end"]] = db[["start", "end"]].astype(str)
 	if 'source' in db.columns:
 		sources = set(db['source'])
 		if 'member_of_parliament' in sources:
 			#db = impute_member_date(db, gov_db)
-			db = impute_member_dates(db)
+			db = impute_member_dates(db, metadata_folder)
 
 		db['start'] = db['start'].apply(increase_date_precision, start=True)
 		db['end'] = db['end'].apply(increase_date_precision, start=False)
 		db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
 		# Impute current governments end date
-		gov_db = pd.read_csv('corpus/metadata/government.csv')
+		gov_db = pd.read_csv(f'{metadata_folder}/government.csv')
 		gov_db[["start", "end"]] = gov_db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
 		idx = gov_db['start'].idxmax()
 		gov_db.loc[idx, 'end'] = gov_db.loc[idx, 'start'] + datetime.timedelta(days = 365*4)
@@ -231,15 +233,15 @@ class Corpus(pd.DataFrame):
 	def _constructor(self):
 		return Corpus
 
-	def _load_metadata(self, file, source=False):
-		df = pd.read_csv(f"corpus/metadata/{file}.csv")
+	def _load_metadata(self, file, metadata_folder="corpus/metadata", source=False):
+		df = pd.read_csv(f"{metadata_folder}/{file}.csv")
 
 		# Adjust to new structure where party information
 		# is not included in member_of_parliament.csv
 		if file == "member_of_parliament":
 			print(df)
 			columns = list(df.columns) + ["party"]
-			party_df = pd.read_csv(f"corpus/metadata/party_affiliation.csv")
+			party_df = pd.read_csv(f"{metadata_folder}/party_affiliation.csv")
 			party_df = party_df[party_df["start"].notnull()]
 			party_df = party_df[party_df["end"].notnull()]
 			df = df.merge(party_df, on=["swerik_id", "start", "end"], how="left")
@@ -250,49 +252,49 @@ class Corpus(pd.DataFrame):
 			df['source'] = file
 		return df
 
-	def add_mps(self):
-		df = self._load_metadata('member_of_parliament', source=True)
+	def add_mps(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('member_of_parliament', metadata_folder=metadata_folder, source=True)
 		df = infer_chamber(df)
 		df = format_member_role(df)
 		return Corpus(pd.concat([self, df]))
 	        
-	def add_ministers(self):
-		df = self._load_metadata('minister', source=True)
+	def add_ministers(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('minister', metadata_folder=metadata_folder, source=True)
 		df = format_minister_role(df)
 		return Corpus(pd.concat([self, df]))
 
-	def add_speakers(self):
-		df = self._load_metadata('speaker', source=True)
+	def add_speakers(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('speaker', metadata_folder=metadata_folder, source=True)
 		df = infer_chamber(df)
 		df = format_speaker_role(df)
 		return Corpus(pd.concat([self, df]))
 
-	def add_persons(self):
-		df = self._load_metadata('person')
+	def add_persons(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('person', metadata_folder=metadata_folder)
 		return self.merge(df, on='swerik_id', how='left')
 
-	def add_location_specifiers(self):
-		df = self._load_metadata('location_specifier')
+	def add_location_specifiers(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('location_specifier', metadata_folder=metadata_folder)
 		return self.merge(df, on='swerik_id', how='left')
 
-	def add_names(self):
-		df = self._load_metadata('name')
+	def add_names(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('name', metadata_folder=metadata_folder)
 		return self.merge(df, on='swerik_id', how='left')
 	
-	def impute_dates(self):
-		return impute_date(self)
+	def impute_dates(self, metadata_folder="corpus/metadata"):
+		return impute_date(self, metadata_folder)
 
-	def impute_parties(self):
-		df = self._load_metadata('party_affiliation')
-		df = impute_date(df)
+	def impute_parties(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('party_affiliation', metadata_folder=metadata_folder)
+		df = impute_date(df, metadata_folder)
 		return impute_party(self, df)
 
-	def abbreviate_parties(self):
-		df = self._load_metadata('party_abbreviation')
+	def abbreviate_parties(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('party_abbreviation', metadata_folder=metadata_folder)
 		return abbreviate_party(self, df)
 
-	def add_twitter(self):
-		df = self._load_metadata('twitter')
+	def add_twitter(self, metadata_folder="corpus/metadata"):
+		df = self._load_metadata('twitter', metadata_folder=metadata_folder)
 		return self.merge(df, on='swerik_id', how='left')
 
 	def clean_names(self):
@@ -300,24 +302,24 @@ class Corpus(pd.DataFrame):
 
 
 
-def load_Corpus_metadata():
+def load_Corpus_metadata(metadata_folder="corpus/metadata"):
 	"""
 	Populates Corpus object
 	"""
 	corpus = Corpus()
 
-	corpus = corpus.add_mps()
-	corpus = corpus.add_ministers()
-	corpus = corpus.add_speakers()
+	corpus = corpus.add_mps(metadata_folder=metadata_folder)
+	corpus = corpus.add_ministers(metadata_folder=metadata_folder)
+	corpus = corpus.add_speakers(metadata_folder=metadata_folder)
 
-	corpus = corpus.add_persons()
-	corpus = corpus.add_location_specifiers()
-	corpus = corpus.add_names()
+	corpus = corpus.add_persons(metadata_folder=metadata_folder)
+	corpus = corpus.add_location_specifiers(metadata_folder=metadata_folder)
+	corpus = corpus.add_names(metadata_folder=metadata_folder)
 
-	corpus = corpus.impute_dates()
-	corpus = corpus.impute_parties()
-	corpus = corpus.abbreviate_parties()
-	corpus = corpus.add_twitter()
+	corpus = corpus.impute_dates(metadata_folder=metadata_folder)
+	corpus = corpus.impute_parties(metadata_folder=metadata_folder)
+	corpus = corpus.abbreviate_parties(metadata_folder=metadata_folder)
+	corpus = corpus.add_twitter(metadata_folder=metadata_folder)
 	corpus = corpus.clean_names()
 
 	# Clean up speaker role formatting

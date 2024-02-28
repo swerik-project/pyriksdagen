@@ -7,7 +7,7 @@ from lxml import etree
 from pyparlaclarin.create import pc_header, create_parlaclarin
 from pyparlaclarin.refine import format_texts
 
-from .utils import infer_metadata, get_formatted_uuid, XML_NS, TEI_NS
+from .utils import infer_metadata, get_formatted_uuid, get_data_location, XML_NS, TEI_NS
 from .db import year_iterator
 
 def dict_to_tei(data):
@@ -77,7 +77,8 @@ def add_to_corpus_meta_file_list(metadata):
          "Första kammaren": "fk"
     }
     parser = etree.XMLParser(remove_blank_text=True)
-    meta_path = f"corpus/protocols/prot-{chambers[metadata['chamber']]}.xml"
+    records_location = get_data_location("records")
+    meta_path = f"{records_location}/prot-{chambers[metadata['chamber']]}.xml"
     file_path = f"./{metadata['sitting']}/{zero_pad_prot_nr(metadata['protocol'])}.xml"
     root = etree.parse(meta_path, parser).getroot()
     include = root.find(f".//{xi_ns}include[@href=\"{file_path}\"]")
@@ -124,7 +125,8 @@ def dict_to_parlaclarin(data):
     print("Formatted protocol ID", protocol_id)
     yearstr = protocol_id[5:]
     yearstr = yearstr.split("-")[0]
-    parlaclarin_path = f"corpus/protocols/{yearstr}/{protocol_id}.xml"
+    records_location = get_data_location("records")
+    parlaclarin_path = f"{records_location}/{yearstr}/{protocol_id}.xml"
 
     tei = dict_to_tei(data)
     with open(parlaclarin_path, "wb") as f:

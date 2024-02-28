@@ -13,7 +13,10 @@ from pyparlaclarin.refine import format_texts
 from datetime import datetime
 import hashlib, uuid, base58, requests, tqdm
 import zipfile
+import os
+from trainerlog import get_logger
 
+LOGGER = get_logger("pyriksdagen")
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
@@ -41,7 +44,7 @@ def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
                     elem.tag = ns + "u"
                     yield "u", elem
                 else:
-                    print(elem.tag)
+                    LOGGER.warning(f"Encountered unknown tag: {elem.tag}")
                     yield None
 
 
@@ -131,12 +134,12 @@ def validate_xml_schema(xml_path, schema_path, schema=None):
     return is_valid
 
 
-def protocol_iterators(corpus_root, document_type=None, start=None, end=None):
+def protocol_iterators(corpus_root=None, document_type=None, start=None, end=None):
     """
     Returns an iterator of protocol paths in a corpus.
 
     Args:
-        corpus_root (str): path to the corpus root
+        corpus_root (str): path to the corpus root. If env variable RECORDS_PATH exists, uses that as a default
         document_type (str): type of document (prot, mot, etc.). If None, fetches all types
         start (int): start year
         end (int): end year
@@ -144,6 +147,9 @@ def protocol_iterators(corpus_root, document_type=None, start=None, end=None):
     Returns:
         iterator of the protocols as relative paths to current location
     """
+    if corpus_root is None:
+        corpus_root = get_data_location("records")
+
     folder = Path(corpus_root)
     docs = folder.glob("**/*.xml")
     if document_type is not None:
@@ -226,7 +232,7 @@ def _download_with_progressbar(url, fname, chunk_size=1024):
             size = file.write(data)
             bar.update(size)
 
-def download_corpus(path="./"):
+def download_corpus(path="./", partitions=["records"]):
     """
     Downloads the full corpus.
     Does not return anything, just downloads the corpus ZIP and unzips it.
@@ -240,7 +246,7 @@ def download_corpus(path="./"):
     zip_path = p / "corpus.zip"
     corpus_path = p / "corpus"
     if corpus_path.exists():
-        print(f"WARNING: data already exists at the path '{corpus_path}'. It will be overwritten once the download is finished.")
+        LOGGER.warning(f"data already exists at the path '{corpus_path}'. It will be overwritten once the download is finished.")
 
     zip_path_str = str(zip_path.relative_to("."))
     extraction_path = str(p.relative_to("."))
@@ -248,7 +254,7 @@ def download_corpus(path="./"):
     # Download file and display progress
     _download_with_progressbar(url, zip_path_str)
     with zipfile.ZipFile(zip_path_str, "r") as zip_ref:
-        print("Exract to", corpus_path, "...")
+        LOGGER.debug(f"Extract to {corpus_path} ...")
         zip_ref.extractall(extraction_path)
 
     zip_path.unlink()
@@ -303,5 +309,16 @@ def parse_protocol(protocol_path, get_ns=False):
     else:
         return root
 
-
-
+def get_data_location(partition):
+    """
+    Get data location for a specific path. Tries the env variables
+    RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
+    returns the defaults corpus/records, corpus/motions, corpus/metadata
+    """
+    valid_partitions = ["records", "motions", "metadata"]
+    assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
+    d = {}
+    d["records"] = os.environ.get("RECORDS_PATH", "corpus/records")
+    d["motions"] = os.environ.get("MOTIONS_PATH", "corpus/motions")
+    d["metadata"] = os.environ.get("METADATA_PATH", "corpus/metadata")
+    return d[partition]

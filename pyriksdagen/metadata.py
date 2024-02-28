@@ -4,6 +4,7 @@ from .match_mp import multiple_replace
 from functools import partial
 import datetime
 import calendar
+from .utils import get_data_location
 
 def increase_date_precision(date, start=True):
 	if pd.isna(date):
@@ -302,10 +303,13 @@ class Corpus(pd.DataFrame):
 
 
 
-def load_Corpus_metadata(metadata_folder="corpus/metadata"):
+def load_Corpus_metadata(metadata_folder=None):
 	"""
 	Populates Corpus object
 	"""
+	if metadata_folder is None:
+		metadata_folder = get_data_location("metadata")
+
 	corpus = Corpus()
 
 	corpus = corpus.add_mps(metadata_folder=metadata_folder)

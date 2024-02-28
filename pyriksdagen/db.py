@@ -1,6 +1,6 @@
 import pandas as pd
 import os, json, re, hashlib
-
+from .utils import get_data_location
 
 def year_iterator(file_db):
     """
@@ -82,7 +82,8 @@ def load_ministers(path='corpus/wiki-data/minister.json'):
     return minister
 
 def load_metadata():
-    party_mapping = pd.read_csv('corpus/metadata/party_abbreviation.csv')
+    metadata_location = get_data_location("metadata")
+    party_mapping = pd.read_csv(f'{metadata_location}/party_abbreviation.csv')
     #join_intros = ## DEPRECIATED ##pd.read_csv('input/segmentation/join_intros.csv')  return party_mapping, join_intros, mp_db, minister_db, speaker_db
     mp_db = pd.read_csv('input/matching/member_of_parliament.csv')
     minister_db = pd.read_csv('input/matching/minister.csv')

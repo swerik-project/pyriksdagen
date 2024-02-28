@@ -1,6 +1,7 @@
 import pandas as pd
 import os, json, re, hashlib
 from .utils import get_data_location
+from .metadata import load_Corpus_metadata
 
 def year_iterator(file_db):
     """
@@ -81,13 +82,21 @@ def load_ministers(path='corpus/wiki-data/minister.json'):
     minister = pd.DataFrame(data, columns=["government", "wiki_id", "name", "role", "start", "end"])
     return minister
 
-def load_metadata():
-    metadata_location = get_data_location("metadata")
+def load_metadata(metadata_location=None):
+    if metadata_location is None:
+        metadata_location = get_data_location("metadata")
     party_mapping = pd.read_csv(f'{metadata_location}/party_abbreviation.csv')
     #join_intros = ## DEPRECIATED ##pd.read_csv('input/segmentation/join_intros.csv')  return party_mapping, join_intros, mp_db, minister_db, speaker_db
-    mp_db = pd.read_csv('input/matching/member_of_parliament.csv')
-    minister_db = pd.read_csv('input/matching/minister.csv')
-    speaker_db = pd.read_csv('input/matching/speaker.csv')
+    mb_db, minister_db, speaker_db = None, None, None
+    try:
+        mp_db = pd.read_csv('input/matching/member_of_parliament.csv')
+        minister_db = pd.read_csv('input/matching/minister.csv')
+        speaker_db = pd.read_csv('input/matching/speaker.csv')
+    except Exception:
+        df = load_Corpus_metadata(metadata_location)        
+        mp_db  = df[df['source'] == 'member_of_parliament']
+        minister_db  = df[df['source'] == 'minister']
+        speaker_db  = df[df['source'] == 'speaker']
 
     ### Temporary colname changes
     mp_db["specifier"] = mp_db["location"]

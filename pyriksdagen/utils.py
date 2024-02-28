@@ -242,22 +242,23 @@ def download_corpus(path="./", partitions=["records"]):
 
     """
     p = Path(path)
-    url = "https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip"
-    zip_path = p / "records.zip"
-    corpus_path = p / "data"
-    if corpus_path.exists():
-        LOGGER.warning(f"data already exists at the path '{corpus_path}'. It will be overwritten once the download is finished.")
+    for partition in partitions:
+        url = f"https://github.com/swerik-project/riksdagen-{partition}/releases/latest/download/{partition}.zip"
+        zip_path = p / f"{partition}.zip"
+        corpus_path = p / "data"
+        if corpus_path.exists():
+            LOGGER.warning(f"data already exists at the path '{corpus_path}'. It will be overwritten once the download is finished.")
 
-    zip_path_str = str(zip_path.relative_to("."))
-    extraction_path = str(p.relative_to("."))
-    
-    # Download file and display progress
-    _download_with_progressbar(url, zip_path_str)
-    with zipfile.ZipFile(zip_path_str, "r") as zip_ref:
-        LOGGER.debug(f"Extract to {corpus_path} ...")
-        zip_ref.extractall()
+        zip_path_str = str(zip_path.relative_to("."))
+        extraction_path = str(p.relative_to("."))
+        
+        # Download file and display progress
+        _download_with_progressbar(url, zip_path_str)
+        with zipfile.ZipFile(zip_path_str, "r") as zip_ref:
+            LOGGER.debug(f"Extract to {corpus_path} ...")
+            zip_ref.extractall()
 
-    zip_path.unlink()
+        zip_path.unlink()
 
 def get_doc_dates(protocol):
     """

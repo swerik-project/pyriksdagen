@@ -2,6 +2,7 @@ import pandas as pd
 import os, json, re, hashlib
 from .utils import get_data_location
 from .metadata import load_Corpus_metadata
+from importlib_resources import files
 
 def year_iterator(file_db):
     """
@@ -22,8 +23,9 @@ def load_patterns(year=None, phase="segmentation"):
     """
     Load regex patterns from disk
     """
-    fpath = "input/" + phase + "/patterns.json"
-    patterns = pd.read_json(fpath, orient="records", lines=True)
+    file = files(f'pyriksdagen.data.{phase}').joinpath('patterns.json')
+    with file.open() as f:
+        patterns = pd.read_json(f, orient="records", lines=True)
     if year is not None:
         patterns = patterns[patterns["start"] >= year]
         patterns = patterns[patterns["end"] <= year]
@@ -123,14 +125,19 @@ def load_expressions(phase="segmentation", year=None):
             expressions[pattern_digest] = exp
         return expressions
     elif phase == "mp":
-        patterns = pd.read_csv("input/segmentation/detection.csv", sep=";")
+        file = files(f'pyriksdagen.data.segmentation').joinpath('detection.csv')
+        with file.open() as f:
+            patterns = pd.read_csv(f, sep=";")
         expressions = []
         for _, row in patterns.iterrows():
             exp, t = row[["pattern", "type"]]
             expressions.append((re.compile(exp), t))
         return expressions
     elif phase == "join_intros":
-        patterns = pd.read_csv("input/segmentation/join_intro_pattern.csv", sep=";")
+        file = files(f'pyriksdagen.data.segmentation').joinpath('join_intro_pattern.csv')
+        with file.open() as f:
+            #"input/segmentation/join_intro_pattern.csv"
+            patterns = pd.read_csv(f, sep=";")
         expressions = []
         for _, row in patterns.iterrows():
             exp, t = row[["pattern", "type"]]

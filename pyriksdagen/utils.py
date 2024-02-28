@@ -242,9 +242,9 @@ def download_corpus(path="./", partitions=["records"]):
 
     """
     p = Path(path)
-    url = "https://github.com/swerik-project/riksdagen-records/releases/latest/download/corpus.zip"
-    zip_path = p / "corpus.zip"
-    corpus_path = p / "corpus"
+    url = "https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip"
+    zip_path = p / "records.zip"
+    corpus_path = p / "data"
     if corpus_path.exists():
         LOGGER.warning(f"data already exists at the path '{corpus_path}'. It will be overwritten once the download is finished.")
 
@@ -255,7 +255,7 @@ def download_corpus(path="./", partitions=["records"]):
     _download_with_progressbar(url, zip_path_str)
     with zipfile.ZipFile(zip_path_str, "r") as zip_ref:
         LOGGER.debug(f"Extract to {corpus_path} ...")
-        zip_ref.extractall(extraction_path)
+        zip_ref.extractall()
 
     zip_path.unlink()
 
@@ -313,12 +313,12 @@ def get_data_location(partition):
     """
     Get data location for a specific path. Tries the env variables
     RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
-    returns the defaults corpus/records, corpus/motions, corpus/metadata
+    returns the defaults data/records, data/motions, data/metadata
     """
     valid_partitions = ["records", "motions", "metadata"]
     assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
     d = {}
-    d["records"] = os.environ.get("RECORDS_PATH", "corpus/records")
-    d["motions"] = os.environ.get("MOTIONS_PATH", "corpus/motions")
-    d["metadata"] = os.environ.get("METADATA_PATH", "corpus/metadata")
+    d["records"] = os.environ.get("RECORDS_PATH", "data/records")
+    d["motions"] = os.environ.get("MOTIONS_PATH", "data/motions")
+    d["metadata"] = os.environ.get("METADATA_PATH", "data/metadata")
     return d[partition]

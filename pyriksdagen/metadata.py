@@ -81,7 +81,7 @@ def impute_member_dates(db, metadata_folder):
 				print(f"Problem with end date: {date} not in riksmote")
 				return date + '-12-31'
 
-	riksmote = pd.read_csv(f"{metadata_folder}/riksdag_start-end.csv")
+	riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
 	riksmote[['start', 'end']] = riksmote[['start', 'end']].astype(str)
 
 	idx = (db['source'] == 'member_of_parliament') &\

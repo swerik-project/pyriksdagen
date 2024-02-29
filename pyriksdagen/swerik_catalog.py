@@ -5,9 +5,18 @@ import json
 import pandas as pd
 
 
-def _json_template(i, v, now):
+def _json_template(i:str, v:str, now:str) -> dict:
     """
     Returns mostly empty dict with person info.
+
+    Args:
+        i (str): person ID
+        v (str): version
+        now (str): string-formatted timestamp
+
+    Returns:
+        dict: person dict
+
     """
     return {
         "name": None,             #
@@ -34,9 +43,15 @@ def _json_template(i, v, now):
     }
 
 
-def _party_template(row):
+def _party_template(row:pd.core.series.Series) -> dict:
     """
-    Returns instance of party affiliation
+    Returns instance of party affiliation.
+
+    Args:
+        row (pd.core.series.Series): a row
+
+    Returns:
+        dict: info about party affiliation
     """
     return {
         "party": {
@@ -48,9 +63,15 @@ def _party_template(row):
     }
 
 
-def _position_template(row):
+def _position_template(row:pd.core.series.Series) -> dict:
     """
     Returns instance of a position held
+
+    Args:
+        row (pd.core.series.Series): a row
+
+    Returns:
+        dict: info about position
     """
     return {
             'start': str(row["start"]),
@@ -63,9 +84,16 @@ def _position_template(row):
         }
 
 
-def _identifier_template(auth_code, identifier):
+def _identifier_template(auth_code:str, identifier:str) -> dict:
     """
     Returns instance of an external identifier
+
+    Args:
+        auth_code (str): authority abbreviation
+        identifier (str): an external identifier
+
+    Returns:
+        dict: info about external identifiers.
     """
     url_formatter = {
             "DiSweNaBiID": {                                                  # P3217
@@ -100,9 +128,15 @@ def _identifier_template(auth_code, identifier):
         }
 
 
-def _verify_J(J):
+def _verify_J(J:dict) -> bool:
     """
-    Verifies that Dict object is not totally empty before writing to a file
+    Verifies that Dict object is not totally empty before writing to a file.
+
+    Args:
+        J (dict): dictionary object
+
+    Returns:
+        bool: J is not empty
     """
     not_empty = False
     if J['name'] == None or len(J['name']) == 0:
@@ -130,7 +164,17 @@ def _verify_J(J):
     return not_empty
 
 
-def _add_party(r, J):
+def _add_party(r:pd.core.series.Series, J:dict) -> bool:
+    """
+    Checks whether a party affiliation can be added to a person dict
+
+    Args:
+        r (pd.core.series.Series): row
+        J (dict): Person dict
+
+    Returns:
+        bool: can add
+    """
     if (
         pd.notnull(r['start'])
         and pd.notnull(r['end'])
@@ -141,18 +185,24 @@ def _add_party(r, J):
         return False
 
 
-def jsonize_person_data(person_id, Corpus_metadata, peripheral_metadata, v, now):
+def jsonize_person_data(
+        person_id:str,
+        Corpus_metadata:pd.core.frame.DataFrame,
+        peripheral_metadata:dict,
+        v:str,
+        now:str) -> dict:
     """
     Return a json object of all a n individual's info.
 
     Args:
-    - person_id           - str
-    - Corpus_metadata     - corpus metadata (pyriksdagen.metadata.Corpus)
-    - peripheral metadata - metadata dict from non-core queries
-    - v                   - data versionversion
+        person_id (str): person ID
+        Corpus_metadata (pd.core.frame.DataFrame): corpus metadata (pyriksdagen.metadata.Corpus)
+        peripheral_metadata (dict): metadata dict from non-core queries
+        v (str): data version
+        now (str): string formatted timestamp
 
     Returns:
-    - Dict object
+        dict: Person dict object
     """
     C = Corpus_metadata                 # for convenience
     J = _json_template(person_id, v, now)
@@ -239,17 +289,27 @@ def jsonize_person_data(person_id, Corpus_metadata, peripheral_metadata, v, now)
         return None
 
 
-def write_J(J, person_id, website_path):
+def write_J(J:dict, person_id:str, website_path:str) -> None:
     """
     Write a json file for each swerik ID with person's info.
+
+    Args:
+        J (dict): person dict
+        person_id (str): person id
+        website_path (str): path in website repo
     """
     with open(f"{website_path}_data/_person-catalog/{person_id}.json", "w+") as outj:
         json.dump(J, outj, ensure_ascii=False, indent=2)
 
 
-def write_md(person_id, website_path):
+def write_md(person_id:str, website_path:str) --> None:
     """
-    writes markwown file for each swerik ID
+    Write markwown file for each swerik ID
+
+    Args:
+        person_id (str): person id
+        website_path (str): path in website repo
+
     """
     markdown = f"""---
 layout: catalog

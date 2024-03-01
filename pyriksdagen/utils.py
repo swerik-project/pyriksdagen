@@ -302,15 +302,22 @@ def write_protocol(prot_elem, prot_path) -> None:
     with open(prot_path, "wb") as f:
         f.write(b)
 
-def parse_protocol(protocol_path, get_ns=False):
+def parse_protocol(protocol_path, get_ns=False) -> tuple:
     """
-    Parse a protocol, return root element (and name space defnitions).
+    Parse a protocol, return root element (and namespace defnitions).
+
+    Args:
+        protocol_path (str): protocol path
+        get_ns (bool): also return namespace dict
+
+    Returns:
+        tuple/etree._Element: root and an optional namespace dict
     """
-    tei_ns = "{http://www.tei-c.org/ns/1.0}"
-    xml_ns = "{http://www.w3.org/XML/1998/namespace}"
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(protocol_path, parser).getroot()
     if get_ns:
+        tei_ns = "{http://www.tei-c.org/ns/1.0}"
+        xml_ns = "{http://www.w3.org/XML/1998/namespace}"
         return root, {"tei_ns":tei_ns, "xml_ns":xml_ns}
     else:
         return root
@@ -319,12 +326,12 @@ def get_data_location(partition):
     """
     Get data location for a specific path. Tries the env variables
     RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
-    returns the defaults data/records, data/motions, data/metadata
+    returns the defaults data/, data/, data/
     """
     valid_partitions = ["records", "motions", "metadata"]
     assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
     d = {}
-    d["records"] = os.environ.get("RECORDS_PATH", "data/records")
-    d["motions"] = os.environ.get("MOTIONS_PATH", "data/motions")
-    d["metadata"] = os.environ.get("METADATA_PATH", "data/metadata")
+    d["records"] = os.environ.get("RECORDS_PATH", "data")
+    d["motions"] = os.environ.get("MOTIONS_PATH", "data")
+    d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]

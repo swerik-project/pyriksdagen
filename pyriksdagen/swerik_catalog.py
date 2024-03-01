@@ -84,12 +84,12 @@ def _position_template(row:pd.core.series.Series) -> dict:
         }
 
 
-def _identifier_template(auth_code:str, identifier:str) -> dict:
+def _identifier_template(auth_code, identifier:str) -> dict:
     """
     Returns instance of an external identifier
 
     Args:
-        auth_code (str): authority abbreviation
+        auth_code: authority abbreviation
         identifier (str): an external identifier
 
     Returns:
@@ -289,7 +289,7 @@ def jsonize_person_data(
         return None
 
 
-def write_J(J:dict, person_id:str, website_path:str) -> None:
+def write_J(J, person_id, website_path) -> None:
     """
     Write a json file for each swerik ID with person's info.
 
@@ -302,7 +302,7 @@ def write_J(J:dict, person_id:str, website_path:str) -> None:
         json.dump(J, outj, ensure_ascii=False, indent=2)
 
 
-def write_md(person_id:str, website_path:str) --> None:
+def write_md(person_id:str, website_path:str) -> None:
     """
     Write markwown file for each swerik ID
 

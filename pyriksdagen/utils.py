@@ -283,11 +283,16 @@ def get_doc_dates(protocol):
         dates.append(when_attrib)
     return match_error, dates
 
-def write_protocol(prot_elem, prot_path):
+def write_protocol(prot_elem, prot_path) -> None:
     """
-    Writes the protocol lxml element (`prot_elem`) to the specified path (`prot_path`).
+    Write the protocol to a file.
+
+    Args:
+        prot_elem (etree._Element): protocol root element
+        prot_path (str): protocol path
+
     """
-    prot_elem = format_texts(prot_elem)
+    prot_elem = format_texts(prot_elem, padding=10)
     b = etree.tostring(
         prot_elem,
         pretty_print=True,

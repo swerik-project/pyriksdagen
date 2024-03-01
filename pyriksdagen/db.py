@@ -84,16 +84,15 @@ def load_ministers(path='corpus/wiki-data/minister.json'):
     minister = pd.DataFrame(data, columns=["government", "wiki_id", "name", "role", "start", "end"])
     return minister
 
-def load_metadata(metadata_location=None):
+def load_metadata(metadata_location=None, processed_metadata_folder=None):
     if metadata_location is None:
         metadata_location = get_data_location("metadata")
     party_mapping = pd.read_csv(f'{metadata_location}/party_abbreviation.csv')
-    #join_intros = ## DEPRECIATED ##pd.read_csv('input/segmentation/join_intros.csv')  return party_mapping, join_intros, mp_db, minister_db, speaker_db
     mb_db, minister_db, speaker_db = None, None, None
     try:
-        mp_db = pd.read_csv('input/matching/member_of_parliament.csv')
-        minister_db = pd.read_csv('input/matching/minister.csv')
-        speaker_db = pd.read_csv('input/matching/speaker.csv')
+        mp_db = pd.read_csv(f'{processed_metadata_folder}/member_of_parliament.csv')
+        minister_db = pd.read_csv(f'{processed_metadata_folder}/minister.csv')
+        speaker_db = pd.read_csv(f'{processed_metadata_folder}/speaker.csv')
     except Exception:
         df = load_Corpus_metadata(metadata_location)        
         mp_db  = df[df['source'] == 'member_of_parliament']

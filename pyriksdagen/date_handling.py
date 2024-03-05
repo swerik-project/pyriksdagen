@@ -5,9 +5,9 @@ Handle issues relating to dates in the corpus and MP/Minister database.
 from tqdm import tqdm
 import pandas as pd
 from pyriksdagen.metadata import (
-    impute_date, # db
-    impute_minister_date, # db gov_db
-    impute_speaker_date, # db
+    impute_date,            # db
+    impute_minister_date,   # db gov_db
+    impute_speaker_date,    # db
 )
 import sys
 
@@ -284,7 +284,7 @@ def yearize_date(date, riksmote):
 
 
 
-def yearize_mandates(debug_id=None):
+def yearize_mandates(debug_id=None, metadata_folder="data"):
     """
     return a dataframe of mandate periods, lengthened for each parliament year
 
@@ -298,11 +298,11 @@ def yearize_mandates(debug_id=None):
 
     """
     print("Yearizing mandates... this will take a moment.")
-    riksmote = pd.read_csv("data/riksdag-year.csv")
-    mep = pd.read_csv("data/member_of_parliament.csv")
-    minister = pd.read_csv("data/minister.csv")
-    speaker = pd.read_csv("data/speaker.csv")
-    government = pd.read_csv("data/government.csv")
+    riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
+    mep = pd.read_csv(f"{metadata_folder}/member_of_parliament.csv")
+    minister = pd.read_csv(f"{metadata_folder}/minister.csv")
+    speaker = pd.read_csv(f"{metadata_folder}/speaker.csv")
+    government = pd.read_csv(f"{metadata_folder}/government.csv")
     parliament_years = riksmote["parliament_year"].unique()
     parliament_years = [str(_) for _ in parliament_years]
     rows = []
@@ -311,9 +311,9 @@ def yearize_mandates(debug_id=None):
     cols = ["person_id", "start", "end", "role", "parliament_year"]
     for k, df in {"member_of_parliament":mep, "minister": minister, "speaker": speaker}.items():
         if k == "minister":
-            df = impute_minister_date(impute_date(df), government)
+            df = impute_minister_date(impute_date(df, metadata_folder), government)
         if k == "speaker":
-            df = impute_speaker_date(impute_date(df))
+            df = impute_speaker_date(impute_date(df, metadata_folder))
         for i, r in tqdm(df.iterrows(), total=len(df)):
 
             if debug_id and r['person_id'] == debug_id:

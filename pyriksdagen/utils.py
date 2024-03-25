@@ -8,7 +8,7 @@ import lxml
 from lxml import etree
 import xmlschema
 from bs4 import BeautifulSoup
-from pathlib import Path
+from pathlib import Path, PurePath
 from pyparlaclarin.refine import format_texts
 from datetime import datetime
 import hashlib, uuid, base58, requests, tqdm
@@ -147,10 +147,9 @@ def protocol_iterators(corpus_root=None, document_type=None, start=None, end=Non
     Returns:
         iterator of the protocols as relative paths to current location
     """
-    if corpus_root is None:
-        corpus_root = get_data_location("records")
-
     folder = Path(corpus_root)
+    if folder.is_absolute():
+        folder = folder.relative_to(Path(".").resolve(), walk_up=True)
     docs = folder.glob("**/*.xml")
     if document_type is not None:
         docs = folder.glob(f"**/{document_type}*.xml")
@@ -158,7 +157,7 @@ def protocol_iterators(corpus_root=None, document_type=None, start=None, end=Non
         metadata = infer_metadata(protocol.name)
         if "year" not in metadata:
             continue
-        path = protocol.relative_to(".")
+        _path = protocol.relative_to(".")
         assert (start is None) == (
             end is None
         ), "Provide both start and end year or neither"
@@ -170,7 +169,6 @@ def protocol_iterators(corpus_root=None, document_type=None, start=None, end=Non
             secondary_year = metadata.get("secondary_year", year)
             if start <= year and end >= secondary_year:
                 yield str(protocol.relative_to("."))
-
         else:
             yield str(protocol.relative_to("."))
 
@@ -335,3 +333,7 @@ def get_data_location(partition):
     d["motions"] = os.environ.get("MOTIONS_PATH", "data")
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]
+
+
+def where_am_i():
+    return os.path.dirname(__file__)

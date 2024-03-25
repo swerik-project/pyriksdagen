@@ -1,0 +1,17 @@
+SELECT DISTINCT ?person_id  ?ref ?vol ?pages ?wiki_id
+WHERE
+{
+    ?wiki_id wdt:P31 wd:Q5;
+             wdt:P12192 ?person_id;
+             rdf:type wdno:P102;
+             p:P102 ?statement.
+    ?statement prov:wasDerivedFrom ?reference.
+    ?reference pr:P248 ?ref;
+               pr:P304 ?pages;
+               pr:P478 ?vol.
+
+    {
+        PLACEHOLDER
+    }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "sv". }
+ }

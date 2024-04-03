@@ -126,6 +126,45 @@ def impute_speaker_date(db):
 	return db
 
 
+def infer_start_or_end(row, metadata_folder):
+	if pd.isna(row['start']) == pd.isna(row['end']):
+		return row
+	else:
+		riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
+		if pd.isna(row['start']):
+			try:
+				py = riksmote.loc[
+						(riksmote['start'] <= row['end'].strftime("%Y-%m-%d")) &
+						(riksmote['end'] >= row['end'].strftime("%Y-%m-%d"))
+					].copy()
+				row['start'] = py['start'].unique()[0]
+			except:
+				pass
+				#print("no bueno ---------------------> end:", row['end'], row['person_id'])
+		else:
+			if int(row['start'].strftime("%Y-%m-%d")[:4]) < 1867:
+				return row
+			try:
+				py = riksmote.loc[
+						(riksmote['start'] <= row['start'].strftime("%Y-%m-%d")) &
+						(riksmote['end'] > row['start'].strftime("%Y-%m-%d"))
+					].copy()
+				row['end'] = py['end'].unique()[0]
+			except:
+				py = riksmote.loc[
+						riksmote['end'].str.startswith(row['start'].strftime("%Y-%m-%d")[:4])
+					].copy()
+				rs = sorted(py['end'].unique(), reverse=True)[0]
+				if rs < row['start'].strftime("%Y-%m-%d"):
+					py = riksmote.loc[
+							riksmote['end'].str.startswith(
+								str(int(row['start'].strftime("%Y-%m-%d")[:4])+1))
+						].copy()
+					rs = sorted(py['end'].unique(), reverse=True)[0]
+				row['end'] = rs
+		return row
+
+
 def impute_date(db, metadata_folder):
 	db[["start", "end"]] = db[["start", "end"]].astype(str)
 	if 'source' in db.columns:
@@ -137,6 +176,10 @@ def impute_date(db, metadata_folder):
 		db['start'] = db['start'].apply(increase_date_precision, start=True)
 		db['end'] = db['end'].apply(increase_date_precision, start=False)
 		db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
+
+		if 'member_of_parliament' in sources:
+			db = db.apply(infer_start_or_end, axis=1, args=(metadata_folder,))
+			db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
 		# Impute current governments end date
 		gov_db = pd.read_csv(f'{metadata_folder}/government.csv')
 		gov_db[["start", "end"]] = gov_db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')

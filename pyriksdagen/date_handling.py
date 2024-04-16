@@ -266,7 +266,7 @@ def _get_parliament_years(start, end, start_year, end_year, start_p, end_p, year
 
 def yearize_date(date, riksmote):
     """
-    takes a date and a dataframe of riksdagen-politicians/data/riksdag-year.csv
+    takes a date and a dataframe of riksdagen-persons/data/riksdag-year.csv
     """
     parliament_years = riksmote["parliament_year"].unique()
     parliament_years = [str(_) for _ in parliament_years]

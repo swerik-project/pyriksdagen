@@ -43,6 +43,46 @@ def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
 
 
 def impute_member_dates(db, metadata_folder):
+	def _fill_na(row, **kwargs):
+		if row['start'] == 'nan' and row['end'] == 'nan':
+			return row
+		elif pd.isna(row['start']) and pd.isna(row['end']):
+			return row
+		else:
+			riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
+			if pd.isna(row['start']) or row['start'] == 'nan':
+				try:
+					py = riksmote.loc[
+							(riksmote['start'] <= row['end']) &
+							(riksmote['end'] >= row['end'])
+						].copy()
+					row['start'] = py['start'].unique()[0]
+				except:
+					#pass
+					print("no bueno ---------------------> end:", row['end'], row['person_id'])
+			elif pd.isna(row['end']) or row['end'] == 'nan':
+				if int(row['start'][:4]) < 1867:
+					return row
+				try:
+					py = riksmote.loc[
+							(riksmote['start'] <= row['start']) &
+							(riksmote['end'] > row['start'])
+						].copy()
+					row['end'] = py['end'].unique()[0]
+				except:
+					py = riksmote.loc[
+							riksmote['end'].str.startswith(row['start'][:4])
+						].copy()
+					rs = sorted(py['end'].unique(), reverse=True)[0]
+					if rs < row['start']:
+						py = riksmote.loc[
+								riksmote['end'].str.startswith(
+									str(int(row['start'][:4])+1))
+							].copy()
+						rs = sorted(py['end'].unique(), reverse=True)[0]
+					row['end'] = rs
+		return row
+
 	def _impute_start(date, **kwargs):
 		riksmote = kwargs['riksmote']
 		if len(date) == 10:
@@ -83,6 +123,11 @@ def impute_member_dates(db, metadata_folder):
 
 	riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
 	riksmote[['start', 'end']] = riksmote[['start', 'end']].astype(str)
+
+	idx = (db['source'] == 'member_of_parliament') &\
+			(((pd.isna(db['start'])) | (db['start'] == 'nan')) |\
+			((pd.isna(db['end'])) | (db['end'] == 'nan')))
+	db.loc[idx] = db.loc[idx].apply(lambda x: _fill_na(x, riksmote=riksmote), axis = 1)
 
 	idx = (db['source'] == 'member_of_parliament') &\
 			(pd.notnull(db['start'])) & (db['start'] != 'nan')
@@ -126,45 +171,6 @@ def impute_speaker_date(db):
 	return db
 
 
-def infer_start_or_end(row, metadata_folder):
-	if pd.isna(row['start']) == pd.isna(row['end']):
-		return row
-	else:
-		riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
-		if pd.isna(row['start']):
-			try:
-				py = riksmote.loc[
-						(riksmote['start'] <= row['end'].strftime("%Y-%m-%d")) &
-						(riksmote['end'] >= row['end'].strftime("%Y-%m-%d"))
-					].copy()
-				row['start'] = py['start'].unique()[0]
-			except:
-				pass
-				#print("no bueno ---------------------> end:", row['end'], row['person_id'])
-		else:
-			if int(row['start'].strftime("%Y-%m-%d")[:4]) < 1867:
-				return row
-			try:
-				py = riksmote.loc[
-						(riksmote['start'] <= row['start'].strftime("%Y-%m-%d")) &
-						(riksmote['end'] > row['start'].strftime("%Y-%m-%d"))
-					].copy()
-				row['end'] = py['end'].unique()[0]
-			except:
-				py = riksmote.loc[
-						riksmote['end'].str.startswith(row['start'].strftime("%Y-%m-%d")[:4])
-					].copy()
-				rs = sorted(py['end'].unique(), reverse=True)[0]
-				if rs < row['start'].strftime("%Y-%m-%d"):
-					py = riksmote.loc[
-							riksmote['end'].str.startswith(
-								str(int(row['start'].strftime("%Y-%m-%d")[:4])+1))
-						].copy()
-					rs = sorted(py['end'].unique(), reverse=True)[0]
-				row['end'] = rs
-		return row
-
-
 def impute_date(db, metadata_folder):
 	db[["start", "end"]] = db[["start", "end"]].astype(str)
 	if 'source' in db.columns:
@@ -177,10 +183,6 @@ def impute_date(db, metadata_folder):
 		db['end'] = db['end'].apply(increase_date_precision, start=False)
 		db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
 
-		if 'member_of_parliament' in sources:
-			db = db.apply(infer_start_or_end, axis=1, args=(metadata_folder,))
-			db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
-		# Impute current governments end date
 		gov_db = pd.read_csv(f'{metadata_folder}/government.csv')
 		gov_db[["start", "end"]] = gov_db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
 		idx = gov_db['start'].idxmax()
@@ -390,7 +392,10 @@ def load_Corpus_metadata(metadata_folder=None):
 
 	# Remove redundancy and split file
 	corpus = corpus.drop_duplicates()
+	print(len(corpus))
+	print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
 	corpus = corpus.dropna(subset=['name', 'start', 'end'])
+	print(len(corpus))
 	corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
 
 	return corpus

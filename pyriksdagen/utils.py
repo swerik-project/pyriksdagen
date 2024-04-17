@@ -334,6 +334,3 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]
 
-
-def where_am_i():
-    return os.path.dirname(__file__)

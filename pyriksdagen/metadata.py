@@ -392,10 +392,8 @@ def load_Corpus_metadata(metadata_folder=None):
 
 	# Remove redundancy and split file
 	corpus = corpus.drop_duplicates()
-	print(len(corpus))
-	print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
+	#print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
 	corpus = corpus.dropna(subset=['name', 'start', 'end'])
-	print(len(corpus))
 	corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
 
 	return corpus

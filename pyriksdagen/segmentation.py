@@ -86,6 +86,17 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         gender = intro_dict["gender"]
         minister_db = minister_db[minister_db["gender"] == gender]
 
+    # Filter by date
+    if 'date' in intro_dict:
+
+        minister_db = minister_db[
+                (minister_db["start"] <= intro_dict['date']) &
+                (minister_db["end"] >= intro_dict['date'])]
+        print("~~~~~~> date:", len(minister_db))
+        if not minister_db.empty:
+            if len(set(minister_db["id"])) == 1:
+                return minister_db["id"].iloc[0]
+
     # Match by name
     if 'name' in intro_dict:
         name = intro_dict["name"].lower()

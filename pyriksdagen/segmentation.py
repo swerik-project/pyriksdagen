@@ -92,7 +92,6 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         minister_db = minister_db[
                 (minister_db["start"] <= intro_dict['date']) &
                 (minister_db["end"] >= intro_dict['date'])]
-        print("~~~~~~> date:", len(minister_db))
         if not minister_db.empty:
             if len(set(minister_db["id"])) == 1:
                 return minister_db["id"].iloc[0]

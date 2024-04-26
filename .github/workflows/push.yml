@@ -1,4 +1,4 @@
-name: Run example notebooks
+name: "Pyriksdagen: run example notebook"
 
 on: [push]
 

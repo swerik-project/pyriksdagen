@@ -348,13 +348,16 @@ class Corpus(pd.DataFrame):
 
 
 
-def load_Corpus_metadata(metadata_folder=None, read_pickle_from=None):
+def load_Corpus_metadata(metadata_folder=None, read_db_from=None):
 	"""
 	Populates Corpus object
 	"""
-	if read_pickle_from is not None:
+	if read_db_from is not None:
 		print("Reading metadata db from a file.")
-		corpus = pd.read_pickle(read_pickle_from)
+		try:
+			corpus = pd.read_csv(read_db_from)
+		except:
+			corpus = pd.read_pickle(read_db_from)
 	else:
 		print("Compiling metadata db from source.")
 		if metadata_folder is None:

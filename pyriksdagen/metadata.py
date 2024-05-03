@@ -348,52 +348,57 @@ class Corpus(pd.DataFrame):
 
 
 
-def load_Corpus_metadata(metadata_folder=None):
+def load_Corpus_metadata(metadata_folder=None, read_pickle_from=None):
 	"""
 	Populates Corpus object
 	"""
-	if metadata_folder is None:
-		metadata_folder = get_data_location("metadata")
+	if read_pickle_from is not None:
+		print("Reading metadata db from a file.")
+		corpus = pd.read_pickle(read_pickle_from)
+	else:
+		print("Compiling metadata db from source.")
+		if metadata_folder is None:
+			metadata_folder = get_data_location("metadata")
 
-	corpus = Corpus()
+		corpus = Corpus()
 
-	corpus = corpus.add_mps(metadata_folder=metadata_folder)
-	corpus = corpus.add_ministers(metadata_folder=metadata_folder)
-	corpus = corpus.add_speakers(metadata_folder=metadata_folder)
+		corpus = corpus.add_mps(metadata_folder=metadata_folder)
+		corpus = corpus.add_ministers(metadata_folder=metadata_folder)
+		corpus = corpus.add_speakers(metadata_folder=metadata_folder)
 
-	corpus = corpus.add_persons(metadata_folder=metadata_folder)
-	corpus = corpus.add_location_specifiers(metadata_folder=metadata_folder)
-	corpus = corpus.add_names(metadata_folder=metadata_folder)
+		corpus = corpus.add_persons(metadata_folder=metadata_folder)
+		corpus = corpus.add_location_specifiers(metadata_folder=metadata_folder)
+		corpus = corpus.add_names(metadata_folder=metadata_folder)
 
-	corpus = corpus.impute_dates(metadata_folder=metadata_folder)
-	corpus = corpus.impute_parties(metadata_folder=metadata_folder)
-	corpus = corpus.abbreviate_parties(metadata_folder=metadata_folder)
-	corpus = corpus.add_twitter(metadata_folder=metadata_folder)
-	corpus = corpus.clean_names()
+		corpus = corpus.impute_dates(metadata_folder=metadata_folder)
+		corpus = corpus.impute_parties(metadata_folder=metadata_folder)
+		corpus = corpus.abbreviate_parties(metadata_folder=metadata_folder)
+		corpus = corpus.add_twitter(metadata_folder=metadata_folder)
+		corpus = corpus.clean_names()
 
-	# Clean up speaker role formatting
-	corpus["role"] = corpus["role"].replace({
-		'Sveriges riksdags talman':'speaker',
-		'andra kammarens andre vice talman':'ak_2_vice_speaker',
-		'andra kammarens förste vice talman':'ak_1_vice_speaker',
-		'andra kammarens talman':'ak_speaker',
-		'andra kammarens vice talman':'ak_1_vice_speaker',
-		'andre vice talman i första kammaren':'fk_2_vice_speaker',
-		'första kammarens talman':'fk_speaker',
-		'första kammarens vice talman':'fk_1_vice_speaker',
-		'förste vice talman i första kammaren':'fk_1_vice_speaker'
-		})
+		# Clean up speaker role formatting
+		corpus["role"] = corpus["role"].replace({
+			'Sveriges riksdags talman':'speaker',
+			'andra kammarens andre vice talman':'ak_2_vice_speaker',
+			'andra kammarens förste vice talman':'ak_1_vice_speaker',
+			'andra kammarens talman':'ak_speaker',
+			'andra kammarens vice talman':'ak_1_vice_speaker',
+			'andre vice talman i första kammaren':'fk_2_vice_speaker',
+			'första kammarens talman':'fk_speaker',
+			'första kammarens vice talman':'fk_1_vice_speaker',
+			'förste vice talman i första kammaren':'fk_1_vice_speaker'
+			})
 
-	# Temporary ids
-	corpus['person_id'] = corpus['person_id']
+		# Temporary ids
+		corpus['person_id'] = corpus['person_id']
 
-	# Drop individuals with missing names
-	corpus = corpus[corpus['name'].notna()]
+		# Drop individuals with missing names
+		corpus = corpus[corpus['name'].notna()]
 
-	# Remove redundancy and split file
-	corpus = corpus.drop_duplicates()
-	#print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
-	corpus = corpus.dropna(subset=['name', 'start', 'end'])
-	corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
+		# Remove redundancy and split file
+		corpus = corpus.drop_duplicates()
+		#print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
+		corpus = corpus.dropna(subset=['name', 'start', 'end'])
+		corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
 
 	return corpus

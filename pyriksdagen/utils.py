@@ -397,6 +397,7 @@ def get_context_sequences_for_protocol(protocol, context_type, max_length = 120)
     
     prev_elem_is_text_seq = False
     elem_idx = ''
+    curr_sequence = None
     prev_sequence = ''
     next_sequence = ''
     prev_elem_sequence = ''
@@ -440,12 +441,12 @@ def get_context_sequences_for_protocol(protocol, context_type, max_length = 120)
                 prev_elem_is_text_seq = True
                 
     next_sequence = ''
-    context_sequence = add_context_to_sequence(prev_sequence, curr_sequence, next_sequence, context_type, max_length)
-    
-    id_list.append(idx)
-    context_sequence_list.append(context_sequence)
+    if curr_sequence:
+        context_sequence = add_context_to_sequence(prev_sequence, curr_sequence, next_sequence, context_type, max_length)
+        id_list.append(idx)
+        context_sequence_list.append(context_sequence)
     
     
     output_dict = {'id' : id_list,
-                   'context_sequence' : context_sequence_list}
+                   'text' : context_sequence_list}
     return output_dict

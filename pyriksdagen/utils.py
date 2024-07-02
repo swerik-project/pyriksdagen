@@ -342,7 +342,14 @@ def remove_whitespace_from_sequence(text_seq):
     text_seq_string = ' '.join(text_seq_list)
     return text_seq_string
 
-def add_context_to_sequence(previous_sequence, current_sequence, next_sequence, context_type, target_length = 120):
+def get_sequence_from_elem_list(elem_list):
+    # parses output from elem neighbor search into a text sequence
+    sequence = ''
+    if len(elem_list) != 0:
+        sequence = str(elem_list[0].text)
+    return sequence
+
+def extract_context_sequence(elem, context_type, target_length = 128, sep_char = '/n'):
     # if previous sequence is long, we want it to truncate the sequence so that the
     # current sequence is not unecessarily 
     if context_type == 'left_context':
@@ -350,25 +357,34 @@ def add_context_to_sequence(previous_sequence, current_sequence, next_sequence, 
     elif context_type == 'full_context':
         max_previous_length = target_length//3
     
-    # remove whitespace from sequences
-    previous_sequence = remove_whitespace_from_sequence(str(previous_sequence))
-    current_sequence = remove_whitespace_from_sequence(str(current_sequence))
-    next_sequence = remove_whitespace_from_sequence(str(next_sequence))
+    # find previous and next sequence using xpath, remove whitespace
+    previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
+    previous_sequence = get_sequence_from_elem_list(previous_elem_list)
+    previous_sequence = remove_whitespace_from_sequence(previous_sequence)
+    if context_type == 'full_context':
+        next_elem_list = elem.xpath("following::*[local-name() = 'note' or local-name() = 'seg'][1]")
+        next_sequence = get_sequence_from_elem_list(next_elem_list)
+        next_sequence = remove_whitespace_from_sequence(next_sequence)
     
-    
+    # current sequence is elem.text
+    current_sequence = elem.text
+    current_sequence = remove_whitespace_from_sequence(current_sequence)
+
+    # split by punctuation
     previous_as_list = re.split(r'([.!?])', previous_sequence)
     if (previous_as_list[-1] == '') & (len(previous_as_list) != 1):
         prev_last_sentence = previous_as_list[-3:]
         prev_last_sentence = ''.join(prev_last_sentence)
     else:
         prev_last_sentence = previous_as_list[-1]
-        
-    next_as_list = re.split(r'([.!?])', next_sequence)
-    if len(next_as_list) != 1:
-        next_first_sentence = next_as_list[:2]
-        next_first_sentence = ''.join(next_first_sentence)
-    else:
-        next_first_sentence = next_as_list[0]
+    
+    if context_type == 'full_context':
+        next_as_list = re.split(r'([.!?])', next_sequence)
+        if len(next_as_list) != 1:
+            next_first_sentence = next_as_list[:2]
+            next_first_sentence = ''.join(next_first_sentence)
+        else:
+            next_first_sentence = next_as_list[0]
 
     # regardless of sequence type, we combine prev last sentence with curr sequence
     prev_last_sentence_as_list = prev_last_sentence.split(' ')
@@ -377,16 +393,16 @@ def add_context_to_sequence(previous_sequence, current_sequence, next_sequence, 
         prev_last_sentence_as_list = prev_last_sentence_as_list[-max_previous_length:]
         prev_last_sentence = ' '.join(prev_last_sentence_as_list)
     # use new line (/n) as token to signify where current sequence begins
-    left_context_sequence = prev_last_sentence + ' /n ' + current_sequence
+    left_context_sequence = prev_last_sentence + f' {sep_char} ' + current_sequence
     
     if context_type == 'left_context':
         return left_context_sequence
     elif context_type == 'full_context':
         # add next first sentence to left context sequence to get full context
-        full_context_sequence = left_context_sequence + ' /n ' + next_first_sentence
+        full_context_sequence = left_context_sequence + f' {sep_char} ' + next_first_sentence
         return full_context_sequence
 
-def get_context_sequences_for_protocol(protocol, context_type, max_length = 120):
+def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, sep_char = '/n'):
     # returns dictionary with ids and context sequences for a complete protocol
     id_list = []
     context_sequence_list = []
@@ -395,57 +411,18 @@ def get_context_sequences_for_protocol(protocol, context_type, max_length = 120)
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(protocol, parser).getroot()
     
-    prev_elem_is_text_seq = False
-    elem_idx = ''
-    curr_sequence = None
-    prev_sequence = ''
-    next_sequence = ''
-    prev_elem_sequence = ''
     for tag, elem in elem_iter(root):
         if tag == 'note':
-            elem_sequence = elem.text
-            elem_idx = elem.attrib[id_key]
-            
-            if prev_elem_is_text_seq == True:
-                next_sequence = elem_sequence
-                context_sequence = add_context_to_sequence(prev_sequence, curr_sequence, next_sequence, context_type, max_length)
-                
-                id_list.append(idx)
-                context_sequence_list.append(context_sequence)
-            
-
-            idx = elem_idx
-            curr_sequence = elem_sequence
-            prev_sequence = prev_elem_sequence
-                
-            prev_elem_sequence = elem_sequence
-            prev_elem_is_text_seq = True
+            elem_id = elem.get(id_key)
+            id_list.append(elem_id)
+            context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, sep_char = sep_char)
+            context_sequence_list.append(context_sequence)
         elif tag == 'u':
             for child in elem.getchildren():
-                elem_sequence = child.text
-                elem_idx = child.values()[0]
-                
-                if prev_elem_is_text_seq == True:
-                    next_sequence = elem_sequence
-                    context_sequence = add_context_to_sequence(prev_sequence, curr_sequence, next_sequence, context_type, max_length)
-                    
-                    id_list.append(idx)
-                    context_sequence_list.append(context_sequence)
-                    
-                
-                idx = elem_idx
-                curr_sequence = elem_sequence
-                prev_sequence = prev_elem_sequence
-                    
-                prev_elem_sequence = elem_sequence
-                prev_elem_is_text_seq = True
-                
-    next_sequence = ''
-    if curr_sequence:
-        context_sequence = add_context_to_sequence(prev_sequence, curr_sequence, next_sequence, context_type, max_length)
-        id_list.append(idx)
-        context_sequence_list.append(context_sequence)
-    
+                child_id = child.get(id_key)
+                id_list.append(child_id)
+                context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, sep_char = sep_char)
+                context_sequence_list.append(context_sequence)
     
     output_dict = {'id' : id_list,
                    'text' : context_sequence_list}

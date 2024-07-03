@@ -336,74 +336,59 @@ def get_data_location(partition):
     return d[partition]
 
 def remove_whitespace_from_sequence(text_seq):
-    # function to remove whitespace from string to get comparable text between corpus and kblab
+    """
+    Remove whitespace from string to get comparable text between corpus and kblab.
+    Input is string and output is string.
+    """
     text_seq = text_seq.split()
     text_seq_list = [s for s in text_seq if s != '']
     text_seq_string = ' '.join(text_seq_list)
     return text_seq_string
 
 def get_sequence_from_elem_list(elem_list):
-    # parses output from elem neighbor search into a text sequence
+    """
+    Get sequence from first elem in list. 
+    Returns string. If list is empty, returns empty string. 
+    """
     sequence = ''
     if len(elem_list) != 0:
         sequence = str(elem_list[0].text)
     return sequence
 
 def extract_context_sequence(elem, context_type, target_length = 128, sep_char = '/n'):
-    # if previous sequence is long, we want it to truncate the sequence so that the
-    # current sequence is not unecessarily 
+    """
+    Get sequence with context from xml element. Returns string. 
+    """
+    sequence_to_list_by_punctuation = lambda sequence_string: list(filter(None, re.split(r'([.!?])', sequence_string)))
+    
+    current_sequence = remove_whitespace_from_sequence(elem.text)
+    
+    previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
+    previous_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(previous_elem_list))
+    previous_sequence_as_list = sequence_to_list_by_punctuation(previous_sequence)
+    previous_last_sentence = ''.join(previous_sequence_as_list[-2:]).lstrip('.!? ')
+    
     if context_type == 'left_context':
         max_previous_length = target_length//2
     elif context_type == 'full_context':
         max_previous_length = target_length//3
-    
-    # find previous and next sequence using xpath, remove whitespace
-    previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
-    previous_sequence = get_sequence_from_elem_list(previous_elem_list)
-    previous_sequence = remove_whitespace_from_sequence(previous_sequence)
-    if context_type == 'full_context':
         next_elem_list = elem.xpath("following::*[local-name() = 'note' or local-name() = 'seg'][1]")
-        next_sequence = get_sequence_from_elem_list(next_elem_list)
-        next_sequence = remove_whitespace_from_sequence(next_sequence)
+        next_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(next_elem_list))
+        next_sequence_as_list = sequence_to_list_by_punctuation(next_sequence)
+        next_first_sentence = ''.join(next_sequence_as_list[:2])
     
-    # current sequence is elem.text
-    current_sequence = elem.text
-    current_sequence = remove_whitespace_from_sequence(current_sequence)
+    previous_last_sentence = ' '.join(previous_last_sentence.split(' ')[-max_previous_length:]) # truncate sequence if too long
+    left_context_sequence = previous_last_sentence + f' {sep_char} ' + current_sequence
 
-    # split by punctuation
-    previous_as_list = re.split(r'([.!?])', previous_sequence)
-    if (previous_as_list[-1] == '') & (len(previous_as_list) != 1):
-        prev_last_sentence = previous_as_list[-3:]
-        prev_last_sentence = ''.join(prev_last_sentence)
-    else:
-        prev_last_sentence = previous_as_list[-1]
-    
-    if context_type == 'full_context':
-        next_as_list = re.split(r'([.!?])', next_sequence)
-        if len(next_as_list) != 1:
-            next_first_sentence = next_as_list[:2]
-            next_first_sentence = ''.join(next_first_sentence)
-        else:
-            next_first_sentence = next_as_list[0]
-
-    # regardless of sequence type, we combine prev last sentence with curr sequence
-    prev_last_sentence_as_list = prev_last_sentence.split(' ')
-    n_words = len(prev_last_sentence_as_list)
-    if n_words > max_previous_length:
-        prev_last_sentence_as_list = prev_last_sentence_as_list[-max_previous_length:]
-        prev_last_sentence = ' '.join(prev_last_sentence_as_list)
-    # use new line (/n) as token to signify where current sequence begins
-    left_context_sequence = prev_last_sentence + f' {sep_char} ' + current_sequence
-    
     if context_type == 'left_context':
         return left_context_sequence
     elif context_type == 'full_context':
-        # add next first sentence to left context sequence to get full context
-        full_context_sequence = left_context_sequence + f' {sep_char} ' + next_first_sentence
-        return full_context_sequence
+        return left_context_sequence + f' {sep_char} ' + next_first_sentence
 
 def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, sep_char = '/n'):
-    # returns dictionary with ids and context sequences for a complete protocol
+    """
+    Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. 
+    """
     id_list = []
     context_sequence_list = []
     

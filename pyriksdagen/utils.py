@@ -376,14 +376,14 @@ def extract_context_sequence(elem, context_type, target_length = 128, separator 
         next_first_sentence = ''.join(next_sequence_as_list[:2])
     
     previous_last_sentence = ' '.join(previous_last_sentence.split(' ')[-max_previous_length:]) # truncate sequence if too long
-    left_context_sequence = previous_last_sentence + f' {sep_char} ' + current_sequence
+    left_context_sequence = previous_last_sentence + f' {separator} ' + current_sequence
 
     if context_type == 'left_context':
         return left_context_sequence
     elif context_type == 'full_context':
-        return left_context_sequence + f' {sep_char} ' + next_first_sentence
+        return left_context_sequence + f' {separator} ' + next_first_sentence
 
-def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, sep_char = '/n'):
+def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, separator = '/n'):
     """
     Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. 
     """
@@ -396,13 +396,13 @@ def get_context_sequences_for_protocol(protocol, context_type, target_length = 1
         if tag == 'note':
             elem_id = elem.get(f'{XML_NS}id')
             id_list.append(elem_id)
-            context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, sep_char = sep_char)
+            context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, separator = separator)
             texts_with_contexts.append(context_sequence)
         elif tag == 'u':
             for child in elem:
                 child_id = child.get(f'{XML_NS}id')
                 id_list.append(child_id)
-                context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, sep_char = sep_char)
+                context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, separator = separator)
                 texts_with_contexts.append(context_sequence)
     
     output_dict = {'id' : id_list,

@@ -335,27 +335,25 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]
 
-def remove_whitespace_from_sequence(text_seq):
+def remove_whitespace_from_sequence(text):
     """
-    Remove whitespace from string to get comparable text between corpus and kblab.
+    Remove repeated whitespace and replace all whitespace with spaces
     Input is string and output is string.
     """
-    text_seq = text_seq.split()
-    text_seq_list = [s for s in text_seq if s != '']
-    text_seq_string = ' '.join(text_seq_list)
-    return text_seq_string
+    text_seq = text.split()
+    text_seq = [s for s in text_seq if s != '']
+    return ' '.join(text_seq)
 
 def get_sequence_from_elem_list(elem_list):
     """
-    Get sequence from first elem in list. 
+    Get sequence from first elem in list.
     Returns string. If list is empty, returns empty string. 
     """
-    sequence = ''
-    if len(elem_list) != 0:
-        sequence = str(elem_list[0].text)
-    return sequence
+    if len(elem_list) > 0:
+        return str(elem_list[0].text)
+    return ""
 
-def extract_context_sequence(elem, context_type, target_length = 128, sep_char = '/n'):
+def extract_context_sequence(elem, context_type, target_length = 128, separator = '/n'):
     """
     Get sequence with context from xml element. Returns string. 
     """
@@ -389,26 +387,24 @@ def get_context_sequences_for_protocol(protocol, context_type, target_length = 1
     """
     Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. 
     """
-    id_list = []
-    context_sequence_list = []
+    id_list, texts_with_contexts = [], []
     
-    id_key = f'{XML_NS}id'
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(protocol, parser).getroot()
     
     for tag, elem in elem_iter(root):
         if tag == 'note':
-            elem_id = elem.get(id_key)
+            elem_id = elem.get(f'{XML_NS}id')
             id_list.append(elem_id)
             context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, sep_char = sep_char)
-            context_sequence_list.append(context_sequence)
+            texts_with_contexts.append(context_sequence)
         elif tag == 'u':
-            for child in elem.getchildren():
-                child_id = child.get(id_key)
+            for child in elem:
+                child_id = child.get(f'{XML_NS}id')
                 id_list.append(child_id)
                 context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, sep_char = sep_char)
-                context_sequence_list.append(context_sequence)
+                texts_with_contexts.append(context_sequence)
     
     output_dict = {'id' : id_list,
-                   'text' : context_sequence_list}
+                   'text' : texts_with_contexts}
     return output_dict

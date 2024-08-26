@@ -113,7 +113,7 @@ def _identifier_template(auth_code, identifier:str) -> dict:
                     "name": "Swedish Portrait Archive ID"
                 },
             "UpUnAlID": {                                                     # P6821
-                    "formatter-url": "https://www.alvin-portal.org/alvin/view.jsf?pid=alvin-person%{}",
+                    "formatter-url": "https://www.alvin-portal.org/alvin/view.jsf?pid={}",
                     "name": "Uppsala University Alvin ID"
                 },
             "WiDaID": {

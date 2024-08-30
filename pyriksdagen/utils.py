@@ -357,14 +357,19 @@ def extract_context_sequence(elem, context_type, target_length = 128, separator 
     """
     Get sequence with context from xml element. Returns string. 
     """
-    sequence_to_list_by_punctuation = lambda sequence_string: list(filter(None, re.split(r'([.!?])', sequence_string)))
-    
     current_sequence = remove_whitespace_from_sequence(elem.text)
+    
+    sentence_endings_regex = re.compile(r'(?<!\skl\.)(?<!\sKongl\.)(?<!\sKungl\.)(?<!\ssid\.)(?<!\sleg\.)(?<!\sang\.)(?<!\s\w\.)(?<!\w\.\w)(?<![A-Z][a-z]\.)(?<=\.|\?|!)(\s|$)')
+    sequence_to_list_by_punctuation = lambda sequence_string: list(filter(None, sentence_endings_regex.split(sequence_string)))
     
     previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
     previous_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(previous_elem_list))
-    previous_sequence_as_list = sequence_to_list_by_punctuation(previous_sequence)
-    previous_last_sentence = ''.join(previous_sequence_as_list[-2:]).lstrip('.!? ')
+    
+    if len(previous_sequence.split()) < 10:
+        previous_last_sentence = previous_sequence
+    else:
+        previous_sequence_as_list = sequence_to_list_by_punctuation(previous_sequence)
+        previous_last_sentence = previous_sequence_as_list[-1]
     
     if context_type == 'left_context':
         max_previous_length = target_length//2

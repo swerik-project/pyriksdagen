@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: To cite this reposository, please use these metadata.
+title: "The Swedish Parliament Corpus: pyriksdagen"
+version: v1.2.0
+authors:
+  - given-names: Väinö
+    family-names: Yrjänäinen
+    alias: ninpnin
+  - family-names: Borges
+    given-names: Robert
+    orcid: "https://orcid.org/0000-0002-7647-4048"
+    alias: BobBorges
+date-released: 2024-04-25
+identifiers:
+  - description: Repository basename
+    type: other
+    value: pyriksdagen
+repository-code: "https://github.com/swerik-project/pyriksdagen"
+url: "https://github.com/swerik-project/the-swedish-parliament-corpus"
+type: dataset

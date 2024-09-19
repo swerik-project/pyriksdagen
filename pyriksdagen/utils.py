@@ -334,3 +334,21 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]
 
+
+def get_gh_link(_file, elem,
+                username='swerik-project',
+                repo='riksdaen-records',
+                branch='dev')
+    """
+    return a formatted github link to an lxml element
+
+    Args:
+    - _file: the path (from root) of the file in question
+    - elem: the element
+    - username: the username of the repo owner
+    - reponame: the repository containing the _file
+    - branch: the branch you want to link to
+    """
+    line_number = elem.sourceline
+    gh = f"https://github.com/{username}/{repo}/blob/{branch}/{file}/#L{line_number}"
+    return gh

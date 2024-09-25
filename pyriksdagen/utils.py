@@ -13,7 +13,7 @@ from pyparlaclarin.refine import format_texts
 from datetime import datetime
 import hashlib, uuid, base58, requests, tqdm
 import zipfile
-import os
+import os, sys
 from trainerlog import get_logger
 
 LOGGER = get_logger("pyriksdagen")
@@ -334,3 +334,31 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     return d[partition]
 
+
+def get_gh_link(_file,
+                elem=None,
+                line_number=None,
+                username='swerik-project',
+                repo='riksdagen-records',
+                branch='dev'):
+    """
+    return a formatted github link to an lxml element or specified line in _file
+
+    Args:
+    - _file: the path (from root) of the file in question
+    - elem: the element
+    - username: the username of the repo owner
+    - reponame: the repository containing the _file
+    - branch: the branch you want to link to
+    """
+    try:
+        assert (elem is not None or line_number is not None) and elem != line_number
+    except:
+        print("You have to pass an elem or a line number")
+        sys.exit()
+    if _file.startswith(repo):
+        _file = _file.replace(f"{repo}/", "")
+    if elem is not None:
+        line_number = elem.sourceline
+    gh = f"https://github.com/{username}/{repo}/blob/{branch}/{_file}/#L{line_number}"
+    return gh

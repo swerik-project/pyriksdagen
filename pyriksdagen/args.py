@@ -9,9 +9,15 @@ from pyriksdagen.utils import (
     protocol_iterators,
 )
 import argparse
+import inspect
 import sys
 
 
+
+
+
+def not_implemented(_name):
+    raise NotImplementedError(f"The function {_name} hasn't been implemented yet")
 
 
 def record_parser(parser):
@@ -66,8 +72,7 @@ def record_args(args):
         return records
 
     if (args.start is None or args.end is None) and args.start != args.end:
-        print("\n\nWARNING: Set -s and -e together or neither.\n\n")
-        sys.exit()
+        raise ValueError("Set -s and -e or neither.")
 
     if args.records_folder is None:
         args.records_folder = get_data_location("records")
@@ -97,24 +102,28 @@ def record_args(args):
 
 
 def motion_parser(parser):
+    not_implemented(inspect.currentframe().f_code.co_name)
     return parser
 
 
 
 
 def interpellation_parser(parser):
+    not_implemented(inspect.currentframe().f_code.co_name)
     return parser
 
 
 
 
 def motion_args(args):
+    not_implemented(inspect.currentframe().f_code.co_name)
     return args
 
 
 
 
 def interpellation_args(args):
+    not_implemented(inspect.currentframe().f_code.co_name)
     return args
 
 

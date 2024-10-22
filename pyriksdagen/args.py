@@ -7,6 +7,7 @@ from glob import glob
 from pyriksdagen.utils import (
     get_data_location,
     protocol_iterators,
+    corpus_iterator,
 )
 import argparse
 import inspect
@@ -31,16 +32,16 @@ def record_parser(parser):
     parser.add_argument("-s", "--start",
                         type=int,
                         default=None,
-                        help="start year. If -s is set, -e must also be set. If -s and -e are explicitly set, all protocols in that range are processed. If -s and -e are unset and neither -p nor -l are set, the script will process all records from 1867 until the current year.")
+                        help="start year. If -s is set, -e must also be set. If -s and -e are explicitly set, all protocols in that range are processed. If -s and -e are unset and neither -p nor -l are set, the script will process all records from 1867 until the current year. Priority == 4")
     parser.add_argument("-e", "--end",
                         type=int,
                         default=None,
-                        help="end year. If -e is set, -s must also be set. If -s and -e are explicitly set, all protocols in that range are processed. If -s and -e are unset and neither -p nor -l are set, the script will process all records from 1867 until the current year.")
+                        help="end year. If -e is set, -s must also be set. If -s and -e are explicitly set, all protocols in that range are processed. If -s and -e are unset and neither -p nor -l are set, the script will process all records from 1867 until the current year. Priority == 4")
     parser.add_argument("-y", "--parliament-year",
                         type=int,
                         default=None,
                         nargs='*',
-                        help="Parliament year, e.g. 1971 or 198384")
+                        help="Parliament year, e.g. 1971 or 198384. Priority == 3")
     parser.add_argument("-R", "--records-folder",
                         type=str,
                         default=None,
@@ -49,11 +50,11 @@ def record_parser(parser):
                         type=str,
                         default=None,
                         nargs='*',
-                        help="operate on a single record or list of records. Set the path from ./ -- this option doesn't cooperate with `-R`. -r takes presidence over -l.")
+                        help="operate on a single record or list of records. Set the path from ./ -- this option doesn't cooperate with `-R`. Priority == 1")
     parser.add_argument("-l", "--from-list",
                         type=str,
                         default=None,
-                        help="operate on a list of records from a file. Set the path from ./ -- this option doesn't cooperate with `-R`.")
+                        help="operate on a list of records from a file. Set the path from ./ -- this option doesn't cooperate with `-R`. Priority == 2")
     return parser
 
 
@@ -67,35 +68,27 @@ def record_args(args):
     returns:
         args
     """
-    def _iterate_protocols(s, e, data_location):
-        records = sorted(list(protocol_iterators(data_location, start=s, end=e)))
-        return records
-
     if (args.start is None or args.end is None) and args.start != args.end:
         raise ValueError("Set -s and -e or neither.")
 
     if args.records_folder is None:
         args.records_folder = get_data_location("records")
 
-    if args.start is not None:
-        args.records = _iterate_protocols(args.start, args.end, args.records_folder)
-        print(args.records)
-    else:
-        if args.records is not None and len(args.records) != 0:
-            pass
-        elif args.from_list is not None:
-            with open(args.from_list, 'r') as inf:
-                lines = inf.readlines()
-                args.protocol = [_.strip() for _ in lines if _.strip() != '']
-        elif args.parliament_year is not None and len(args.parliament_year) != 0:
-            args.records = []
-            for py in args.parliament_year:
-                args.records.extend(glob(f"{args.records_folder}/{py}/*.xml"))
-        else:
-            args.records = _iterate_protocols(1867, int(datetime.now().strftime('%Y')), args.records_folder)
-
     if args.records is not None and len(args.records) != 0:
-        args.records = sorted(args.records)
+        pass
+    elif args.from_list is not None:
+        with open(args.from_list, 'r') as inf:
+            lines = inf.readlines()
+            args.protocol = [_.strip() for _ in lines if _.strip() != '']
+    elif args.parliament_year is not None and len(args.parliament_year) != 0:
+        args.records = []
+        for py in args.parliament_year:
+            args.records.extend(glob(f"{args.records_folder}/{py}/*.xml"))
+    else:
+        args.records = sorted(list(corpus_iterator("prot", start=args.start, end=args.end)))
+
+    if args.records is not None and len(list(args.records)) != 0:
+        args.records = sorted(list(args.records))
     return args
 
 

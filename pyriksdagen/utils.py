@@ -3,22 +3,29 @@
 """
 Provides useful utilities for the other modules as well as for general use.
 """
-
-import lxml
-from lxml import etree
-import xmlschema
 from bs4 import BeautifulSoup
-from pathlib import Path, PurePath
-from pyparlaclarin.refine import format_texts
 from datetime import datetime
-import hashlib, uuid, base58, requests, tqdm
-import zipfile
-import os, sys, warnings
+from lxml import etree
+from pathlib import Path
+from pyparlaclarin.refine import format_texts
+from tqdm import tqdm
 from trainerlog import get_logger
+import base58
+import hashlib
+import os
+import requests
+import uuid
+import warnings
+import xmlschema
+import zipfile
+
+
+
 
 LOGGER = get_logger("pyriksdagen")
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
+
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
     """
@@ -51,7 +58,7 @@ def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
 def infer_metadata(filename):
     """
     Heuristically infer metadata from a protocol id or filename.
-    
+
     Args:
         filename (str): the protocols filename. Agnostic wrt. dashes and underscores. Can be relative or absolute.
 
@@ -118,7 +125,7 @@ def validate_xml_schema(xml_path, schema_path, schema=None):
     Returns:
         is_valid (bool): whether the XML is valid according to the schema
     """
-    xml_file = lxml.etree.parse(xml_path)
+    xml_file = etree.parse(xml_path)
     xml_file.xinclude()
 
     if schema is None:
@@ -219,6 +226,7 @@ def parse_date(s):
         else:
             return None
 
+
 def get_formatted_uuid(seed=None):
     """
     Generate a UUID and format it in base58.
@@ -230,7 +238,6 @@ def get_formatted_uuid(seed=None):
     Returns:
         id (str): formatted UUID
     """
-
     if seed is None:
         x = uuid.uuid4()
     else:
@@ -244,7 +251,7 @@ def get_formatted_uuid(seed=None):
 def _download_with_progressbar(url, fname, chunk_size=1024):
     resp = requests.get(url, stream=True)
     total = int(resp.headers.get('content-length', 0))
-    with open(fname, 'wb') as file, tqdm.tqdm(
+    with open(fname, 'wb') as file, tqdm(
         desc=fname,
         total=total,
         unit='iB',
@@ -255,6 +262,7 @@ def _download_with_progressbar(url, fname, chunk_size=1024):
             size = file.write(data)
             bar.update(size)
 
+
 def download_corpus(path="./", partitions=["records"]):
     """
     Downloads the full corpus.
@@ -262,7 +270,6 @@ def download_corpus(path="./", partitions=["records"]):
 
     Args:
         path (str): path for the download
-
     """
     p = Path(path)
     for partition in partitions:
@@ -282,6 +289,7 @@ def download_corpus(path="./", partitions=["records"]):
             zip_ref.extractall()
 
         zip_path.unlink()
+
 
 def get_doc_dates(protocol):
     """
@@ -314,7 +322,6 @@ def write_tei(_elem, _path) -> None:
     Args:
         _elem (etree._Element): tei root element
         _path (str): protocol path
-
     """
     _elem = format_texts(_elem, padding=10)
     b = etree.tostring(
@@ -334,7 +341,6 @@ def write_protocol(prot_elem, prot_path) -> None:
     Args:
         prot_elem (etree._Element): protocol root element
         prot_path (str): protocol path
-
     """
     warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
     write_tei(prot_elem, prot_path)
@@ -411,8 +417,8 @@ def get_gh_link(_file,
     try:
         assert (elem is not None or line_number is not None) and elem != line_number
     except:
-        print("You have to pass an elem or a line number")
-        sys.exit()
+        raise ValueError("You have to pass an elem or a line number")
+
     if _file.startswith(repo):
         _file = _file.replace(f"{repo}/", "")
     if elem is not None:

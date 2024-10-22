@@ -23,10 +23,12 @@ def not_implemented(_name):
 
 def record_parser(parser):
     """
-    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen records;
-    args:
+    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen records.
+
+    Args:
         parser: parser
-    returns:
+
+    Returns:
         parser
     """
     parser.add_argument("-s", "--start",
@@ -62,10 +64,12 @@ def record_parser(parser):
 
 def record_args(args):
     """
-    takes an argparse namespace object for working with riksdagen records and imputes standard stuff
-    args:
+    Takes an argparse namespace object for working with riksdagen records and imputes standard stuff
+
+    Args:
         args: args
-    returns:
+
+    Returns:
         args
     """
     if (args.start is None or args.end is None) and args.start != args.end:
@@ -125,9 +129,13 @@ def interpellation_args(args):
 def fetch_parser(doctype, docstring=None):
     """
     Fetch an argparse argument parser based on the doctype.
-    args:
+
+    Args:
         doctype (str): doctype, one listed in D
         docstring (str): string describing scripts for which the parser is called.
+
+    Returns:
+        argparse Parser object
     """
     D = {
             "records": record_parser,
@@ -144,9 +152,11 @@ def fetch_parser(doctype, docstring=None):
 def impute_args(args):
     """
     Impute args based on the doctype (args.doctype).
-    args:
+
+    Args:
         args: argparse parsed args namespace
-    returns:
+
+    Returns:
         argparse parsed args namespace
     """
     D = {

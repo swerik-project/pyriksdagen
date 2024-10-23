@@ -417,7 +417,7 @@ def get_gh_link(_file,
     Returns:
         gh (str): formatted github link
     """
-    if not assert (elem is not None or line_number is not None) and elem != line_number:
+    if not (elem is not None or line_number is not None) and elem != line_number:
         raise ValueError("You have to pass an elem or a line number")
 
     if _file.startswith(repo):

@@ -398,14 +398,13 @@ def get_data_location(partition):
     RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
     returns the defaults data/, data/, data/
     """
-    valid_partitions = ["records", "motions", "metadata", "interpellations"]
-    assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
     d = {}
     d["records"] = os.environ.get("RECORDS_PATH", "data")
     d["motions"] = os.environ.get("MOTIONS_PATH", "data")
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     d["metadata_db"] = os.environ.get("METADATA_DB", "data")               # path to csv or pkl of compiled Corpus()
     d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")
+    assert partition in d, f"Provide valid partition of the dataset ({list(d.keys())})"
     return d[partition]
 
 

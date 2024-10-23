@@ -315,22 +315,22 @@ def get_doc_dates(protocol):
     return match_error, dates
 
 
-def write_tei(_elem, _path) -> None:
+def write_tei(elem, dest_path) -> None:
     """
-    Write a corpus doc to disk.
+    Write a corpus document to disk.
 
     Args:
-        _elem (etree._Element): tei root element
-        _path (str): protocol path
+        elem (etree._Element): tei root element
+        dest_path (str): protocol path
     """
-    _elem = format_texts(_elem, padding=10)
+    elem = format_texts(elem, padding=10)
     b = etree.tostring(
-        _elem,
+        elem,
         pretty_print=True,
         encoding="utf-8",
         xml_declaration=True
     )
-    with open(_path, "wb") as f:
+    with open(dest_path, "wb") as f:
         f.write(b)
 
 
@@ -413,10 +413,11 @@ def get_gh_link(_file,
     - username: the username of the repo owner
     - reponame: the repository containing the _file
     - branch: the branch you want to link to
+
+    Returns:
+        gh (str): formatted github link
     """
-    try:
-        assert (elem is not None or line_number is not None) and elem != line_number
-    except:
+    if not assert (elem is not None or line_number is not None) and elem != line_number:
         raise ValueError("You have to pass an elem or a line number")
 
     if _file.startswith(repo):

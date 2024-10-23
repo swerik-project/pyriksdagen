@@ -411,3 +411,93 @@ def load_Corpus_metadata(metadata_folder=None, read_db_from=None):
         corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
 
     return corpus
+
+
+def fetch_person_name(person_id, corpus, primary=True):
+    """
+    Get a person's primary name or list of names.
+
+    Args:
+        person_id (str): a swerik-style person ID
+        corpus (df): compiled metadata DB
+        primary (bool): return only person's primary name
+
+    Returns:
+        name or names (str or list of str)
+    """
+    def _names(df):
+        return df["name"].unique()
+
+    if person_id is None or person_id == "unknown":
+        return None
+    df = corpus.loc[corpus["person_id"] == person_id].copy()
+    if primary == True:
+        df = df.loc[corpus["primary_name"] == True].copy()
+        names = _names(df)
+        if len(names) == 1:
+            return names[0]
+        else:
+            raise ValueError(f"There should be exactly one primary name for {person_id}, but: {names}")
+    else:
+        return _names(df)
+
+
+def fetch_person_gender(person_id, corpus):
+    """
+    Get Person's gender.
+
+    Args:
+        person_id (str): a swerik-style person ID
+        corpus (df): compiled metadata DB
+
+    Returns:
+        gender (str): man or woman
+    """
+    if person_id is None or person_id == "unknown":
+        return None
+    df = corpus.loc[(corpus["person_id"] == person_id) & (pd.notnull(corpus["gender"]))].copy()
+    genders = df["gender"].unique()
+    if len(genders) == 1:
+        return genders[0]
+    elif len(genders) == 0:
+        return None
+    else:
+        raise ValueError(f"There probably shouldn't be multiple genders for {person_id}, but {genders}")
+
+
+def fetch_person_party(person_id, corpus, date=None):
+    """
+    Get a person's party affiliation (during a particular period.
+
+    Args:
+        person_id (str): a swerik-style person ID
+        corpus (df): compiled metadata DB
+        date (str): (yyyy-mm-dd) formatted date string.
+            If the date arg is not None, the fn will try to match
+            party affiliations that overlap with that date. If none
+            are found, it defaults to all party affiliations
+
+    Returns:
+        party/ies: str or list of str
+    """
+    def _party(df):
+        parties = df["party"].unique()
+        if len(parties) == 1:
+            return "string", parties[0]
+        elif len(parties) == 0:
+            return None
+        else:
+            return parties
+
+    if person_id is None or person_id == "unknown":
+        return None
+
+    df = corpus.loc[(corpus["person_id"] == person_id) & (pd.notnull(corpus["party"]))].copy()
+    if date is not None:
+        df_date = df.loc[(df["start"] <= date) & (df["end"] >= date)]
+        parties = _party(df_date)
+        if parties is not None:
+            return parties
+    return _party(df)
+
+

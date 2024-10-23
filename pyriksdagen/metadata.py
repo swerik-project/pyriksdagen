@@ -9,6 +9,7 @@ from pyriksdagen.utils import get_data_location
 import pandas as pd
 import calendar
 import datetime
+import os
 import re
 
 
@@ -354,16 +355,22 @@ class Corpus(pd.DataFrame):
         return clean_name(self)
 
 
-def load_Corpus_metadata(metadata_folder=None, read_db_from=None):
+def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None):
     """
     Populates Corpus object
     """
-    if read_db_from is not None:
+    if read_db or read_db_from is not None:
+        if read_db_from is None:
+            read_db_from = get_data_location("metadata_db")
+            if not os.path.exists(read_db_from):
+                raise FileNotFoundError(f"File not found at {read_db_from}. Try compiling the database or set the METADATA_DB variable in your environment.")
+
         print("Reading metadata db from a file.")
         try:
             corpus = pd.read_csv(read_db_from)
         except:
             corpus = pd.read_pickle(read_db_from)
+        assert type(corpus) == Corpus, f"{read_db_from} is not a CSV or pickle file."
     else:
         print("Compiling metadata db from source.")
         if metadata_folder is None:

@@ -3,22 +3,29 @@
 """
 Provides useful utilities for the other modules as well as for general use.
 """
-
-import lxml
-from lxml import etree
-import xmlschema
 from bs4 import BeautifulSoup
-from pathlib import Path, PurePath
-from pyparlaclarin.refine import format_texts
 from datetime import datetime
-import hashlib, uuid, base58, requests, tqdm
-import zipfile
-import os, sys
+from lxml import etree
+from pathlib import Path
+from pyparlaclarin.refine import format_texts
+from tqdm import tqdm
 from trainerlog import get_logger
+import base58
+import hashlib
+import os
+import requests
+import uuid
+import warnings
+import xmlschema
+import zipfile
+
+
+
 
 LOGGER = get_logger("pyriksdagen")
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
+
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
     """
@@ -51,7 +58,7 @@ def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
 def infer_metadata(filename):
     """
     Heuristically infer metadata from a protocol id or filename.
-    
+
     Args:
         filename (str): the protocols filename. Agnostic wrt. dashes and underscores. Can be relative or absolute.
 
@@ -118,7 +125,7 @@ def validate_xml_schema(xml_path, schema_path, schema=None):
     Returns:
         is_valid (bool): whether the XML is valid according to the schema
     """
-    xml_file = lxml.etree.parse(xml_path)
+    xml_file = etree.parse(xml_path)
     xml_file.xinclude()
 
     if schema is None:
@@ -134,8 +141,54 @@ def validate_xml_schema(xml_path, schema_path, schema=None):
     return is_valid
 
 
+def corpus_iterator(document_type, corpus_root=None, start=None, end=None):
+    """
+    Returns an iterator of document paths in a corpus.
+
+    Args:
+        document_type (str): type of document (prot, mot, etc.). Valid types:
+                            - records | prot
+                            - motions | mot
+                            - interpellations | ipq
+        corpus_root (str): path to the corpus root. If None, the function looks for the default location (see get_data_location()) based on the doctype
+        start (int): start year
+        end (int): end year
+
+    Returns:
+        iterator of the protocols as relative paths to current location
+    """
+    doctypes = {
+        "interpellations": "interpellations",
+        "ipq": "interpellations",
+        "motions":"motions",
+        "mot": "motions",
+        "prot": "records",
+        "records": "records"
+    }
+    if document_type not in doctypes:
+        raise ValueError(f"{document_type} not valid")
+    if corpus_root is None:
+        corpus_root = get_data_location(doctypes[document_type])
+    folder = Path(corpus_root)
+    if folder.is_absolute():
+        folder = folder.relative_to(Path(".").resolve(), walk_up=True)
+    docs = folder.glob("*/*.xml")
+    for doc in sorted(docs):
+        if start is not None:
+            metadata = infer_metadata(doc.name)
+            if "year" not in metadata:
+                continue
+            year = metadata["year"]
+            secondary_year = metadata.get("secondary_year", year)
+            if start <= year and end >= secondary_year:
+                yield str(doc.relative_to("."))
+        else:
+            yield str(doc.relative_to("."))
+
+
 def protocol_iterators(corpus_root=None, document_type=None, start=None, end=None):
     """
+    Deprecate - Use corpus_iterator() instead.
     Returns an iterator of protocol paths in a corpus.
 
     Args:
@@ -147,30 +200,9 @@ def protocol_iterators(corpus_root=None, document_type=None, start=None, end=Non
     Returns:
         iterator of the protocols as relative paths to current location
     """
-    folder = Path(corpus_root)
-    if folder.is_absolute():
-        folder = folder.relative_to(Path(".").resolve(), walk_up=True)
-    docs = folder.glob("**/*.xml")
-    if document_type is not None:
-        docs = folder.glob(f"**/{document_type}*.xml")
-    for protocol in sorted(docs):
-        metadata = infer_metadata(protocol.name)
-        if "year" not in metadata:
-            continue
-        _path = protocol.relative_to(".")
-        assert (start is None) == (
-            end is None
-        ), "Provide both start and end year or neither"
-        if start is not None and end is not None:
-            metadata = infer_metadata(protocol.name)
-            year = metadata["year"]
-            if not year:
-                continue
-            secondary_year = metadata.get("secondary_year", year)
-            if start <= year and end >= secondary_year:
-                yield str(protocol.relative_to("."))
-        else:
-            yield str(protocol.relative_to("."))
+    warnings.warn("protocol_iterators is replaced by corpus_iterator() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    return corpus_iterator("prot", corpus_root=corpus_root, start=start, end=end)
+
 
 def parse_date(s):
     """
@@ -194,6 +226,7 @@ def parse_date(s):
         else:
             return None
 
+
 def get_formatted_uuid(seed=None):
     """
     Generate a UUID and format it in base58.
@@ -205,7 +238,6 @@ def get_formatted_uuid(seed=None):
     Returns:
         id (str): formatted UUID
     """
-
     if seed is None:
         x = uuid.uuid4()
     else:
@@ -219,7 +251,7 @@ def get_formatted_uuid(seed=None):
 def _download_with_progressbar(url, fname, chunk_size=1024):
     resp = requests.get(url, stream=True)
     total = int(resp.headers.get('content-length', 0))
-    with open(fname, 'wb') as file, tqdm.tqdm(
+    with open(fname, 'wb') as file, tqdm(
         desc=fname,
         total=total,
         unit='iB',
@@ -230,6 +262,7 @@ def _download_with_progressbar(url, fname, chunk_size=1024):
             size = file.write(data)
             bar.update(size)
 
+
 def download_corpus(path="./", partitions=["records"]):
     """
     Downloads the full corpus.
@@ -237,7 +270,6 @@ def download_corpus(path="./", partitions=["records"]):
 
     Args:
         path (str): path for the download
-
     """
     p = Path(path)
     for partition in partitions:
@@ -249,7 +281,7 @@ def download_corpus(path="./", partitions=["records"]):
 
         zip_path_str = str(zip_path.relative_to("."))
         extraction_path = str(p.relative_to("."))
-        
+
         # Download file and display progress
         _download_with_progressbar(url, zip_path_str)
         with zipfile.ZipFile(zip_path_str, "r") as zip_ref:
@@ -257,6 +289,7 @@ def download_corpus(path="./", partitions=["records"]):
             zip_ref.extractall()
 
         zip_path.unlink()
+
 
 def get_doc_dates(protocol):
     """
@@ -281,6 +314,26 @@ def get_doc_dates(protocol):
         dates.append(when_attrib)
     return match_error, dates
 
+
+def write_tei(elem, dest_path) -> None:
+    """
+    Write a corpus document to disk.
+
+    Args:
+        elem (etree._Element): tei root element
+        dest_path (str): protocol path
+    """
+    elem = format_texts(elem, padding=10)
+    b = etree.tostring(
+        elem,
+        pretty_print=True,
+        encoding="utf-8",
+        xml_declaration=True
+    )
+    with open(dest_path, "wb") as f:
+        f.write(b)
+
+
 def write_protocol(prot_elem, prot_path) -> None:
     """
     Write the protocol to a file.
@@ -288,17 +341,31 @@ def write_protocol(prot_elem, prot_path) -> None:
     Args:
         prot_elem (etree._Element): protocol root element
         prot_path (str): protocol path
-
     """
-    prot_elem = format_texts(prot_elem, padding=10)
-    b = etree.tostring(
-        prot_elem,
-        pretty_print=True,
-        encoding="utf-8",
-        xml_declaration=True
-    )
-    with open(prot_path, "wb") as f:
-        f.write(b)
+    warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    write_tei(prot_elem, prot_path)
+
+
+def parse_tei(_path, get_ns=True) -> tuple:
+    """
+    Parse a protocol, return root element (and namespace defnitions).
+
+    Args:
+        _path (str): path to tei-xml doc
+        get_ns (bool): also return namespace dict
+
+    Returns:
+        tuple/etree._Element: root and an optional namespace dict
+    """
+    parser = etree.XMLParser(remove_blank_text=True)
+    root = etree.parse(_path, parser).getroot()
+    if get_ns:
+        tei_ns = "{http://www.tei-c.org/ns/1.0}"
+        xml_ns = "{http://www.w3.org/XML/1998/namespace}"
+        return root, {"tei_ns":tei_ns, "xml_ns":xml_ns}
+    else:
+        return root
+
 
 def parse_protocol(protocol_path, get_ns=False) -> tuple:
     """
@@ -311,14 +378,9 @@ def parse_protocol(protocol_path, get_ns=False) -> tuple:
     Returns:
         tuple/etree._Element: root and an optional namespace dict
     """
-    parser = etree.XMLParser(remove_blank_text=True)
-    root = etree.parse(protocol_path, parser).getroot()
-    if get_ns:
-        tei_ns = "{http://www.tei-c.org/ns/1.0}"
-        xml_ns = "{http://www.w3.org/XML/1998/namespace}"
-        return root, {"tei_ns":tei_ns, "xml_ns":xml_ns}
-    else:
-        return root
+    warnings.warn("parse_protocol is replaced by parse_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    return parse_tei(protocol_path, get_ns=get_ns)
+
 
 def get_data_location(partition):
     """
@@ -326,12 +388,13 @@ def get_data_location(partition):
     RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
     returns the defaults data/, data/, data/
     """
-    valid_partitions = ["records", "motions", "metadata"]
+    valid_partitions = ["records", "motions", "metadata", "interpellations"]
     assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
     d = {}
     d["records"] = os.environ.get("RECORDS_PATH", "data")
     d["motions"] = os.environ.get("MOTIONS_PATH", "data")
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
+    d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")
     return d[partition]
 
 
@@ -350,12 +413,13 @@ def get_gh_link(_file,
     - username: the username of the repo owner
     - reponame: the repository containing the _file
     - branch: the branch you want to link to
+
+    Returns:
+        gh (str): formatted github link
     """
-    try:
-        assert (elem is not None or line_number is not None) and elem != line_number
-    except:
-        print("You have to pass an elem or a line number")
-        sys.exit()
+    if not (elem is not None or line_number is not None) and elem != line_number:
+        raise ValueError("You have to pass an elem or a line number")
+
     if _file.startswith(repo):
         _file = _file.replace(f"{repo}/", "")
     if elem is not None:

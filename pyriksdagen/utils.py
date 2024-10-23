@@ -26,6 +26,10 @@ LOGGER = get_logger("pyriksdagen")
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
+def fetch_ns():
+    return {"tei_ns": "{http://www.tei-c.org/ns/1.0}",
+            "xml_ns": "{http://www.w3.org/XML/1998/namespace}"}
+
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
     """
@@ -293,19 +297,26 @@ def download_corpus(path="./", partitions=["records"]):
 
 def get_doc_dates(protocol):
     """
-    Gets the content of <docDate> elements. 
+    Gets the content of <docDate> elements.
 
-    - match_error is True when the value of the "when" attribte doesn't match the element's text value.
+    Args:
+        protocol: str or etree.Element
 
-    - dates is a list of dates.
+    Returns:
+
+        match_error (bool):  True when the value of the "when" attribte doesn't match the element's text value.
+        dates (list): a list of dates.
     """
     match_error = False
     dates = []
-    tei_ns = ".//{http://www.tei-c.org/ns/1.0}"
-    xml_ns = "{http://www.w3.org/XML/1998/namespace}"
-    parser = etree.XMLParser(remove_blank_text=True)
-    root = etree.parse(protocol, parser).getroot()
-    date_elems = root.findall(f"{tei_ns}docDate")
+    if type(protocol) == str:
+        root, ns = parse_tei(protocol)
+    elif type(protocol) == etree._Element:
+        root = protocol
+        ns = fetch_ns()
+    else:
+        raise TypeError(f"You need to pass a string or etree Element, not {type(protocol)}")
+    date_elems = root.findall(f"{ns['tei_ns']}docDate")
     for de in date_elems:
         when_attrib = de.get("when")
         elem_text = de.text
@@ -360,9 +371,8 @@ def parse_tei(_path, get_ns=True) -> tuple:
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(_path, parser).getroot()
     if get_ns:
-        tei_ns = "{http://www.tei-c.org/ns/1.0}"
-        xml_ns = "{http://www.w3.org/XML/1998/namespace}"
-        return root, {"tei_ns":tei_ns, "xml_ns":xml_ns}
+        ns = fetch_ns()
+        return root, ns
     else:
         return root
 
@@ -426,3 +436,5 @@ def get_gh_link(_file,
         line_number = elem.sourceline
     gh = f"https://github.com/{username}/{repo}/blob/{branch}/{_file}/#L{line_number}"
     return gh
+
+

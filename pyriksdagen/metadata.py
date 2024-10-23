@@ -1,10 +1,15 @@
-import pandas as pd
-import re
-from .match_mp import multiple_replace
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Class declaration and functions related to corpus metadata
+"""
 from functools import partial
-import datetime
+from pyriksdagen.match_mp import multiple_replace
+from pyriksdagen.utils import get_data_location
+import pandas as pd
 import calendar
-from .utils import get_data_location
+import datetime
+import re
 
 
 

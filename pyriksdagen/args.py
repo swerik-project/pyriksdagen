@@ -16,12 +16,6 @@ import sys
 
 
 
-def not_implemented(_name):
-    raise NotImplementedError(f"The function {_name} hasn't been implemented yet")
-
-
-
-
 def populate_common_arguments(parser):
     """
     add arguments common to all doctypes to a parser object
@@ -190,14 +184,34 @@ def motion_args(args):
 
 
 def interpellation_parser(parser):
-    not_implemented(inspect.currentframe().f_code.co_name)
+    """
+    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen interpellations.
+
+    Args:
+        parser: parser
+
+    Returns:
+        parser
+    """
+    parser = populate_common_arguments(parser)
+    # leaving the interpellations-specific function in place, in case we need interpellations-specific args
     return parser
 
 
 
 
 def interpellation_args(args):
-    not_implemented(inspect.currentframe().f_code.co_name)
+    """
+    Takes an argparse namespace object for working with riksdagen interpellations and imputes standard stuff
+
+    Args:
+        args: args
+
+    Returns:
+        args
+    """
+    args = common_args(args)
+    # leaving the interpellations-specific function in place, in case we need interpellations-specific actions
     return args
 
 

@@ -172,7 +172,6 @@ def motion_args(args):
 
     Args:
         args: args
-
     Returns:
         args
     """

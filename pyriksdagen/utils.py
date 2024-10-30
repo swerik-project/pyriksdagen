@@ -26,9 +26,10 @@ LOGGER = get_logger("pyriksdagen")
 XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
+
 def fetch_ns():
-    return {"tei_ns": "{http://www.tei-c.org/ns/1.0}",
-            "xml_ns": "{http://www.w3.org/XML/1998/namespace}"}
+    return {"tei_ns": TEI_NS,
+            "xml_ns": XML_NS}
 
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):

@@ -439,3 +439,79 @@ def get_gh_link(_file,
     return gh
 
 
+def remove_whitespace_from_sequence(text):
+    """
+    Remove repeated whitespace and replace all whitespace with spaces
+    Input is string and output is string.
+    """
+    text_seq = text.split()
+    text_seq = [s for s in text_seq if s != '']
+    return ' '.join(text_seq)
+
+  
+def get_sequence_from_elem_list(elem_list):
+    """
+    Get sequence from first elem in list.
+    Returns string. If list is empty, returns empty string. 
+    """
+    if len(elem_list) > 0:
+        return str(elem_list[0].text)
+    return ""
+
+  
+def extract_context_sequence(elem, context_type, target_length = 128, separator = '/n'):
+    """
+    Get sequence with context from xml element. Returns string. 
+    """
+    sequence_to_list_by_punctuation = lambda sequence_string: list(filter(None, re.split(r'([.!?])', sequence_string)))
+    
+    current_sequence = remove_whitespace_from_sequence(elem.text)
+    
+    previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
+    previous_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(previous_elem_list))
+    previous_sequence_as_list = sequence_to_list_by_punctuation(previous_sequence)
+    previous_last_sentence = ''.join(previous_sequence_as_list[-2:]).lstrip('.!? ')
+    
+    if context_type == 'left_context':
+        max_previous_length = target_length//2
+    elif context_type == 'full_context':
+        max_previous_length = target_length//3
+        next_elem_list = elem.xpath("following::*[local-name() = 'note' or local-name() = 'seg'][1]")
+        next_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(next_elem_list))
+        next_sequence_as_list = sequence_to_list_by_punctuation(next_sequence)
+        next_first_sentence = ''.join(next_sequence_as_list[:2])
+    
+    previous_last_sentence = ' '.join(previous_last_sentence.split(' ')[-max_previous_length:]) # truncate sequence if too long
+    left_context_sequence = previous_last_sentence + f' {separator} ' + current_sequence
+
+    if context_type == 'left_context':
+        return left_context_sequence
+    elif context_type == 'full_context':
+        return left_context_sequence + f' {separator} ' + next_first_sentence
+
+ 
+def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, separator = '/n'):
+    """
+    Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. 
+    """
+    id_list, texts_with_contexts = [], []
+    
+    parser = etree.XMLParser(remove_blank_text=True)
+    root = etree.parse(protocol, parser).getroot()
+    
+    for tag, elem in elem_iter(root):
+        if tag == 'note':
+            elem_id = elem.get(f'{XML_NS}id')
+            id_list.append(elem_id)
+            context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, separator = separator)
+            texts_with_contexts.append(context_sequence)
+        elif tag == 'u':
+            for child in elem:
+                child_id = child.get(f'{XML_NS}id')
+                id_list.append(child_id)
+                context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, separator = separator)
+                texts_with_contexts.append(context_sequence)
+    
+    output_dict = {'id' : id_list,
+                   'text' : texts_with_contexts}
+    return output_dict

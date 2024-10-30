@@ -137,7 +137,7 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
 
     for tag, elem in elem_iter(root):
         parent = elem.getparent()
-        if "type" not in parent.attrib or ("type" in parent.attrib and parent.attrib['type'] != "commentSection"): #ignore where people don't talk
+        if parent.attrib.get("type") != "commentSection": #ignore where people don't talk
             if tag == "u":
                 # Deleting and adding attributes changes their order;
                 # Mark as 'delete' instead and delete later
@@ -195,7 +195,16 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
 
                         if current_speaker is None:
                             unknowns.append([protocol_id, elem.attrib.get(f'{xml_ns}id')] + [d.get(key, "") for key in unknown_variables])
-                    
+        else:
+            # If the whole section has no speeches, reset speaker and next/prev notation
+            if tag == "u":
+                elem.set("prev", "delete")
+                elem.set("next", "delete")
+                elem.set("who", "unknown")
+            
+            current_speaker = None
+            prev = None
+
     # Do two loops to preserve attribute order
     for tag, elem in elem_iter(root):
         if tag == "u":

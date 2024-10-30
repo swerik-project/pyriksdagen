@@ -27,6 +27,11 @@ XML_NS = "{http://www.w3.org/XML/1998/namespace}"
 TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
 
+def fetch_ns():
+    return {"tei_ns": TEI_NS,
+            "xml_ns": XML_NS}
+
+
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
     """
     Return an iterator of the elements (utterances, notes, pbs) in a protocol body
@@ -293,19 +298,26 @@ def download_corpus(path="./", partitions=["records"]):
 
 def get_doc_dates(protocol):
     """
-    Gets the content of <docDate> elements. 
+    Gets the content of <docDate> elements.
 
-    - match_error is True when the value of the "when" attribte doesn't match the element's text value.
+    Args:
+        protocol: str or etree.Element
 
-    - dates is a list of dates.
+    Returns:
+
+        match_error (bool):  True when the value of the "when" attribte doesn't match the element's text value.
+        dates (list): a list of dates.
     """
     match_error = False
     dates = []
-    tei_ns = ".//{http://www.tei-c.org/ns/1.0}"
-    xml_ns = "{http://www.w3.org/XML/1998/namespace}"
-    parser = etree.XMLParser(remove_blank_text=True)
-    root = etree.parse(protocol, parser).getroot()
-    date_elems = root.findall(f"{tei_ns}docDate")
+    if type(protocol) == str:
+        root, ns = parse_tei(protocol)
+    elif type(protocol) == etree._Element:
+        root = protocol
+        ns = fetch_ns()
+    else:
+        raise TypeError(f"You need to pass a string or etree Element, not {type(protocol)}")
+    date_elems = root.findall(f"{ns['tei_ns']}docDate")
     for de in date_elems:
         when_attrib = de.get("when")
         elem_text = de.text
@@ -360,9 +372,8 @@ def parse_tei(_path, get_ns=True) -> tuple:
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(_path, parser).getroot()
     if get_ns:
-        tei_ns = "{http://www.tei-c.org/ns/1.0}"
-        xml_ns = "{http://www.w3.org/XML/1998/namespace}"
-        return root, {"tei_ns":tei_ns, "xml_ns":xml_ns}
+        ns = fetch_ns()
+        return root, ns
     else:
         return root
 
@@ -388,13 +399,13 @@ def get_data_location(partition):
     RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist
     returns the defaults data/, data/, data/
     """
-    valid_partitions = ["records", "motions", "metadata", "interpellations"]
-    assert partition in valid_partitions, f"Provide valid partition of the dataset ({valid_partitions})"
     d = {}
     d["records"] = os.environ.get("RECORDS_PATH", "data")
     d["motions"] = os.environ.get("MOTIONS_PATH", "data")
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
+    d["metadata_db"] = os.environ.get("METADATA_DB", "data")               # path to csv or pkl of compiled Corpus()
     d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")
+    assert partition in d, f"Provide valid partition of the dataset ({list(d.keys())})"
     return d[partition]
 
 
@@ -426,3 +437,81 @@ def get_gh_link(_file,
         line_number = elem.sourceline
     gh = f"https://github.com/{username}/{repo}/blob/{branch}/{_file}/#L{line_number}"
     return gh
+
+
+def remove_whitespace_from_sequence(text):
+    """
+    Remove repeated whitespace and replace all whitespace with spaces
+    Input is string and output is string.
+    """
+    text_seq = text.split()
+    text_seq = [s for s in text_seq if s != '']
+    return ' '.join(text_seq)
+
+  
+def get_sequence_from_elem_list(elem_list):
+    """
+    Get sequence from first elem in list.
+    Returns string. If list is empty, returns empty string. 
+    """
+    if len(elem_list) > 0:
+        return str(elem_list[0].text)
+    return ""
+
+  
+def extract_context_sequence(elem, context_type, target_length = 128, separator = '/n'):
+    """
+    Get sequence with context from xml element. Returns string. 
+    """
+    sequence_to_list_by_punctuation = lambda sequence_string: list(filter(None, re.split(r'([.!?])', sequence_string)))
+    
+    current_sequence = remove_whitespace_from_sequence(elem.text)
+    
+    previous_elem_list = elem.xpath("preceding::*[local-name() = 'note' or local-name() = 'seg'][1]")
+    previous_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(previous_elem_list))
+    previous_sequence_as_list = sequence_to_list_by_punctuation(previous_sequence)
+    previous_last_sentence = ''.join(previous_sequence_as_list[-2:]).lstrip('.!? ')
+    
+    if context_type == 'left_context':
+        max_previous_length = target_length//2
+    elif context_type == 'full_context':
+        max_previous_length = target_length//3
+        next_elem_list = elem.xpath("following::*[local-name() = 'note' or local-name() = 'seg'][1]")
+        next_sequence = remove_whitespace_from_sequence(get_sequence_from_elem_list(next_elem_list))
+        next_sequence_as_list = sequence_to_list_by_punctuation(next_sequence)
+        next_first_sentence = ''.join(next_sequence_as_list[:2])
+    
+    previous_last_sentence = ' '.join(previous_last_sentence.split(' ')[-max_previous_length:]) # truncate sequence if too long
+    left_context_sequence = previous_last_sentence + f' {separator} ' + current_sequence
+
+    if context_type == 'left_context':
+        return left_context_sequence
+    elif context_type == 'full_context':
+        return left_context_sequence + f' {separator} ' + next_first_sentence
+
+ 
+def get_context_sequences_for_protocol(protocol, context_type, target_length = 128, separator = '/n'):
+    """
+    Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. 
+    """
+    id_list, texts_with_contexts = [], []
+    
+    parser = etree.XMLParser(remove_blank_text=True)
+    root = etree.parse(protocol, parser).getroot()
+    
+    for tag, elem in elem_iter(root):
+        if tag == 'note':
+            elem_id = elem.get(f'{XML_NS}id')
+            id_list.append(elem_id)
+            context_sequence = extract_context_sequence(elem, context_type = context_type, target_length = target_length, separator = separator)
+            texts_with_contexts.append(context_sequence)
+        elif tag == 'u':
+            for child in elem:
+                child_id = child.get(f'{XML_NS}id')
+                id_list.append(child_id)
+                context_sequence = extract_context_sequence(child, context_type=context_type, target_length = target_length, separator = separator)
+                texts_with_contexts.append(context_sequence)
+    
+    output_dict = {'id' : id_list,
+                   'text' : texts_with_contexts}
+    return output_dict

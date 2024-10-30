@@ -402,6 +402,7 @@ def get_data_location(partition):
     d = {}
     d["records"] = os.environ.get("RECORDS_PATH", "data")
     d["motions"] = os.environ.get("MOTIONS_PATH", "data")
+    d["motions-alto"] = os.environ.get("MOTIONS_ALTO_PATH", "data")
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     d["metadata_db"] = os.environ.get("METADATA_DB", "data")               # path to csv or pkl of compiled Corpus()
     d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")

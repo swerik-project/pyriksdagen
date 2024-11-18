@@ -536,8 +536,12 @@ def pathize_protocol_id(protocol_id):
             suffix = f"-{spl[-1]}"
     path_ = f"data/{parliament_year}/{pren}-{nr:0>3}{suffix}.xml"
     if os.path.exists(path_):
+        # if path_ exists, return path_
         return path_
     else:
+        # try to remove strings like "extra" and "höst" from path_ ...
+        #    (these were removed from some of the protocol filenames after goldstandard annotation)
+        #    check again if new path_ exists and return
         path_ = re.sub(f'((extra)?h[^-]+st|")', '', path_)
         if os.path.exists(path_):
             return path_

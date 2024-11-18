@@ -524,7 +524,7 @@ def pathize_protocol_id(protocol_id):
     """
 
     spl = protocol_id.split('-')
-    py = spl[1]
+    parliament_year = spl[1]
     suffix = ""
     if len(spl) == 4:
         nr = spl[3]
@@ -534,7 +534,7 @@ def pathize_protocol_id(protocol_id):
         pren = '-'.join(spl[:5])
         if len(spl) == 7:
             suffix = f"-{spl[-1]}"
-    path_ = f"data/{py}/{pren}-{nr:0>3}{suffix}.xml"
+    path_ = f"data/{parliament_year}/{pren}-{nr:0>3}{suffix}.xml"
     if os.path.exists(path_):
         return path_
     else:

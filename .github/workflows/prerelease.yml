@@ -31,7 +31,7 @@ jobs:
 
     - name: Get release type
       run: |
-        release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '(((M|m)ajor|inor)|(P|p)atch)')
+        release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '(((M|m)ajor|inor)|(P|p)atch)' | awk '{print tolower($0)}')
         if [ -z $release_type ] ; then
             echo "You have to indicate the release type in the title of a pr to main"
             echo "   suggested: `prerelease: major|minor|patch version"
@@ -47,14 +47,23 @@ jobs:
         version: 1.7
         force: false
 
-    - name: Get last release and bump version nr
-      id: releaseBump
+    - name: Get most recent release
+      id: lastRelease
       run: |
         LATEST_RELEASE=$(echo "$(curl -L https://api.github.com/repos/swerik-project/pyriksdagen/releases/latest)" | jq -r .tag_name)
         if [[ "$LATEST_RELEASE" == null ]] ; then LATEST_RELEASE="v0.0.0" ; fi
-        echo $LATEST_RELEASE ${{ env.RELEASE_TYPE }}
-        output=$(python .github/workflows/bump-release.py --type ${{ env.RELEASE_TYPE }} --version $LATEST_RELEASE)
-        echo "RELEASE_NR=$output" >> $GITHUB_ENV
+        echo "LAST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
+
+    - name: Bump version
+      id: bump
+      uses: cbrgm/semver-bump-action@main
+        with:
+          current-version: ${{ env.LAST_RELEASE }}
+          bump-level: ${{ env.RELEASE_TYPE }}
+
+    - name: bump to env
+      run: |
+        echo "RELEASE_NR=${{ steps.bump.outputs.new_version }}" >> $GITHUB_ENV
         sed -e "s/\(version\s=\s\"\)[^\"]*\"/\1${{ env.RELEASE_NR }}\"/" CITATION.cff
 
     - name: Validate CITATION.cff

@@ -48,7 +48,6 @@ jobs:
         force: false
 
     - name: Get most recent release
-      id: lastRelease
       run: |
         LATEST_RELEASE=$(echo "$(curl -L https://api.github.com/repos/swerik-project/pyriksdagen/releases/latest)" | jq -r .tag_name)
         if [[ "$LATEST_RELEASE" == null ]] ; then LATEST_RELEASE="v0.0.0" ; fi
@@ -57,9 +56,9 @@ jobs:
     - name: Bump version
       id: bump
       uses: cbrgm/semver-bump-action@main
-        with:
-          current-version: ${{ env.LAST_RELEASE }}
-          bump-level: ${{ env.RELEASE_TYPE }}
+      with:
+        current-version: ${{ env.LAST_RELEASE }}
+        bump-level: ${{ env.RELEASE_TYPE }}
 
     - name: bump to env
       run: |

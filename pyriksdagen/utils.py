@@ -535,12 +535,10 @@ def pathize_protocol_id(protocol_id):
         if len(spl) == 7:
             suffix = f"-{spl[-1]}"
     path_ = f"data/{py}/{pren}-{nr:0>3}{suffix}.xml"
-    #print(path_)
     if os.path.exists(path_):
         return path_
     else:
         path_ = re.sub(f'((extra)?h[^-]+st|")', '', path_)
-    #    print("~~~~", path_)
         if os.path.exists(path_):
             return path_
     raise FileNotFoundError(f"Can't find {path_}")

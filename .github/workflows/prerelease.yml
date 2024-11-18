@@ -55,6 +55,7 @@ jobs:
         echo $LATEST_RELEASE ${{ env.RELEASE_TYPE }}
         output=$(python .github/workflows/bump-release.py --type ${{ env.RELEASE_TYPE }} --version $LATEST_RELEASE)
         echo "RELEASE_NR=$output" >> $GITHUB_ENV
+        sed -e "s/\(version\s=\s\"\)[^\"]*\"/\1${{ env.RELEASE_NR }}\"/" CITATION.cff
 
     - name: Validate CITATION.cff
       uses: dieghernan/cff-validator@v3
@@ -62,7 +63,6 @@ jobs:
     - name: Build documentation
       run: |
         echo "Release version ${{ env.RELEASE_NR }}"
-        sed -e "s/\(version\s=\s\"\)[^\"]*\"/\1${{ env.RELEASE_NR }}\"/" CITATION.cff
         pdoc -o docs --footer-text ${{ env.RELEASE_NR }} -t docs/dark-mode --logo https://raw.githubusercontent.com/swerik-project/the-swedish-parliament-corpus/refs/heads/main/readme/riksdagshuset.jpg pyriksdagen
 
     - name: Add and commit changes

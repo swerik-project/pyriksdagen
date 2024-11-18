@@ -57,8 +57,8 @@ jobs:
         output=$(python .github/workflows/bump-release.py --type ${{ env.RELEASE_TYPE }} --version $LATEST_RELEASE)
         echo "RELEASE_NR=$output" >> $GITHUB_ENV
 
-      - name: Validate CITATION.cff
-        uses: dieghernan/cff-validator@v3
+    - name: Validate CITATION.cff
+      uses: dieghernan/cff-validator@v3
 
     - name: Build documentation
       run: |

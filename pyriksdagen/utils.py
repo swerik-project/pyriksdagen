@@ -516,3 +516,33 @@ def get_context_sequences_for_protocol(protocol, context_type, target_length = 1
     output_dict = {'id' : id_list,
                    'text' : texts_with_contexts}
     return output_dict
+
+
+def pathize_protocol_id(protocol_id):
+    """
+    Turn the protocol id into a path string from riksdagen-records root. Handles 'unpadded' protocol numbers.
+    """
+
+    spl = protocol_id.split('-')
+    parliament_year = spl[1]
+    suffix = ""
+    if len(spl) == 4:
+        nr = spl[3]
+        pren = '-'.join(spl[:3])
+    else:
+        nr = spl[5]
+        pren = '-'.join(spl[:5])
+        if len(spl) == 7:
+            suffix = f"-{spl[-1]}"
+    path_ = f"data/{parliament_year}/{pren}-{nr:0>3}{suffix}.xml"
+    if os.path.exists(path_):
+        # if path_ exists, return path_
+        return path_
+    else:
+        # try to remove strings like "extra" and "höst" from path_ ...
+        #    (these were removed from some of the protocol filenames after goldstandard annotation)
+        #    check again if new path_ exists and return
+        path_ = re.sub(f'((extra)?h[^-]+st|")', '', path_)
+        if os.path.exists(path_):
+            return path_
+    raise FileNotFoundError(f"Can't find {path_}")

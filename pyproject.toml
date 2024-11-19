@@ -33,6 +33,7 @@ textdistance = "*"
 py-markdown-table = "*"
 alto-xml = "*"
 trainerlog = "*"
+transformers = "*"
 
 [tool.poetry.dev-dependencies]
 devtools = "^0.5.1"

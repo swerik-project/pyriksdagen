@@ -63,8 +63,9 @@ jobs:
 
     - name: bump to env
       run: |
-        echo "RELEASE_NR=${{ steps.bump.outputs.new_version }}" >> $GITHUB_ENV
-        sed -e "s/\(version\s=\s\"\)[^\"]*\"/\1${{ env.RELEASE_NR }}\"/" CITATION.cff
+        release_nr=${{ steps.bump.outputs.new_version }}
+        echo "RELEASE_NR=$release_nr" >> $GITHUB_ENV
+        sed -i.bak -e "s/\(version:\)\([^\"]*\)/ \1 $release_nr\"/" CITATION.cff
 
     - name: Validate CITATION.cff
       uses: dieghernan/cff-validator@v3

@@ -1,0 +1,89 @@
+name: Prerelease workflow
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false   # use GITHUB_TOKEN
+        fetch-depth: 1               # fetch depth is nr of commits
+        ref: ${{ github.head_ref }}
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pdoc
+
+    - name: Get release type
+      run: |
+        release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '(((M|m)ajor|inor)|(P|p)atch)' | awk '{print tolower($0)}')
+        if [ -z $release_type ] ; then
+            echo "You have to indicate the release type in the title of a pr to main"
+            echo "   suggested: `prerelease: major|minor|patch version"
+            exit 1
+        else
+            echo "Next release will be a $release_type version"
+            echo "RELEASE_TYPE=$release_type" >> $GITHUB_ENV
+        fi
+
+    - name: Install jq
+      uses: dcarbone/install-jq-action@v2
+      with:
+        version: 1.7
+        force: false
+
+    - name: Get most recent release
+      run: |
+        LATEST_RELEASE=$(echo "$(curl -L https://api.github.com/repos/swerik-project/pyriksdagen/releases/latest)" | jq -r .tag_name)
+        if [[ "$LATEST_RELEASE" == null ]] ; then LATEST_RELEASE="v0.0.0" ; fi
+        echo "LAST_RELEASE=$LATEST_RELEASE" >> $GITHUB_ENV
+
+    - name: Bump version
+      id: bump
+      uses: cbrgm/semver-bump-action@main
+      with:
+        current-version: ${{ env.LAST_RELEASE }}
+        bump-level: ${{ env.RELEASE_TYPE }}
+
+    - name: bump to env
+      run: |
+        echo "RELEASE_NR=${{ steps.bump.outputs.new_version }}" >> $GITHUB_ENV
+        sed -e "s/\(version\s=\s\"\)[^\"]*\"/\1${{ env.RELEASE_NR }}\"/" CITATION.cff
+
+    - name: Validate CITATION.cff
+      uses: dieghernan/cff-validator@v3
+
+    - name: Build documentation
+      run: |
+        echo "Release version ${{ env.RELEASE_NR }}"
+        pdoc -o docs --footer-text ${{ env.RELEASE_NR }} -t docs/dark-mode --logo https://raw.githubusercontent.com/swerik-project/the-swedish-parliament-corpus/refs/heads/main/readme/riksdagshuset.jpg pyriksdagen
+
+    - name: Add and commit changes
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add CITATION.cff
+        git commit -m "chore: bump version nr in cff file"
+        git add docs
+        git commit -m "chore: update docs"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.head_ref }}

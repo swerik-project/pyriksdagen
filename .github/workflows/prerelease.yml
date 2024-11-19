@@ -34,7 +34,7 @@ jobs:
         release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '(((M|m)ajor|inor)|(P|p)atch)' | awk '{print tolower($0)}')
         if [ -z $release_type ] ; then
             echo "You have to indicate the release type in the title of a pr to main"
-            echo "   suggested: `prerelease: major|minor|patch version"
+            echo "   suggested: `prerelease: major|minor|patch version`"
             exit 1
         else
             echo "Next release will be a $release_type version"

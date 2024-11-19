@@ -31,7 +31,7 @@ jobs:
 
     - name: Get release type
       run: |
-        release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '(((M|m)ajor|inor)|(P|p)atch)' | awk '{print tolower($0)}')
+        release_type=$(echo ${{ github.event.pull_request.title }} | grep -Eoh '((M|m)(ajor|inor)|(P|p)atch)' | awk '{print tolower($0)}')
         if [ -z $release_type ] ; then
             echo "You have to indicate the release type in the title of a pr to main"
             echo "   suggested: `prerelease: major|minor|patch version`"

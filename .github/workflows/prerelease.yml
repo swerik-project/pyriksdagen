@@ -65,7 +65,7 @@ jobs:
       run: |
         release_nr=${{ steps.bump.outputs.new_version }}
         echo "RELEASE_NR=$release_nr" >> $GITHUB_ENV
-        sed -i.bak -e "s/\(^version:\)\([^\"]*\)/\1 $release_nr\"/" CITATION.cff
+        sed -i.bak -e "s/\(^version:\)\([^\"]*\)/\1 $release_nr/" CITATION.cff
         sed -i.bak -e "s/\(version\s=\s\"\)[^\"]*\"/\1$release_nr\"/" pyproject.toml
 
     - name: Validate CITATION.cff

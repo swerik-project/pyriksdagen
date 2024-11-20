@@ -83,7 +83,7 @@ jobs:
         git add CITATION.cff
         git commit -m "chore: bump version nr in cff file"
         git add pyproject.toml
-        git commit -m "chore: bump version nr in pyproject.toml file
+        git commit -m "chore: bump version nr in pyproject.toml file"
         git add docs
         git commit -m "chore: update docs"
 

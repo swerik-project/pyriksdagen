@@ -354,6 +354,25 @@ def detect_date(root, metadata):
     protocol_years = {protocol_year, metadata.get("secondary_year", protocol_year)}
     yearless = set()
 
+    def _is_sjukbetyg(elem):
+        """
+        check if elem with date is part of a (lakar|sjul)(be|in)tyg
+        """
+        found_title = False
+        is_sjukbetyg = False
+        pat = re.compile(r'(läkar|sjuk)(in|be)tyg')
+        while found_title == False:
+            elem = elem.getprevious()
+            if elem is None:
+                break
+            if "type" in elem.attrib and elem.attrib["type"] == "title":
+                found_title = True
+            if elem.text is not None:
+                m = pat.search(elem.text)
+                if m is not None:
+                    is_sjukbetyg = True
+        return is_sjukbetyg
+
     for ix, elem_tuple in enumerate(list(elem_iter(root))):
         tag, elem = elem_tuple
         if tag == "note" and type(elem.text) == str and len(" ".join(elem.text.split()))  < 50:
@@ -366,12 +385,12 @@ def detect_date(root, metadata):
                 elem.attrib["type"] = "date"
                 datestr = matches.group(1) + " " + matches.group(2) + " " + matches.group(3)
                 date = dateparser.parse(datestr, languages=["sv"])
-                if date is not None:
+                if date is not None and not _is_sjukbetyg(elem):
                     if date.year in protocol_years:
                         number_dates.add(date)
 
             # Dates with the year included, though unsure if protocol date
-            elif matches3 is not None:
+            elif matches3 is not None and not _is_sjukbetyg(elem):
                 datestr = matches3.group()
                 date = dateparser.parse(datestr, languages=["sv"])
                 if date is not None:
@@ -379,7 +398,7 @@ def detect_date(root, metadata):
                         dates.add(date)
 
             # Dates without a year
-            elif matches2 is not None:
+            elif matches2 is not None and not _is_sjukbetyg(elem):
                 elem.attrib["type"] = "date"
                 datestr = matches2.group(1) + " " + matches2.group(2)
                 yearless.add(datestr)

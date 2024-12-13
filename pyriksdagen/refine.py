@@ -380,8 +380,10 @@ def detect_date(root, metadata, skip_doctors_notes=False):
     for ix, elem_tuple in enumerate(list(elem_iter(root))):
         tag, elem = elem_tuple
         if tag == "note" and type(elem.text) == str and len(" ".join(elem.text.split()))  < 50:
+            # Mark as to-be-removed so that attribute order is retained
             if elem.attrib.get("type") == "date":
                 elem.attrib["type"] = "REMOVE"
+            
             weekday_date_year = re.search(expression, elem.text)
             weekday_and_date = re.search(expression2, elem.text)
             date_and_year = re.search(expression3, elem.text)
@@ -421,7 +423,7 @@ def detect_date(root, metadata, skip_doctors_notes=False):
                     datestr = den_and_date.group()
                     yearless.add(datestr)
 
-
+            # Remove elements that were not dates
             if elem.attrib.get("type") == "REMOVE":
                 del elem.attrib["type"]
 

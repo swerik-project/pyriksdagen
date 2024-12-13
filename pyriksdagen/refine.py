@@ -350,6 +350,7 @@ def detect_date(root, metadata):
     expression = "\\w{3,5}dagen den (\\d{1,2})\\.? (\\w{3,9}) (\\d{4})"
     expression2 = "\\w{3,5}dagen den (\\d{1,2})\\.? (\\w{3,9})"
     expression3 = "(\\d{1,2})\\.? (\\w{3,9}) (\\d{4,4})"
+    expression4 = "(D|d)en (\\d{1,2})\\.? (\\w{3,9})"
     protocol_year = metadata["year"]
     protocol_years = {protocol_year, metadata.get("secondary_year", protocol_year)}
     yearless = set()
@@ -380,6 +381,7 @@ def detect_date(root, metadata):
             weekday_date_year = re.search(expression, elem.text)
             weekday_and_date = re.search(expression2, elem.text)
             date_and_year = re.search(expression3, elem.text)
+            den_and_date = re.search(expression4, elem.text)
 
             # Dates with the year included, surely date
             if weekday_date_year is not None:
@@ -405,6 +407,16 @@ def detect_date(root, metadata):
                     elem.attrib["type"] = "date"
                 datestr = weekday_and_date.group(1) + " " + weekday_and_date.group(2)
                 yearless.add(datestr)
+
+            # Dates without a year or weekday
+            elif den_and_date is not None and not _is_sjukbetyg(elem):
+                if len(" ".join(elem.text.split())) < 30:
+                    if elem.attrib.get("type") != "title":
+                        elem.attrib["type"] = "date"
+
+                    datestr = den_and_date.group()
+                    yearless.add(datestr)
+
 
     if len(dates) > 0:
         protocol_year = list(dates)[0].year

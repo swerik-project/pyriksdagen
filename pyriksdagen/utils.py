@@ -85,7 +85,7 @@ def infer_metadata(filename):
                 metadata["sitting"] = str(year)
 
                 # Protocol ids of format 197879 have two years, eg. 1978 and 1979
-                if s[4:6].isdigit():
+                if s[4:6].isdigit() or "urtima" in metadata["protocol"]:
                     metadata["secondary_year"] = year + 1
                     metadata["sitting"] += f"{s[4:6]}"
 
@@ -317,7 +317,7 @@ def get_doc_dates(protocol):
         ns = fetch_ns()
     else:
         raise TypeError(f"You need to pass a string or etree Element, not {type(protocol)}")
-    date_elems = root.findall(f"{ns['tei_ns']}docDate")
+    date_elems = root.findall(f".//{ns['tei_ns']}docDate")
     for de in date_elems:
         when_attrib = de.get("when")
         elem_text = de.text

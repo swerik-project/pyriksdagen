@@ -358,15 +358,15 @@ def detect_date(root, metadata):
         """
         check if elem with date is part of a (lakar|sjul)(be|in)tyg
         """
-        found_title = False
+        break_while = False
         is_sjukbetyg = False
         pat = re.compile(r'(läkar|sjuk)(in|be)tyg')
-        while found_title == False:
+        while break_while == False:
             elem = elem.getprevious()
             if elem is None:
-                break
+                break_while = True
             if "type" in elem.attrib and elem.attrib["type"] == "title":
-                found_title = True
+                break_while = True
             if elem.text is not None:
                 m = pat.search(elem.text)
                 if m is not None:

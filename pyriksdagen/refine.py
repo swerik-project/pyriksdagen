@@ -427,7 +427,7 @@ def detect_date(root, metadata):
 
             # Format dates and add default XXXX-01-01
             formatted_dates = [d.strftime("%Y-%m-%d") for d in dates]
-            if len(dates) > 0:
+            if len(dates) == 0:
                 formatted_dates = [str(protocol_year) + "-01-01"]
 
             # Add new docDates

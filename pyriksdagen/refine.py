@@ -332,7 +332,7 @@ def find_introductions(root, pattern_db, intro_ids, minister_db=None):
     return root
 
 
-def detect_date(root, metadata):
+def detect_date(root, metadata, skip_doctors_notes=False):
     """
     Detects notes with dates in them. Updates the docDate metadata in the teiHeader accordingly.
 
@@ -362,6 +362,8 @@ def detect_date(root, metadata):
         """
         check if elem with date is part of a (lakar|sjul)(be|in)tyg
         """
+        if not skip_doctors_notes:
+            return False
         break_while, is_sjukbetyg = False, False
         pat = re.compile(r'(läkar|sjuk)(in|be)tyg')
         while break_while == False:
@@ -378,6 +380,8 @@ def detect_date(root, metadata):
     for ix, elem_tuple in enumerate(list(elem_iter(root))):
         tag, elem = elem_tuple
         if tag == "note" and type(elem.text) == str and len(" ".join(elem.text.split()))  < 50:
+            if elem.attrib.get("type") == "date":
+                elem.attrib["type"] = "REMOVE"
             weekday_date_year = re.search(expression, elem.text)
             weekday_and_date = re.search(expression2, elem.text)
             date_and_year = re.search(expression3, elem.text)
@@ -416,6 +420,11 @@ def detect_date(root, metadata):
 
                     datestr = den_and_date.group()
                     yearless.add(datestr)
+
+
+            if elem.attrib.get("type") == "REMOVE":
+                del elem.attrib["type"]
+
 
 
     if len(dates) > 0:

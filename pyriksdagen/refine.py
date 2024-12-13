@@ -354,6 +354,9 @@ def detect_date(root, metadata):
     protocol_years = {protocol_year, metadata.get("secondary_year", protocol_year)}
     yearless = set()
 
+    def _parse_date(s):
+        return dateparser.parse(s, languages=["sv"], settings={'RETURN_AS_TIMEZONE_AWARE': False})
+
     def _is_sjukbetyg(elem):
         """
         check if elem with date is part of a (lakar|sjul)(be|in)tyg
@@ -365,7 +368,7 @@ def detect_date(root, metadata):
             # Run until a title or the beginning of the document is reached
             if elem is None or elem.attrib.get("type") == "title":
                 break_while = True
-            if elem.text is not None:
+            if elem is not None and elem.text is not None:
                 m = pat.search(elem.text)
                 if m is not None:
                     is_sjukbetyg = True
@@ -383,7 +386,7 @@ def detect_date(root, metadata):
                 if elem.attrib.get("type") != "title":
                     elem.attrib["type"] = "date"
                 datestr = weekday_date_year.group(1) + " " + weekday_date_year.group(2) + " " + weekday_date_year.group(3)
-                date = dateparser.parse(datestr, languages=["sv"])
+                date = _parse_date(datestr)
                 if date is not None and not _is_sjukbetyg(elem):
                     if date.year in protocol_years:
                         number_dates.add(date)
@@ -391,7 +394,7 @@ def detect_date(root, metadata):
             # Dates with the year included, though unsure if protocol date
             elif date_and_year is not None and not _is_sjukbetyg(elem):
                 datestr = date_and_year.group()
-                date = dateparser.parse(datestr, languages=["sv"])
+                date = _parse_date(datestr)
                 if date is not None:
                     if date.year in protocol_years:
                         dates.add(date)
@@ -410,11 +413,11 @@ def detect_date(root, metadata):
         protocol_year = list(dates)[0].year
 
     for datestr in yearless:
-        date = dateparser.parse(datestr + " " + str(protocol_year), languages=["sv"])
+        date = _parse_date(f"{datestr} {protocol_year}")
         if date is not None:
             dates.add(date)
 
-    dates = sorted(list(dates))
+    dates = sorted(dates)
     for text in root.findall(".//" + TEI_NS + "text"):
         for front in text.findall(".//" + TEI_NS + "front"):
 

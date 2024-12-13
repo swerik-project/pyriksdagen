@@ -317,7 +317,7 @@ def get_doc_dates(protocol):
         ns = fetch_ns()
     else:
         raise TypeError(f"You need to pass a string or etree Element, not {type(protocol)}")
-    date_elems = root.findall(f"{ns['tei_ns']}docDate")
+    date_elems = root.findall(f".//{ns['tei_ns']}docDate")
     for de in date_elems:
         when_attrib = de.get("when")
         elem_text = de.text

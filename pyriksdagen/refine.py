@@ -3,7 +3,7 @@ import re
 from pyparlaclarin.read import element_hash
 import dateparser
 import pandas as pd
-from .utils import elem_iter, infer_metadata, parse_date, XML_NS, get_formatted_uuid
+from .utils import elem_iter, infer_metadata, parse_date, XML_NS, TEI_NS, get_formatted_uuid
 from .db import load_expressions, filter_db, load_patterns, load_metadata
 from .segmentation import (
     detect_mp,
@@ -358,14 +358,12 @@ def detect_date(root, metadata):
         """
         check if elem with date is part of a (lakar|sjul)(be|in)tyg
         """
-        break_while = False
-        is_sjukbetyg = False
+        break_while, is_sjukbetyg = False, False
         pat = re.compile(r'(läkar|sjuk)(in|be)tyg')
         while break_while == False:
             elem = elem.getprevious()
-            if elem is None:
-                break_while = True
-            if "type" in elem.attrib and elem.attrib["type"] == "title":
+            # Run until a title or the beginning of the document is reached
+            if elem is None or elem.attrib.get("type") == "title":
                 break_while = True
             if elem.text is not None:
                 m = pat.search(elem.text)
@@ -382,7 +380,7 @@ def detect_date(root, metadata):
 
             # Dates with the year included, surely date
             if matches is not None:
-                if not "type" in elem.attrib or elem.attrib["type"] != "title":
+                if elem.attrib.get("type") != "title":
                     elem.attrib["type"] = "date"
                 datestr = matches.group(1) + " " + matches.group(2) + " " + matches.group(3)
                 date = dateparser.parse(datestr, languages=["sv"])
@@ -400,7 +398,7 @@ def detect_date(root, metadata):
 
             # Dates without a year
             elif matches2 is not None and not _is_sjukbetyg(elem):
-                if not "type" in elem.attrib or elem.attrib["type"] != "title":
+                if elem.attrib.get("type") != "title":
                     elem.attrib["type"] = "date"
                 datestr = matches2.group(1) + " " + matches2.group(2)
                 yearless.add(datestr)
@@ -417,31 +415,27 @@ def detect_date(root, metadata):
             dates.add(date)
 
     dates = sorted(list(dates))
-    tei_ns = "{http://www.tei-c.org/ns/1.0}"
-    for text in root.findall(".//" + tei_ns + "text"):
-        for front in text.findall(".//" + tei_ns + "front"):
+    for text in root.findall(".//" + TEI_NS + "text"):
+        for front in text.findall(".//" + TEI_NS + "front"):
 
             # Remove old docDates
-            for docDate in front.findall(".//" + tei_ns + "docDate"):
+            for docDate in front.findall(".//" + TEI_NS + "docDate"):
                 docDate.getparent().remove(docDate)
-            for div in front.findall(".//" + tei_ns + "div"):
-                for docDate in div.findall(".//" + tei_ns + "docDate"):
+            for div in front.findall(".//" + TEI_NS + "div"):
+                for docDate in div.findall(".//" + TEI_NS + "docDate"):
                     docDate.getparent().remove(docDate)
 
+            # Format dates and add default XXXX-01-01
+            formatted_dates = [d.strftime("%Y-%m-%d") for d in dates]
             if len(dates) > 0:
-                for div in front.findall(".//" + tei_ns + "div"):
-                    if div.attrib.get("type") == "preface":
-                        for docDate in div.findall(".//" + tei_ns + "docDate"):
-                            docDate.getparent().remove(docDate)
-                        for date in dates:
-                            formatted = date.strftime("%Y-%m-%d")
-                            docDate = etree.SubElement(div, "docDate")
-                            docDate.text = formatted
-                            docDate.attrib["when"] = formatted
-            else:
-                for div in front.findall(".//" + tei_ns + "div"):
-                    if div.attrib.get("type") == "preface":
-                        formatted = str(protocol_year)
+                formatted_dates = [str(protocol_year) + "-01-01"]
+
+            # Add new docDates
+            for div in front.findall(".//" + TEI_NS + "div"):
+                if div.attrib.get("type") == "preface":
+                    for docDate in div.findall(".//" + TEI_NS + "docDate"):
+                        docDate.getparent().remove(docDate)
+                    for formatted in formatted_dates:
                         docDate = etree.SubElement(div, "docDate")
                         docDate.text = formatted
                         docDate.attrib["when"] = formatted

@@ -365,7 +365,7 @@ def detect_date(root, metadata):
             # Run until a title or the beginning of the document is reached
             if elem is None or elem.attrib.get("type") == "title":
                 break_while = True
-            if elem.text is not None:
+            if elem is not None and elem.text is not None:
                 m = pat.search(elem.text)
                 if m is not None:
                     is_sjukbetyg = True

@@ -49,7 +49,7 @@
     </ul>
 
 
-            <footer>v1.7.0</footer>
+            <footer>v1.7.1</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -74,18 +74,18 @@
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">Handle issues relating to dates in the corpus and MP/Minister database.</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span> <span class="nn">pyriksdagen.metadata</span> <span class="kn">import</span> <span class="p">(</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyriksdagen.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a>    <span class="n">impute_date</span><span class="p">,</span>            <span class="c1"># db</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>    <span class="n">impute_minister_date</span><span class="p">,</span>   <span class="c1"># db gov_db</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>    <span class="n">impute_speaker_date</span><span class="p">,</span>    <span class="c1"># db</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="p">)</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">import</span> <span class="nn">sys</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="k">def</span> <span class="nf">_get_parliament_years</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">start_year</span><span class="p">,</span> <span class="n">end_year</span><span class="p">,</span> <span class="n">start_p</span><span class="p">,</span> <span class="n">end_p</span><span class="p">,</span> <span class="n">year_list</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_get_parliament_years</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">start_year</span><span class="p">,</span> <span class="n">end_year</span><span class="p">,</span> <span class="n">start_p</span><span class="p">,</span> <span class="n">end_p</span><span class="p">,</span> <span class="n">year_list</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">,</span> <span class="n">debug</span><span class="p">):</span>
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    get a list of parliament years in 4 or 6 digit format</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -336,7 +336,7 @@
 </span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>
 </span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>
 </span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a>
-</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="k">def</span> <span class="nf">yearize_date</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">):</span>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="k">def</span><span class="w"> </span><span class="nf">yearize_date</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">):</span>
 </span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">    takes a date and a dataframe of riksdagen-persons/data/riksdag-year.csv</span>
 </span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -356,7 +356,7 @@
 </span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a>
 </span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>
 </span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>
-</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a><span class="k">def</span> <span class="nf">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">):</span>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a><span class="k">def</span><span class="w"> </span><span class="nf">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">):</span>
 </span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a><span class="sd">    return a dataframe of mandate periods, lengthened for each parliament year</span>
 </span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>
@@ -493,7 +493,7 @@
 </span><span id="L-421"><a href="#L-421"><span class="linenos">421</span></a>
 </span><span id="L-422"><a href="#L-422"><span class="linenos">422</span></a>
 </span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a>
-</span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a><span class="k">def</span> <span class="nf">test_yearize_mandates</span><span class="p">():</span>
+</span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a><span class="k">def</span><span class="w"> </span><span class="nf">test_yearize_mandates</span><span class="p">():</span>
 </span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a>    <span class="n">m</span> <span class="o">=</span> <span class="n">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="s2">&quot;i-XvpBFhfR9SDB1i9KLCmqX2&quot;</span><span class="p">)</span>
 </span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a>    <span class="c1">#print(m.head(50))</span>
 </span><span id="L-427"><a href="#L-427"><span class="linenos">427</span></a>    <span class="c1">#print(m.sample(50).head(50))</span>
@@ -501,7 +501,7 @@
 </span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a>    <span class="n">m</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">&quot;_scripts/chairs/yearized_mandates.csv&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </span><span id="L-430"><a href="#L-430"><span class="linenos">430</span></a>
 </span><span id="L-431"><a href="#L-431"><span class="linenos">431</span></a>
-</span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a><span class="k">def</span> <span class="nf">test_yearize_date</span><span class="p">():</span>
+</span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a><span class="k">def</span><span class="w"> </span><span class="nf">test_yearize_date</span><span class="p">():</span>
 </span><span id="L-433"><a href="#L-433"><span class="linenos">433</span></a>    <span class="n">riksmote</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/riksdag-year.csv&quot;</span><span class="p">)</span>
 </span><span id="L-434"><a href="#L-434"><span class="linenos">434</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">yearize_date</span><span class="p">(</span><span class="s2">&quot;1982-04-13&quot;</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">))</span>
 </span><span id="L-435"><a href="#L-435"><span class="linenos">435</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">yearize_date</span><span class="p">(</span><span class="s2">&quot;1982-12-05&quot;</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">))</span>
@@ -511,7 +511,7 @@
 </span><span id="L-439"><a href="#L-439"><span class="linenos">439</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">yearize_date</span><span class="p">(</span><span class="s2">&quot;1942-12-05&quot;</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">))</span>
 </span><span id="L-440"><a href="#L-440"><span class="linenos">440</span></a>
 </span><span id="L-441"><a href="#L-441"><span class="linenos">441</span></a>
-</span><span id="L-442"><a href="#L-442"><span class="linenos">442</span></a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span><span id="L-442"><a href="#L-442"><span class="linenos">442</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span id="L-443"><a href="#L-443"><span class="linenos">443</span></a>    <span class="n">test_yearize_mandates</span><span class="p">()</span>
 </span><span id="L-444"><a href="#L-444"><span class="linenos">444</span></a>    <span class="c1">#test_yearize_date()</span>
 </span><span id="L-445"><a href="#L-445"><span class="linenos">445</span></a>
@@ -534,7 +534,7 @@
 
     </div>
     <a class="headerlink" href="#yearize_date"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="yearize_date-268"><a href="#yearize_date-268"><span class="linenos">268</span></a><span class="k">def</span> <span class="nf">yearize_date</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="yearize_date-268"><a href="#yearize_date-268"><span class="linenos">268</span></a><span class="k">def</span><span class="w"> </span><span class="nf">yearize_date</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">):</span>
 </span><span id="yearize_date-269"><a href="#yearize_date-269"><span class="linenos">269</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="yearize_date-270"><a href="#yearize_date-270"><span class="linenos">270</span></a><span class="sd">    takes a date and a dataframe of riksdagen-persons/data/riksdag-year.csv</span>
 </span><span id="yearize_date-271"><a href="#yearize_date-271"><span class="linenos">271</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -569,7 +569,7 @@
 
     </div>
     <a class="headerlink" href="#yearize_mandates"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="yearize_mandates-288"><a href="#yearize_mandates-288"><span class="linenos">288</span></a><span class="k">def</span> <span class="nf">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="yearize_mandates-288"><a href="#yearize_mandates-288"><span class="linenos">288</span></a><span class="k">def</span><span class="w"> </span><span class="nf">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata_folder</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">):</span>
 </span><span id="yearize_mandates-289"><a href="#yearize_mandates-289"><span class="linenos">289</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="yearize_mandates-290"><a href="#yearize_mandates-290"><span class="linenos">290</span></a><span class="sd">    return a dataframe of mandate periods, lengthened for each parliament year</span>
 </span><span id="yearize_mandates-291"><a href="#yearize_mandates-291"><span class="linenos">291</span></a>
@@ -730,7 +730,7 @@ to
 
     </div>
     <a class="headerlink" href="#test_yearize_mandates"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_yearize_mandates-425"><a href="#test_yearize_mandates-425"><span class="linenos">425</span></a><span class="k">def</span> <span class="nf">test_yearize_mandates</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_yearize_mandates-425"><a href="#test_yearize_mandates-425"><span class="linenos">425</span></a><span class="k">def</span><span class="w"> </span><span class="nf">test_yearize_mandates</span><span class="p">():</span>
 </span><span id="test_yearize_mandates-426"><a href="#test_yearize_mandates-426"><span class="linenos">426</span></a>    <span class="n">m</span> <span class="o">=</span> <span class="n">yearize_mandates</span><span class="p">(</span><span class="n">debug_id</span><span class="o">=</span><span class="s2">&quot;i-XvpBFhfR9SDB1i9KLCmqX2&quot;</span><span class="p">)</span>
 </span><span id="test_yearize_mandates-427"><a href="#test_yearize_mandates-427"><span class="linenos">427</span></a>    <span class="c1">#print(m.head(50))</span>
 </span><span id="test_yearize_mandates-428"><a href="#test_yearize_mandates-428"><span class="linenos">428</span></a>    <span class="c1">#print(m.sample(50).head(50))</span>
@@ -753,7 +753,7 @@ to
 
     </div>
     <a class="headerlink" href="#test_yearize_date"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="test_yearize_date-433"><a href="#test_yearize_date-433"><span class="linenos">433</span></a><span class="k">def</span> <span class="nf">test_yearize_date</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="test_yearize_date-433"><a href="#test_yearize_date-433"><span class="linenos">433</span></a><span class="k">def</span><span class="w"> </span><span class="nf">test_yearize_date</span><span class="p">():</span>
 </span><span id="test_yearize_date-434"><a href="#test_yearize_date-434"><span class="linenos">434</span></a>    <span class="n">riksmote</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data/riksdag-year.csv&quot;</span><span class="p">)</span>
 </span><span id="test_yearize_date-435"><a href="#test_yearize_date-435"><span class="linenos">435</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">yearize_date</span><span class="p">(</span><span class="s2">&quot;1982-04-13&quot;</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">))</span>
 </span><span id="test_yearize_date-436"><a href="#test_yearize_date-436"><span class="linenos">436</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">yearize_date</span><span class="p">(</span><span class="s2">&quot;1982-12-05&quot;</span><span class="p">,</span> <span class="n">riksmote</span><span class="p">))</span>
@@ -778,7 +778,7 @@ to
 
     </div>
     <a class="headerlink" href="#main"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="main-443"><a href="#main-443"><span class="linenos">443</span></a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="main-443"><a href="#main-443"><span class="linenos">443</span></a><span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
 </span><span id="main-444"><a href="#main-444"><span class="linenos">444</span></a>    <span class="n">test_yearize_mandates</span><span class="p">()</span>
 </span><span id="main-445"><a href="#main-445"><span class="linenos">445</span></a>    <span class="c1">#test_yearize_date()</span>
 </span></pre></div>

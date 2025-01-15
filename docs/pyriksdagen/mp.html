@@ -55,7 +55,7 @@
     </ul>
 
 
-            <footer>v1.7.0</footer>
+            <footer>v1.7.1</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -80,14 +80,14 @@
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Handles the data on the members of parliament.</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">re</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">import</span> <span class="nn">progressbar</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">import</span> <span class="nn">hashlib</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">import</span> <span class="nn">unicodedata</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span><span class="o">,</span><span class="w"> </span><span class="nn">re</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">progressbar</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">unicodedata</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="k">def</span> <span class="nf">create_database</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="k">def</span><span class="w"> </span><span class="nf">create_database</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="sd">    Create an initial version of the MP dataframe</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -202,7 +202,7 @@
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>    <span class="k">return</span> <span class="n">df</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
 </span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="k">def</span> <span class="nf">create_full_database</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a><span class="k">def</span><span class="w"> </span><span class="nf">create_full_database</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>    <span class="n">mp_dbs</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
@@ -233,7 +233,7 @@
 </span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="k">return</span> <span class="n">mp_db</span>
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>
 </span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="k">def</span> <span class="nf">add_gender</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_gender</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
 </span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a><span class="sd">    Based to first names, add gender to an MP dataframe.</span>
 </span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -260,7 +260,7 @@
 </span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>    <span class="k">return</span> <span class="n">mp_db</span>
 </span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>
-</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="k">def</span> <span class="nf">clean_names</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
+</span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_names</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a><span class="sd">    Remove artefacts from MP names and specifiers</span>
 </span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -287,7 +287,7 @@
 </span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>    <span class="k">return</span> <span class="n">mp_db</span>
 </span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a>
 </span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>
-</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="k">def</span> <span class="nf">replace_party_abbreviations</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">party_db</span><span class="p">):</span>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="k">def</span><span class="w"> </span><span class="nf">replace_party_abbreviations</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">party_db</span><span class="p">):</span>
 </span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a><span class="sd">    Replace party abbreviations with standardized party names.</span>
 </span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -309,7 +309,7 @@
 </span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>    <span class="k">return</span> <span class="n">mp_db</span>
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>
 </span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>
-</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="k">def</span> <span class="nf">add_id</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
+</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_id</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
 </span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="sd">    Generate deterministic IDs for mps based on the &quot;name&quot;, &quot;party&quot;, &quot;district&quot;,</span>
 </span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">    &quot;chamber&quot;, &quot;start&quot;, and &quot;end&quot; columns of the dataframe.</span>
@@ -341,14 +341,14 @@
 </span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a>    <span class="k">return</span> <span class="n">mp_db</span>
 </span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>
 </span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>
-</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="k">def</span> <span class="nf">add_municipality</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">mun_db</span><span class="p">):</span>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_municipality</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">mun_db</span><span class="p">):</span>
 </span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a><span class="sd">    Add home municipalities as specifiers for matched MPs from personregister</span>
 </span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a>    <span class="n">original_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mp_db</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 </span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Add municipalicites from &#39;personregister&#39;...&quot;</span><span class="p">)</span>
 </span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a>
-</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a>    <span class="k">def</span> <span class="nf">reorder_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reorder_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 </span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
 </span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a>            <span class="k">return</span> <span class="n">name</span>
@@ -377,7 +377,7 @@
 </span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a>
 </span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a>            <span class="n">mpdb_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">current_mpdb</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
 </span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a>
-</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>            <span class="k">def</span> <span class="nf">rname</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>            <span class="k">def</span><span class="w"> </span><span class="nf">rname</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 </span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a>                <span class="n">nameset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
 </span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a>
 </span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a>                <span class="n">namesplit</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
@@ -434,7 +434,7 @@
 
     </div>
     <a class="headerlink" href="#create_database"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="create_database-13"><a href="#create_database-13"><span class="linenos"> 13</span></a><span class="k">def</span> <span class="nf">create_database</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="create_database-13"><a href="#create_database-13"><span class="linenos"> 13</span></a><span class="k">def</span><span class="w"> </span><span class="nf">create_database</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
 </span><span id="create_database-14"><a href="#create_database-14"><span class="linenos"> 14</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="create_database-15"><a href="#create_database-15"><span class="linenos"> 15</span></a><span class="sd">    Create an initial version of the MP dataframe</span>
 </span><span id="create_database-16"><a href="#create_database-16"><span class="linenos"> 16</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -566,7 +566,7 @@
 
     </div>
     <a class="headerlink" href="#create_full_database"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="create_full_database-128"><a href="#create_full_database-128"><span class="linenos">128</span></a><span class="k">def</span> <span class="nf">create_full_database</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="create_full_database-128"><a href="#create_full_database-128"><span class="linenos">128</span></a><span class="k">def</span><span class="w"> </span><span class="nf">create_full_database</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
 </span><span id="create_full_database-129"><a href="#create_full_database-129"><span class="linenos">129</span></a>    <span class="n">mp_dbs</span> <span class="o">=</span> <span class="p">[]</span>
 </span><span id="create_full_database-130"><a href="#create_full_database-130"><span class="linenos">130</span></a>    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
 </span><span id="create_full_database-131"><a href="#create_full_database-131"><span class="linenos">131</span></a>        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
@@ -612,7 +612,7 @@
 
     </div>
     <a class="headerlink" href="#add_gender"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="add_gender-159"><a href="#add_gender-159"><span class="linenos">159</span></a><span class="k">def</span> <span class="nf">add_gender</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="add_gender-159"><a href="#add_gender-159"><span class="linenos">159</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_gender</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">names</span><span class="p">):</span>
 </span><span id="add_gender-160"><a href="#add_gender-160"><span class="linenos">160</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="add_gender-161"><a href="#add_gender-161"><span class="linenos">161</span></a><span class="sd">    Based to first names, add gender to an MP dataframe.</span>
 </span><span id="add_gender-162"><a href="#add_gender-162"><span class="linenos">162</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -656,7 +656,7 @@
 
     </div>
     <a class="headerlink" href="#clean_names"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="clean_names-186"><a href="#clean_names-186"><span class="linenos">186</span></a><span class="k">def</span> <span class="nf">clean_names</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="clean_names-186"><a href="#clean_names-186"><span class="linenos">186</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_names</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
 </span><span id="clean_names-187"><a href="#clean_names-187"><span class="linenos">187</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="clean_names-188"><a href="#clean_names-188"><span class="linenos">188</span></a><span class="sd">    Remove artefacts from MP names and specifiers</span>
 </span><span id="clean_names-189"><a href="#clean_names-189"><span class="linenos">189</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -700,7 +700,7 @@
 
     </div>
     <a class="headerlink" href="#replace_party_abbreviations"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="replace_party_abbreviations-213"><a href="#replace_party_abbreviations-213"><span class="linenos">213</span></a><span class="k">def</span> <span class="nf">replace_party_abbreviations</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">party_db</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="replace_party_abbreviations-213"><a href="#replace_party_abbreviations-213"><span class="linenos">213</span></a><span class="k">def</span><span class="w"> </span><span class="nf">replace_party_abbreviations</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">party_db</span><span class="p">):</span>
 </span><span id="replace_party_abbreviations-214"><a href="#replace_party_abbreviations-214"><span class="linenos">214</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="replace_party_abbreviations-215"><a href="#replace_party_abbreviations-215"><span class="linenos">215</span></a><span class="sd">    Replace party abbreviations with standardized party names.</span>
 </span><span id="replace_party_abbreviations-216"><a href="#replace_party_abbreviations-216"><span class="linenos">216</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -739,7 +739,7 @@
 
     </div>
     <a class="headerlink" href="#add_id"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="add_id-235"><a href="#add_id-235"><span class="linenos">235</span></a><span class="k">def</span> <span class="nf">add_id</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="add_id-235"><a href="#add_id-235"><span class="linenos">235</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_id</span><span class="p">(</span><span class="n">mp_db</span><span class="p">):</span>
 </span><span id="add_id-236"><a href="#add_id-236"><span class="linenos">236</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="add_id-237"><a href="#add_id-237"><span class="linenos">237</span></a><span class="sd">    Generate deterministic IDs for mps based on the &quot;name&quot;, &quot;party&quot;, &quot;district&quot;,</span>
 </span><span id="add_id-238"><a href="#add_id-238"><span class="linenos">238</span></a><span class="sd">    &quot;chamber&quot;, &quot;start&quot;, and &quot;end&quot; columns of the dataframe.</span>
@@ -789,14 +789,14 @@
 
     </div>
     <a class="headerlink" href="#add_municipality"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="add_municipality-267"><a href="#add_municipality-267"><span class="linenos">267</span></a><span class="k">def</span> <span class="nf">add_municipality</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">mun_db</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="add_municipality-267"><a href="#add_municipality-267"><span class="linenos">267</span></a><span class="k">def</span><span class="w"> </span><span class="nf">add_municipality</span><span class="p">(</span><span class="n">mp_db</span><span class="p">,</span> <span class="n">mun_db</span><span class="p">):</span>
 </span><span id="add_municipality-268"><a href="#add_municipality-268"><span class="linenos">268</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="add_municipality-269"><a href="#add_municipality-269"><span class="linenos">269</span></a><span class="sd">    Add home municipalities as specifiers for matched MPs from personregister</span>
 </span><span id="add_municipality-270"><a href="#add_municipality-270"><span class="linenos">270</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="add_municipality-271"><a href="#add_municipality-271"><span class="linenos">271</span></a>    <span class="n">original_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">mp_db</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
 </span><span id="add_municipality-272"><a href="#add_municipality-272"><span class="linenos">272</span></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Add municipalicites from &#39;personregister&#39;...&quot;</span><span class="p">)</span>
 </span><span id="add_municipality-273"><a href="#add_municipality-273"><span class="linenos">273</span></a>
-</span><span id="add_municipality-274"><a href="#add_municipality-274"><span class="linenos">274</span></a>    <span class="k">def</span> <span class="nf">reorder_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span id="add_municipality-274"><a href="#add_municipality-274"><span class="linenos">274</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">reorder_name</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 </span><span id="add_municipality-275"><a href="#add_municipality-275"><span class="linenos">275</span></a>        <span class="n">s</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
 </span><span id="add_municipality-276"><a href="#add_municipality-276"><span class="linenos">276</span></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
 </span><span id="add_municipality-277"><a href="#add_municipality-277"><span class="linenos">277</span></a>            <span class="k">return</span> <span class="n">name</span>
@@ -825,7 +825,7 @@
 </span><span id="add_municipality-300"><a href="#add_municipality-300"><span class="linenos">300</span></a>
 </span><span id="add_municipality-301"><a href="#add_municipality-301"><span class="linenos">301</span></a>            <span class="n">mpdb_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">current_mpdb</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
 </span><span id="add_municipality-302"><a href="#add_municipality-302"><span class="linenos">302</span></a>
-</span><span id="add_municipality-303"><a href="#add_municipality-303"><span class="linenos">303</span></a>            <span class="k">def</span> <span class="nf">rname</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+</span><span id="add_municipality-303"><a href="#add_municipality-303"><span class="linenos">303</span></a>            <span class="k">def</span><span class="w"> </span><span class="nf">rname</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
 </span><span id="add_municipality-304"><a href="#add_municipality-304"><span class="linenos">304</span></a>                <span class="n">nameset</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
 </span><span id="add_municipality-305"><a href="#add_municipality-305"><span class="linenos">305</span></a>
 </span><span id="add_municipality-306"><a href="#add_municipality-306"><span class="linenos">306</span></a>                <span class="n">namesplit</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>

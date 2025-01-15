@@ -43,7 +43,7 @@
     </ul>
 
 
-            <footer>v1.7.0</footer>
+            <footer>v1.7.1</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -67,11 +67,11 @@
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Functions relating to the Swerik Catalog.</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span> <span class="nn">json</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">def</span> <span class="nf">_json_template</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_json_template</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">now</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="sd">    Returns mostly empty dict with person info.</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>
@@ -109,7 +109,7 @@
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="p">}</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="k">def</span> <span class="nf">_party_template</span><span class="p">(</span><span class="n">row</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_party_template</span><span class="p">(</span><span class="n">row</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a><span class="sd">    Returns instance of party affiliation.</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>
@@ -129,7 +129,7 @@
 </span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>    <span class="p">}</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="k">def</span> <span class="nf">_position_template</span><span class="p">(</span><span class="n">row</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_position_template</span><span class="p">(</span><span class="n">row</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a><span class="sd">    Returns instance of a position held</span>
 </span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
@@ -150,7 +150,7 @@
 </span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>        <span class="p">}</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="k">def</span> <span class="nf">_identifier_template</span><span class="p">(</span><span class="n">auth_code</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_identifier_template</span><span class="p">(</span><span class="n">auth_code</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 </span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">    Returns instance of an external identifier</span>
 </span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
@@ -194,7 +194,7 @@
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>        <span class="p">}</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>
 </span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="k">def</span> <span class="nf">_verify_J</span><span class="p">(</span><span class="n">J</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_verify_J</span><span class="p">(</span><span class="n">J</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 </span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a><span class="sd">    Verifies that Dict object is not totally empty before writing to a file.</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
@@ -230,7 +230,7 @@
 </span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>    <span class="k">return</span> <span class="n">not_empty</span>
 </span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>
 </span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="k">def</span> <span class="nf">_add_party</span><span class="p">(</span><span class="n">r</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">J</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_add_party</span><span class="p">(</span><span class="n">r</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">series</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">J</span><span class="p">:</span><span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 </span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a><span class="sd">    Checks whether a party affiliation can be added to a person dict</span>
 </span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>
@@ -251,7 +251,7 @@
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>        <span class="k">return</span> <span class="kc">False</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>
 </span><span id="L-187"><a href="#L-187"><span class="linenos">187</span></a>
-</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="k">def</span> <span class="nf">jsonize_person_data</span><span class="p">(</span>
+</span><span id="L-188"><a href="#L-188"><span class="linenos">188</span></a><span class="k">def</span><span class="w"> </span><span class="nf">jsonize_person_data</span><span class="p">(</span>
 </span><span id="L-189"><a href="#L-189"><span class="linenos">189</span></a>        <span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
 </span><span id="L-190"><a href="#L-190"><span class="linenos">190</span></a>        <span class="n">Corpus_metadata</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
 </span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>        <span class="n">peripheral_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
@@ -355,7 +355,7 @@
 </span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>        <span class="k">return</span> <span class="kc">None</span>
 </span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>
 </span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a>
-</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="k">def</span> <span class="nf">write_J</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">person_id</span><span class="p">,</span> <span class="n">website_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_J</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">person_id</span><span class="p">,</span> <span class="n">website_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a><span class="sd">    Write a json file for each swerik ID with person&#39;s info.</span>
 </span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>
@@ -368,7 +368,7 @@
 </span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">outj</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 </span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a>
 </span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a>
-</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a><span class="k">def</span> <span class="nf">write_md</span><span class="p">(</span><span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">website_path</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_md</span><span class="p">(</span><span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">website_path</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-306"><a href="#L-306"><span class="linenos">306</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a><span class="sd">    Write markwown file for each swerik ID</span>
 </span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a>
@@ -402,7 +402,7 @@
 
     </div>
     <a class="headerlink" href="#jsonize_person_data"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="jsonize_person_data-189"><a href="#jsonize_person_data-189"><span class="linenos">189</span></a><span class="k">def</span> <span class="nf">jsonize_person_data</span><span class="p">(</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="jsonize_person_data-189"><a href="#jsonize_person_data-189"><span class="linenos">189</span></a><span class="k">def</span><span class="w"> </span><span class="nf">jsonize_person_data</span><span class="p">(</span>
 </span><span id="jsonize_person_data-190"><a href="#jsonize_person_data-190"><span class="linenos">190</span></a>        <span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
 </span><span id="jsonize_person_data-191"><a href="#jsonize_person_data-191"><span class="linenos">191</span></a>        <span class="n">Corpus_metadata</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
 </span><span id="jsonize_person_data-192"><a href="#jsonize_person_data-192"><span class="linenos">192</span></a>        <span class="n">peripheral_metadata</span><span class="p">:</span><span class="nb">dict</span><span class="p">,</span>
@@ -533,7 +533,7 @@
 
     </div>
     <a class="headerlink" href="#write_J"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="write_J-293"><a href="#write_J-293"><span class="linenos">293</span></a><span class="k">def</span> <span class="nf">write_J</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">person_id</span><span class="p">,</span> <span class="n">website_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_J-293"><a href="#write_J-293"><span class="linenos">293</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_J</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">person_id</span><span class="p">,</span> <span class="n">website_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="write_J-294"><a href="#write_J-294"><span class="linenos">294</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="write_J-295"><a href="#write_J-295"><span class="linenos">295</span></a><span class="sd">    Write a json file for each swerik ID with person&#39;s info.</span>
 </span><span id="write_J-296"><a href="#write_J-296"><span class="linenos">296</span></a>
@@ -568,7 +568,7 @@
 
     </div>
     <a class="headerlink" href="#write_md"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="write_md-306"><a href="#write_md-306"><span class="linenos">306</span></a><span class="k">def</span> <span class="nf">write_md</span><span class="p">(</span><span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">website_path</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_md-306"><a href="#write_md-306"><span class="linenos">306</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_md</span><span class="p">(</span><span class="n">person_id</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">website_path</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="write_md-307"><a href="#write_md-307"><span class="linenos">307</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="write_md-308"><a href="#write_md-308"><span class="linenos">308</span></a><span class="sd">    Write markwown file for each swerik ID</span>
 </span><span id="write_md-309"><a href="#write_md-309"><span class="linenos">309</span></a>

@@ -109,7 +109,7 @@
     </ul>
 
 
-            <footer>v1.7.0</footer>
+            <footer>v1.7.1</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -135,21 +135,21 @@
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">Provides useful utilities for the other modules as well as for general use.</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span> <span class="nn">pyparlaclarin.refine</span> <span class="kn">import</span> <span class="n">format_texts</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span> <span class="nn">trainerlog</span> <span class="kn">import</span> <span class="n">get_logger</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="kn">import</span> <span class="nn">base58</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="kn">import</span> <span class="nn">hashlib</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="kn">import</span> <span class="nn">os</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="kn">import</span> <span class="nn">requests</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="kn">import</span> <span class="nn">uuid</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="kn">import</span> <span class="nn">warnings</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="kn">import</span> <span class="nn">xmlschema</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="kn">import</span> <span class="nn">zipfile</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">bs4</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeautifulSoup</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">lxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">etree</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyparlaclarin.refine</span><span class="w"> </span><span class="kn">import</span> <span class="n">format_texts</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">trainerlog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_logger</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">base58</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">xmlschema</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">zipfile</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>
@@ -159,12 +159,12 @@
 </span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="n">TEI_NS</span> <span class="o">=</span> <span class="s2">&quot;{http://www.tei-c.org/ns/1.0}&quot;</span>
 </span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>
 </span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="k">def</span> <span class="nf">fetch_ns</span><span class="p">():</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_ns</span><span class="p">():</span>
 </span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tei_ns&quot;</span><span class="p">:</span> <span class="n">TEI_NS</span><span class="p">,</span>
 </span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>            <span class="s2">&quot;xml_ns&quot;</span><span class="p">:</span> <span class="n">XML_NS</span><span class="p">}</span>
 </span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>
 </span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="k">def</span> <span class="nf">elem_iter</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="s2">&quot;{http://www.tei-c.org/ns/1.0}&quot;</span><span class="p">):</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a><span class="k">def</span><span class="w"> </span><span class="nf">elem_iter</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="s2">&quot;{http://www.tei-c.org/ns/1.0}&quot;</span><span class="p">):</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">    Return an iterator of the elements (utterances, notes, pbs) in a protocol body</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>
@@ -192,7 +192,7 @@
 </span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>                    <span class="k">yield</span> <span class="kc">None</span>
 </span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
 </span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="k">def</span> <span class="nf">infer_metadata</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a><span class="k">def</span><span class="w"> </span><span class="nf">infer_metadata</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 </span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="sd">    Heuristically infer metadata from a protocol id or filename.</span>
 </span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>
@@ -236,7 +236,7 @@
 </span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>    <span class="k">return</span> <span class="n">metadata</span>
 </span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>
 </span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="k">def</span> <span class="nf">clean_html</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_html</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">    Read a HTML file and turn it into valid XML</span>
 </span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>
@@ -251,7 +251,7 @@
 </span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="k">return</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">pretty_html</span><span class="p">)</span>
 </span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
 </span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="k">def</span> <span class="nf">validate_xml_schema</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="n">schema_path</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_xml_schema</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="n">schema_path</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">    Validate an XML file against a schema.</span>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
@@ -278,7 +278,7 @@
 </span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>    <span class="k">return</span> <span class="n">is_valid</span>
 </span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>
 </span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="k">def</span> <span class="nf">corpus_iterator</span><span class="p">(</span><span class="n">document_type</span><span class="p">,</span> <span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="k">def</span><span class="w"> </span><span class="nf">corpus_iterator</span><span class="p">(</span><span class="n">document_type</span><span class="p">,</span> <span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="sd">    Returns an iterator of document paths in a corpus.</span>
 </span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>
@@ -323,7 +323,7 @@
 </span><span id="L-191"><a href="#L-191"><span class="linenos">191</span></a>            <span class="k">yield</span> <span class="nb">str</span><span class="p">(</span><span class="n">doc</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span>
 </span><span id="L-192"><a href="#L-192"><span class="linenos">192</span></a>
 </span><span id="L-193"><a href="#L-193"><span class="linenos">193</span></a>
-</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="k">def</span> <span class="nf">protocol_iterators</span><span class="p">(</span><span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">document_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-194"><a href="#L-194"><span class="linenos">194</span></a><span class="k">def</span><span class="w"> </span><span class="nf">protocol_iterators</span><span class="p">(</span><span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">document_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-195"><a href="#L-195"><span class="linenos">195</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-196"><a href="#L-196"><span class="linenos">196</span></a><span class="sd">    Deprecate - Use corpus_iterator() instead.</span>
 </span><span id="L-197"><a href="#L-197"><span class="linenos">197</span></a><span class="sd">    Returns an iterator of protocol paths in a corpus.</span>
@@ -341,7 +341,7 @@
 </span><span id="L-209"><a href="#L-209"><span class="linenos">209</span></a>    <span class="k">return</span> <span class="n">corpus_iterator</span><span class="p">(</span><span class="s2">&quot;prot&quot;</span><span class="p">,</span> <span class="n">corpus_root</span><span class="o">=</span><span class="n">corpus_root</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
 </span><span id="L-210"><a href="#L-210"><span class="linenos">210</span></a>
 </span><span id="L-211"><a href="#L-211"><span class="linenos">211</span></a>
-</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span id="L-212"><a href="#L-212"><span class="linenos">212</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="L-213"><a href="#L-213"><span class="linenos">213</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a><span class="sd">    Parse datetimes with special error handling</span>
 </span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a>
@@ -364,7 +364,7 @@
 </span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>            <span class="k">return</span> <span class="kc">None</span>
 </span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>
 </span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>
-</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="k">def</span> <span class="nf">get_formatted_uuid</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_formatted_uuid</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">    Generate a UUID and format it in base58.</span>
 </span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a><span class="sd">    The formatted UUID is prepended bu &#39;i-&#39; so that it can be used as an XML ID</span>
@@ -385,7 +385,7 @@
 </span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;i-</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">base58</span><span class="o">.</span><span class="n">b58encode</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="s1">&#39;UTF8&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 </span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>
 </span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>
-</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="k">def</span> <span class="nf">_download_with_progressbar</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="k">def</span><span class="w"> </span><span class="nf">_download_with_progressbar</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
 </span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a>    <span class="n">resp</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>    <span class="n">total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;content-length&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 </span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">,</span> <span class="n">tqdm</span><span class="p">(</span>
@@ -400,7 +400,7 @@
 </span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a>            <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 </span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a>
 </span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a>
-</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="k">def</span> <span class="nf">download_corpus</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]):</span>
+</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="k">def</span><span class="w"> </span><span class="nf">download_corpus</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]):</span>
 </span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">    Downloads the full corpus.</span>
 </span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a><span class="sd">    Does not return anything, just downloads the corpus ZIP and unzips it.</span>
@@ -428,7 +428,7 @@
 </span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a>        <span class="n">zip_path</span><span class="o">.</span><span class="n">unlink</span><span class="p">()</span>
 </span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a>
 </span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a>
-</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a><span class="k">def</span> <span class="nf">get_doc_dates</span><span class="p">(</span><span class="n">protocol</span><span class="p">):</span>
+</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_doc_dates</span><span class="p">(</span><span class="n">protocol</span><span class="p">):</span>
 </span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a><span class="sd">    Gets the content of &lt;docDate&gt; elements.</span>
 </span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>
@@ -459,7 +459,7 @@
 </span><span id="L-327"><a href="#L-327"><span class="linenos">327</span></a>    <span class="k">return</span> <span class="n">match_error</span><span class="p">,</span> <span class="n">dates</span>
 </span><span id="L-328"><a href="#L-328"><span class="linenos">328</span></a>
 </span><span id="L-329"><a href="#L-329"><span class="linenos">329</span></a>
-</span><span id="L-330"><a href="#L-330"><span class="linenos">330</span></a><span class="k">def</span> <span class="nf">write_tei</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-330"><a href="#L-330"><span class="linenos">330</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_tei</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-331"><a href="#L-331"><span class="linenos">331</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-332"><a href="#L-332"><span class="linenos">332</span></a><span class="sd">    Write a corpus document to disk.</span>
 </span><span id="L-333"><a href="#L-333"><span class="linenos">333</span></a>
@@ -478,7 +478,7 @@
 </span><span id="L-346"><a href="#L-346"><span class="linenos">346</span></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
 </span><span id="L-347"><a href="#L-347"><span class="linenos">347</span></a>
 </span><span id="L-348"><a href="#L-348"><span class="linenos">348</span></a>
-</span><span id="L-349"><a href="#L-349"><span class="linenos">349</span></a><span class="k">def</span> <span class="nf">write_protocol</span><span class="p">(</span><span class="n">prot_elem</span><span class="p">,</span> <span class="n">prot_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-349"><a href="#L-349"><span class="linenos">349</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_protocol</span><span class="p">(</span><span class="n">prot_elem</span><span class="p">,</span> <span class="n">prot_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="L-350"><a href="#L-350"><span class="linenos">350</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-351"><a href="#L-351"><span class="linenos">351</span></a><span class="sd">    Write the protocol to a file.</span>
 </span><span id="L-352"><a href="#L-352"><span class="linenos">352</span></a>
@@ -490,7 +490,7 @@
 </span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a>    <span class="n">write_tei</span><span class="p">(</span><span class="n">prot_elem</span><span class="p">,</span> <span class="n">prot_path</span><span class="p">)</span>
 </span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a>
 </span><span id="L-360"><a href="#L-360"><span class="linenos">360</span></a>
-</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a><span class="k">def</span> <span class="nf">parse_tei</span><span class="p">(</span><span class="n">_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_tei</span><span class="p">(</span><span class="n">_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 </span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a><span class="sd">    Parse a protocol, return root element (and namespace defnitions).</span>
 </span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a>
@@ -510,7 +510,7 @@
 </span><span id="L-378"><a href="#L-378"><span class="linenos">378</span></a>        <span class="k">return</span> <span class="n">root</span>
 </span><span id="L-379"><a href="#L-379"><span class="linenos">379</span></a>
 </span><span id="L-380"><a href="#L-380"><span class="linenos">380</span></a>
-</span><span id="L-381"><a href="#L-381"><span class="linenos">381</span></a><span class="k">def</span> <span class="nf">parse_protocol</span><span class="p">(</span><span class="n">protocol_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+</span><span id="L-381"><a href="#L-381"><span class="linenos">381</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_protocol</span><span class="p">(</span><span class="n">protocol_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 </span><span id="L-382"><a href="#L-382"><span class="linenos">382</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-383"><a href="#L-383"><span class="linenos">383</span></a><span class="sd">    Parse a protocol, return root element (and namespace defnitions).</span>
 </span><span id="L-384"><a href="#L-384"><span class="linenos">384</span></a>
@@ -525,7 +525,7 @@
 </span><span id="L-393"><a href="#L-393"><span class="linenos">393</span></a>    <span class="k">return</span> <span class="n">parse_tei</span><span class="p">(</span><span class="n">protocol_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="n">get_ns</span><span class="p">)</span>
 </span><span id="L-394"><a href="#L-394"><span class="linenos">394</span></a>
 </span><span id="L-395"><a href="#L-395"><span class="linenos">395</span></a>
-</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a><span class="k">def</span> <span class="nf">get_data_location</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_data_location</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
 </span><span id="L-397"><a href="#L-397"><span class="linenos">397</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-398"><a href="#L-398"><span class="linenos">398</span></a><span class="sd">    Get data location for a specific path. Tries the env variables</span>
 </span><span id="L-399"><a href="#L-399"><span class="linenos">399</span></a><span class="sd">    RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist</span>
@@ -542,7 +542,7 @@
 </span><span id="L-410"><a href="#L-410"><span class="linenos">410</span></a>    <span class="k">return</span> <span class="n">d</span><span class="p">[</span><span class="n">partition</span><span class="p">]</span>
 </span><span id="L-411"><a href="#L-411"><span class="linenos">411</span></a>
 </span><span id="L-412"><a href="#L-412"><span class="linenos">412</span></a>
-</span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a><span class="k">def</span> <span class="nf">get_gh_link</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span>
+</span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_gh_link</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span>
 </span><span id="L-414"><a href="#L-414"><span class="linenos">414</span></a>                <span class="n">elem</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-415"><a href="#L-415"><span class="linenos">415</span></a>                <span class="n">line_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a>                <span class="n">username</span><span class="o">=</span><span class="s1">&#39;swerik-project&#39;</span><span class="p">,</span>
@@ -572,7 +572,7 @@
 </span><span id="L-440"><a href="#L-440"><span class="linenos">440</span></a>    <span class="k">return</span> <span class="n">gh</span>
 </span><span id="L-441"><a href="#L-441"><span class="linenos">441</span></a>
 </span><span id="L-442"><a href="#L-442"><span class="linenos">442</span></a>
-</span><span id="L-443"><a href="#L-443"><span class="linenos">443</span></a><span class="k">def</span> <span class="nf">remove_whitespace_from_sequence</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+</span><span id="L-443"><a href="#L-443"><span class="linenos">443</span></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_whitespace_from_sequence</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
 </span><span id="L-444"><a href="#L-444"><span class="linenos">444</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-445"><a href="#L-445"><span class="linenos">445</span></a><span class="sd">    Remove repeated whitespace and replace all whitespace with spaces</span>
 </span><span id="L-446"><a href="#L-446"><span class="linenos">446</span></a><span class="sd">    Input is string and output is string.</span>
@@ -582,7 +582,7 @@
 </span><span id="L-450"><a href="#L-450"><span class="linenos">450</span></a>    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">text_seq</span><span class="p">)</span>
 </span><span id="L-451"><a href="#L-451"><span class="linenos">451</span></a>
 </span><span id="L-452"><a href="#L-452"><span class="linenos">452</span></a>  
-</span><span id="L-453"><a href="#L-453"><span class="linenos">453</span></a><span class="k">def</span> <span class="nf">get_sequence_from_elem_list</span><span class="p">(</span><span class="n">elem_list</span><span class="p">):</span>
+</span><span id="L-453"><a href="#L-453"><span class="linenos">453</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_from_elem_list</span><span class="p">(</span><span class="n">elem_list</span><span class="p">):</span>
 </span><span id="L-454"><a href="#L-454"><span class="linenos">454</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-455"><a href="#L-455"><span class="linenos">455</span></a><span class="sd">    Get sequence from first elem in list.</span>
 </span><span id="L-456"><a href="#L-456"><span class="linenos">456</span></a><span class="sd">    Returns string. If list is empty, returns empty string. </span>
@@ -592,7 +592,7 @@
 </span><span id="L-460"><a href="#L-460"><span class="linenos">460</span></a>    <span class="k">return</span> <span class="s2">&quot;&quot;</span>
 </span><span id="L-461"><a href="#L-461"><span class="linenos">461</span></a>
 </span><span id="L-462"><a href="#L-462"><span class="linenos">462</span></a>  
-</span><span id="L-463"><a href="#L-463"><span class="linenos">463</span></a><span class="k">def</span> <span class="nf">extract_context_sequence</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
+</span><span id="L-463"><a href="#L-463"><span class="linenos">463</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_context_sequence</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
 </span><span id="L-464"><a href="#L-464"><span class="linenos">464</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-465"><a href="#L-465"><span class="linenos">465</span></a><span class="sd">    Get sequence with context from xml element. Returns string. </span>
 </span><span id="L-466"><a href="#L-466"><span class="linenos">466</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -623,7 +623,7 @@
 </span><span id="L-491"><a href="#L-491"><span class="linenos">491</span></a>        <span class="k">return</span> <span class="n">left_context_sequence</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39; </span><span class="si">{</span><span class="n">separator</span><span class="si">}</span><span class="s1"> &#39;</span> <span class="o">+</span> <span class="n">next_first_sentence</span>
 </span><span id="L-492"><a href="#L-492"><span class="linenos">492</span></a>
 </span><span id="L-493"><a href="#L-493"><span class="linenos">493</span></a> 
-</span><span id="L-494"><a href="#L-494"><span class="linenos">494</span></a><span class="k">def</span> <span class="nf">get_context_sequences_for_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
+</span><span id="L-494"><a href="#L-494"><span class="linenos">494</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_context_sequences_for_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
 </span><span id="L-495"><a href="#L-495"><span class="linenos">495</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-496"><a href="#L-496"><span class="linenos">496</span></a><span class="sd">    Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. </span>
 </span><span id="L-497"><a href="#L-497"><span class="linenos">497</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -650,7 +650,7 @@
 </span><span id="L-518"><a href="#L-518"><span class="linenos">518</span></a>    <span class="k">return</span> <span class="n">output_dict</span>
 </span><span id="L-519"><a href="#L-519"><span class="linenos">519</span></a>
 </span><span id="L-520"><a href="#L-520"><span class="linenos">520</span></a>
-</span><span id="L-521"><a href="#L-521"><span class="linenos">521</span></a><span class="k">def</span> <span class="nf">pathize_protocol_id</span><span class="p">(</span><span class="n">protocol_id</span><span class="p">):</span>
+</span><span id="L-521"><a href="#L-521"><span class="linenos">521</span></a><span class="k">def</span><span class="w"> </span><span class="nf">pathize_protocol_id</span><span class="p">(</span><span class="n">protocol_id</span><span class="p">):</span>
 </span><span id="L-522"><a href="#L-522"><span class="linenos">522</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-523"><a href="#L-523"><span class="linenos">523</span></a><span class="sd">    Turn the protocol id into a path string from riksdagen-records root. Handles &#39;unpadded&#39; protocol numbers.</span>
 </span><span id="L-524"><a href="#L-524"><span class="linenos">524</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -729,7 +729,7 @@
 
     </div>
     <a class="headerlink" href="#fetch_ns"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="fetch_ns-31"><a href="#fetch_ns-31"><span class="linenos">31</span></a><span class="k">def</span> <span class="nf">fetch_ns</span><span class="p">():</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="fetch_ns-31"><a href="#fetch_ns-31"><span class="linenos">31</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_ns</span><span class="p">():</span>
 </span><span id="fetch_ns-32"><a href="#fetch_ns-32"><span class="linenos">32</span></a>    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;tei_ns&quot;</span><span class="p">:</span> <span class="n">TEI_NS</span><span class="p">,</span>
 </span><span id="fetch_ns-33"><a href="#fetch_ns-33"><span class="linenos">33</span></a>            <span class="s2">&quot;xml_ns&quot;</span><span class="p">:</span> <span class="n">XML_NS</span><span class="p">}</span>
 </span></pre></div>
@@ -749,7 +749,7 @@
 
     </div>
     <a class="headerlink" href="#elem_iter"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="elem_iter-36"><a href="#elem_iter-36"><span class="linenos">36</span></a><span class="k">def</span> <span class="nf">elem_iter</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="s2">&quot;{http://www.tei-c.org/ns/1.0}&quot;</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="elem_iter-36"><a href="#elem_iter-36"><span class="linenos">36</span></a><span class="k">def</span><span class="w"> </span><span class="nf">elem_iter</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">ns</span><span class="o">=</span><span class="s2">&quot;{http://www.tei-c.org/ns/1.0}&quot;</span><span class="p">):</span>
 </span><span id="elem_iter-37"><a href="#elem_iter-37"><span class="linenos">37</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="elem_iter-38"><a href="#elem_iter-38"><span class="linenos">38</span></a><span class="sd">    Return an iterator of the elements (utterances, notes, pbs) in a protocol body</span>
 </span><span id="elem_iter-39"><a href="#elem_iter-39"><span class="linenos">39</span></a>
@@ -798,7 +798,7 @@
 
     </div>
     <a class="headerlink" href="#infer_metadata"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="infer_metadata-64"><a href="#infer_metadata-64"><span class="linenos"> 64</span></a><span class="k">def</span> <span class="nf">infer_metadata</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="infer_metadata-64"><a href="#infer_metadata-64"><span class="linenos"> 64</span></a><span class="k">def</span><span class="w"> </span><span class="nf">infer_metadata</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 </span><span id="infer_metadata-65"><a href="#infer_metadata-65"><span class="linenos"> 65</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="infer_metadata-66"><a href="#infer_metadata-66"><span class="linenos"> 66</span></a><span class="sd">    Heuristically infer metadata from a protocol id or filename.</span>
 </span><span id="infer_metadata-67"><a href="#infer_metadata-67"><span class="linenos"> 67</span></a>
@@ -864,7 +864,7 @@
 
     </div>
     <a class="headerlink" href="#clean_html"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="clean_html-108"><a href="#clean_html-108"><span class="linenos">108</span></a><span class="k">def</span> <span class="nf">clean_html</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="clean_html-108"><a href="#clean_html-108"><span class="linenos">108</span></a><span class="k">def</span><span class="w"> </span><span class="nf">clean_html</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="clean_html-109"><a href="#clean_html-109"><span class="linenos">109</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="clean_html-110"><a href="#clean_html-110"><span class="linenos">110</span></a><span class="sd">    Read a HTML file and turn it into valid XML</span>
 </span><span id="clean_html-111"><a href="#clean_html-111"><span class="linenos">111</span></a>
@@ -902,7 +902,7 @@
 
     </div>
     <a class="headerlink" href="#validate_xml_schema"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="validate_xml_schema-123"><a href="#validate_xml_schema-123"><span class="linenos">123</span></a><span class="k">def</span> <span class="nf">validate_xml_schema</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="n">schema_path</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="validate_xml_schema-123"><a href="#validate_xml_schema-123"><span class="linenos">123</span></a><span class="k">def</span><span class="w"> </span><span class="nf">validate_xml_schema</span><span class="p">(</span><span class="n">xml_path</span><span class="p">,</span> <span class="n">schema_path</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="validate_xml_schema-124"><a href="#validate_xml_schema-124"><span class="linenos">124</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="validate_xml_schema-125"><a href="#validate_xml_schema-125"><span class="linenos">125</span></a><span class="sd">    Validate an XML file against a schema.</span>
 </span><span id="validate_xml_schema-126"><a href="#validate_xml_schema-126"><span class="linenos">126</span></a>
@@ -953,7 +953,7 @@
 
     </div>
     <a class="headerlink" href="#corpus_iterator"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="corpus_iterator-150"><a href="#corpus_iterator-150"><span class="linenos">150</span></a><span class="k">def</span> <span class="nf">corpus_iterator</span><span class="p">(</span><span class="n">document_type</span><span class="p">,</span> <span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="corpus_iterator-150"><a href="#corpus_iterator-150"><span class="linenos">150</span></a><span class="k">def</span><span class="w"> </span><span class="nf">corpus_iterator</span><span class="p">(</span><span class="n">document_type</span><span class="p">,</span> <span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="corpus_iterator-151"><a href="#corpus_iterator-151"><span class="linenos">151</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="corpus_iterator-152"><a href="#corpus_iterator-152"><span class="linenos">152</span></a><span class="sd">    Returns an iterator of document paths in a corpus.</span>
 </span><span id="corpus_iterator-153"><a href="#corpus_iterator-153"><span class="linenos">153</span></a>
@@ -1027,7 +1027,7 @@
 
     </div>
     <a class="headerlink" href="#protocol_iterators"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="protocol_iterators-195"><a href="#protocol_iterators-195"><span class="linenos">195</span></a><span class="k">def</span> <span class="nf">protocol_iterators</span><span class="p">(</span><span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">document_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="protocol_iterators-195"><a href="#protocol_iterators-195"><span class="linenos">195</span></a><span class="k">def</span><span class="w"> </span><span class="nf">protocol_iterators</span><span class="p">(</span><span class="n">corpus_root</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">document_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="protocol_iterators-196"><a href="#protocol_iterators-196"><span class="linenos">196</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="protocol_iterators-197"><a href="#protocol_iterators-197"><span class="linenos">197</span></a><span class="sd">    Deprecate - Use corpus_iterator() instead.</span>
 </span><span id="protocol_iterators-198"><a href="#protocol_iterators-198"><span class="linenos">198</span></a><span class="sd">    Returns an iterator of protocol paths in a corpus.</span>
@@ -1072,7 +1072,7 @@ Returns an iterator of protocol paths in a corpus.</p>
 
     </div>
     <a class="headerlink" href="#parse_date"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_date-213"><a href="#parse_date-213"><span class="linenos">213</span></a><span class="k">def</span> <span class="nf">parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_date-213"><a href="#parse_date-213"><span class="linenos">213</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="parse_date-214"><a href="#parse_date-214"><span class="linenos">214</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="parse_date-215"><a href="#parse_date-215"><span class="linenos">215</span></a><span class="sd">    Parse datetimes with special error handling</span>
 </span><span id="parse_date-216"><a href="#parse_date-216"><span class="linenos">216</span></a>
@@ -1118,7 +1118,7 @@ Returns an iterator of protocol paths in a corpus.</p>
 
     </div>
     <a class="headerlink" href="#get_formatted_uuid"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_formatted_uuid-236"><a href="#get_formatted_uuid-236"><span class="linenos">236</span></a><span class="k">def</span> <span class="nf">get_formatted_uuid</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_formatted_uuid-236"><a href="#get_formatted_uuid-236"><span class="linenos">236</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_formatted_uuid</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="get_formatted_uuid-237"><a href="#get_formatted_uuid-237"><span class="linenos">237</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_formatted_uuid-238"><a href="#get_formatted_uuid-238"><span class="linenos">238</span></a><span class="sd">    Generate a UUID and format it in base58.</span>
 </span><span id="get_formatted_uuid-239"><a href="#get_formatted_uuid-239"><span class="linenos">239</span></a><span class="sd">    The formatted UUID is prepended bu &#39;i-&#39; so that it can be used as an XML ID</span>
@@ -1163,7 +1163,7 @@ The formatted UUID is prepended bu 'i-' so that it can be used as an XML ID</p>
 
     </div>
     <a class="headerlink" href="#download_corpus"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="download_corpus-272"><a href="#download_corpus-272"><span class="linenos">272</span></a><span class="k">def</span> <span class="nf">download_corpus</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="download_corpus-272"><a href="#download_corpus-272"><span class="linenos">272</span></a><span class="k">def</span><span class="w"> </span><span class="nf">download_corpus</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;records&quot;</span><span class="p">]):</span>
 </span><span id="download_corpus-273"><a href="#download_corpus-273"><span class="linenos">273</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="download_corpus-274"><a href="#download_corpus-274"><span class="linenos">274</span></a><span class="sd">    Downloads the full corpus.</span>
 </span><span id="download_corpus-275"><a href="#download_corpus-275"><span class="linenos">275</span></a><span class="sd">    Does not return anything, just downloads the corpus ZIP and unzips it.</span>
@@ -1212,7 +1212,7 @@ Does not return anything, just downloads the corpus ZIP and unzips it.</p>
 
     </div>
     <a class="headerlink" href="#get_doc_dates"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_doc_dates-300"><a href="#get_doc_dates-300"><span class="linenos">300</span></a><span class="k">def</span> <span class="nf">get_doc_dates</span><span class="p">(</span><span class="n">protocol</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_doc_dates-300"><a href="#get_doc_dates-300"><span class="linenos">300</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_doc_dates</span><span class="p">(</span><span class="n">protocol</span><span class="p">):</span>
 </span><span id="get_doc_dates-301"><a href="#get_doc_dates-301"><span class="linenos">301</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_doc_dates-302"><a href="#get_doc_dates-302"><span class="linenos">302</span></a><span class="sd">    Gets the content of &lt;docDate&gt; elements.</span>
 </span><span id="get_doc_dates-303"><a href="#get_doc_dates-303"><span class="linenos">303</span></a>
@@ -1269,7 +1269,7 @@ dates (list): a list of dates.
 
     </div>
     <a class="headerlink" href="#write_tei"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="write_tei-331"><a href="#write_tei-331"><span class="linenos">331</span></a><span class="k">def</span> <span class="nf">write_tei</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_tei-331"><a href="#write_tei-331"><span class="linenos">331</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_tei</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">dest_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="write_tei-332"><a href="#write_tei-332"><span class="linenos">332</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="write_tei-333"><a href="#write_tei-333"><span class="linenos">333</span></a><span class="sd">    Write a corpus document to disk.</span>
 </span><span id="write_tei-334"><a href="#write_tei-334"><span class="linenos">334</span></a>
@@ -1309,7 +1309,7 @@ dates (list): a list of dates.
 
     </div>
     <a class="headerlink" href="#write_protocol"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="write_protocol-350"><a href="#write_protocol-350"><span class="linenos">350</span></a><span class="k">def</span> <span class="nf">write_protocol</span><span class="p">(</span><span class="n">prot_elem</span><span class="p">,</span> <span class="n">prot_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="write_protocol-350"><a href="#write_protocol-350"><span class="linenos">350</span></a><span class="k">def</span><span class="w"> </span><span class="nf">write_protocol</span><span class="p">(</span><span class="n">prot_elem</span><span class="p">,</span> <span class="n">prot_path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 </span><span id="write_protocol-351"><a href="#write_protocol-351"><span class="linenos">351</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="write_protocol-352"><a href="#write_protocol-352"><span class="linenos">352</span></a><span class="sd">    Write the protocol to a file.</span>
 </span><span id="write_protocol-353"><a href="#write_protocol-353"><span class="linenos">353</span></a>
@@ -1342,7 +1342,7 @@ dates (list): a list of dates.
 
     </div>
     <a class="headerlink" href="#parse_tei"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_tei-362"><a href="#parse_tei-362"><span class="linenos">362</span></a><span class="k">def</span> <span class="nf">parse_tei</span><span class="p">(</span><span class="n">_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_tei-362"><a href="#parse_tei-362"><span class="linenos">362</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_tei</span><span class="p">(</span><span class="n">_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 </span><span id="parse_tei-363"><a href="#parse_tei-363"><span class="linenos">363</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="parse_tei-364"><a href="#parse_tei-364"><span class="linenos">364</span></a><span class="sd">    Parse a protocol, return root element (and namespace defnitions).</span>
 </span><span id="parse_tei-365"><a href="#parse_tei-365"><span class="linenos">365</span></a>
@@ -1386,7 +1386,7 @@ dates (list): a list of dates.
 
     </div>
     <a class="headerlink" href="#parse_protocol"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_protocol-382"><a href="#parse_protocol-382"><span class="linenos">382</span></a><span class="k">def</span> <span class="nf">parse_protocol</span><span class="p">(</span><span class="n">protocol_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="parse_protocol-382"><a href="#parse_protocol-382"><span class="linenos">382</span></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_protocol</span><span class="p">(</span><span class="n">protocol_path</span><span class="p">,</span> <span class="n">get_ns</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
 </span><span id="parse_protocol-383"><a href="#parse_protocol-383"><span class="linenos">383</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="parse_protocol-384"><a href="#parse_protocol-384"><span class="linenos">384</span></a><span class="sd">    Parse a protocol, return root element (and namespace defnitions).</span>
 </span><span id="parse_protocol-385"><a href="#parse_protocol-385"><span class="linenos">385</span></a>
@@ -1425,7 +1425,7 @@ dates (list): a list of dates.
 
     </div>
     <a class="headerlink" href="#get_data_location"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_data_location-397"><a href="#get_data_location-397"><span class="linenos">397</span></a><span class="k">def</span> <span class="nf">get_data_location</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_data_location-397"><a href="#get_data_location-397"><span class="linenos">397</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_data_location</span><span class="p">(</span><span class="n">partition</span><span class="p">):</span>
 </span><span id="get_data_location-398"><a href="#get_data_location-398"><span class="linenos">398</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_data_location-399"><a href="#get_data_location-399"><span class="linenos">399</span></a><span class="sd">    Get data location for a specific path. Tries the env variables</span>
 </span><span id="get_data_location-400"><a href="#get_data_location-400"><span class="linenos">400</span></a><span class="sd">    RECORDS_PATH, MOTIONS_PATH and METADATA_PATH. If those do not exist</span>
@@ -1461,7 +1461,7 @@ returns the defaults data/, data/, data/</p>
 
     </div>
     <a class="headerlink" href="#get_gh_link"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_gh_link-414"><a href="#get_gh_link-414"><span class="linenos">414</span></a><span class="k">def</span> <span class="nf">get_gh_link</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_gh_link-414"><a href="#get_gh_link-414"><span class="linenos">414</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_gh_link</span><span class="p">(</span><span class="n">_file</span><span class="p">,</span>
 </span><span id="get_gh_link-415"><a href="#get_gh_link-415"><span class="linenos">415</span></a>                <span class="n">elem</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="get_gh_link-416"><a href="#get_gh_link-416"><span class="linenos">416</span></a>                <span class="n">line_number</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 </span><span id="get_gh_link-417"><a href="#get_gh_link-417"><span class="linenos">417</span></a>                <span class="n">username</span><span class="o">=</span><span class="s1">&#39;swerik-project&#39;</span><span class="p">,</span>
@@ -1521,7 +1521,7 @@ returns the defaults data/, data/, data/</p>
 
     </div>
     <a class="headerlink" href="#remove_whitespace_from_sequence"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="remove_whitespace_from_sequence-444"><a href="#remove_whitespace_from_sequence-444"><span class="linenos">444</span></a><span class="k">def</span> <span class="nf">remove_whitespace_from_sequence</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="remove_whitespace_from_sequence-444"><a href="#remove_whitespace_from_sequence-444"><span class="linenos">444</span></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_whitespace_from_sequence</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
 </span><span id="remove_whitespace_from_sequence-445"><a href="#remove_whitespace_from_sequence-445"><span class="linenos">445</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="remove_whitespace_from_sequence-446"><a href="#remove_whitespace_from_sequence-446"><span class="linenos">446</span></a><span class="sd">    Remove repeated whitespace and replace all whitespace with spaces</span>
 </span><span id="remove_whitespace_from_sequence-447"><a href="#remove_whitespace_from_sequence-447"><span class="linenos">447</span></a><span class="sd">    Input is string and output is string.</span>
@@ -1549,7 +1549,7 @@ Input is string and output is string.</p>
 
     </div>
     <a class="headerlink" href="#get_sequence_from_elem_list"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_sequence_from_elem_list-454"><a href="#get_sequence_from_elem_list-454"><span class="linenos">454</span></a><span class="k">def</span> <span class="nf">get_sequence_from_elem_list</span><span class="p">(</span><span class="n">elem_list</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_sequence_from_elem_list-454"><a href="#get_sequence_from_elem_list-454"><span class="linenos">454</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_from_elem_list</span><span class="p">(</span><span class="n">elem_list</span><span class="p">):</span>
 </span><span id="get_sequence_from_elem_list-455"><a href="#get_sequence_from_elem_list-455"><span class="linenos">455</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_sequence_from_elem_list-456"><a href="#get_sequence_from_elem_list-456"><span class="linenos">456</span></a><span class="sd">    Get sequence from first elem in list.</span>
 </span><span id="get_sequence_from_elem_list-457"><a href="#get_sequence_from_elem_list-457"><span class="linenos">457</span></a><span class="sd">    Returns string. If list is empty, returns empty string. </span>
@@ -1577,7 +1577,7 @@ Returns string. If list is empty, returns empty string.</p>
 
     </div>
     <a class="headerlink" href="#extract_context_sequence"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="extract_context_sequence-464"><a href="#extract_context_sequence-464"><span class="linenos">464</span></a><span class="k">def</span> <span class="nf">extract_context_sequence</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="extract_context_sequence-464"><a href="#extract_context_sequence-464"><span class="linenos">464</span></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_context_sequence</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
 </span><span id="extract_context_sequence-465"><a href="#extract_context_sequence-465"><span class="linenos">465</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="extract_context_sequence-466"><a href="#extract_context_sequence-466"><span class="linenos">466</span></a><span class="sd">    Get sequence with context from xml element. Returns string. </span>
 </span><span id="extract_context_sequence-467"><a href="#extract_context_sequence-467"><span class="linenos">467</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -1625,7 +1625,7 @@ Returns string. If list is empty, returns empty string.</p>
 
     </div>
     <a class="headerlink" href="#get_context_sequences_for_protocol"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_context_sequences_for_protocol-495"><a href="#get_context_sequences_for_protocol-495"><span class="linenos">495</span></a><span class="k">def</span> <span class="nf">get_context_sequences_for_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_context_sequences_for_protocol-495"><a href="#get_context_sequences_for_protocol-495"><span class="linenos">495</span></a><span class="k">def</span><span class="w"> </span><span class="nf">get_context_sequences_for_protocol</span><span class="p">(</span><span class="n">protocol</span><span class="p">,</span> <span class="n">context_type</span><span class="p">,</span> <span class="n">target_length</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span> <span class="n">separator</span> <span class="o">=</span> <span class="s1">&#39;/n&#39;</span><span class="p">):</span>
 </span><span id="get_context_sequences_for_protocol-496"><a href="#get_context_sequences_for_protocol-496"><span class="linenos">496</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_context_sequences_for_protocol-497"><a href="#get_context_sequences_for_protocol-497"><span class="linenos">497</span></a><span class="sd">    Gets context sequences for a protocol. Returns dictionary with ids and corresponding context sequences. </span>
 </span><span id="get_context_sequences_for_protocol-498"><a href="#get_context_sequences_for_protocol-498"><span class="linenos">498</span></a><span class="sd">    &quot;&quot;&quot;</span>
@@ -1669,7 +1669,7 @@ Returns string. If list is empty, returns empty string.</p>
 
     </div>
     <a class="headerlink" href="#pathize_protocol_id"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="pathize_protocol_id-522"><a href="#pathize_protocol_id-522"><span class="linenos">522</span></a><span class="k">def</span> <span class="nf">pathize_protocol_id</span><span class="p">(</span><span class="n">protocol_id</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="pathize_protocol_id-522"><a href="#pathize_protocol_id-522"><span class="linenos">522</span></a><span class="k">def</span><span class="w"> </span><span class="nf">pathize_protocol_id</span><span class="p">(</span><span class="n">protocol_id</span><span class="p">):</span>
 </span><span id="pathize_protocol_id-523"><a href="#pathize_protocol_id-523"><span class="linenos">523</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="pathize_protocol_id-524"><a href="#pathize_protocol_id-524"><span class="linenos">524</span></a><span class="sd">    Turn the protocol id into a path string from riksdagen-records root. Handles &#39;unpadded&#39; protocol numbers.</span>
 </span><span id="pathize_protocol_id-525"><a href="#pathize_protocol_id-525"><span class="linenos">525</span></a><span class="sd">    &quot;&quot;&quot;</span>

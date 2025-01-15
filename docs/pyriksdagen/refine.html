@@ -49,7 +49,7 @@
     </ul>
 
 
-            <footer>v1.7.0</footer>
+            <footer>v1.7.1</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -68,14 +68,14 @@
 
                         <label class="view-source-button" for="mod-refine-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="kn">from</span> <span class="nn">lxml</span> <span class="kn">import</span> <span class="n">etree</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="kn">import</span> <span class="nn">re</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span> <span class="nn">pyparlaclarin.read</span> <span class="kn">import</span> <span class="n">element_hash</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span> <span class="nn">dateparser</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">elem_iter</span><span class="p">,</span> <span class="n">infer_metadata</span><span class="p">,</span> <span class="n">parse_date</span><span class="p">,</span> <span class="n">XML_NS</span><span class="p">,</span> <span class="n">TEI_NS</span><span class="p">,</span> <span class="n">get_formatted_uuid</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span> <span class="nn">.db</span> <span class="kn">import</span> <span class="n">load_expressions</span><span class="p">,</span> <span class="n">filter_db</span><span class="p">,</span> <span class="n">load_patterns</span><span class="p">,</span> <span class="n">load_metadata</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">from</span> <span class="nn">.segmentation</span> <span class="kn">import</span> <span class="p">(</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">lxml</span><span class="w"> </span><span class="kn">import</span> <span class="n">etree</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyparlaclarin.read</span><span class="w"> </span><span class="kn">import</span> <span class="n">element_hash</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">dateparser</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">elem_iter</span><span class="p">,</span> <span class="n">infer_metadata</span><span class="p">,</span> <span class="n">parse_date</span><span class="p">,</span> <span class="n">XML_NS</span><span class="p">,</span> <span class="n">TEI_NS</span><span class="p">,</span> <span class="n">get_formatted_uuid</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.db</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_expressions</span><span class="p">,</span> <span class="n">filter_db</span><span class="p">,</span> <span class="n">load_patterns</span><span class="p">,</span> <span class="n">load_metadata</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.segmentation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>    <span class="n">detect_mp</span><span class="p">,</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>    <span class="n">detect_minister</span><span class="p">,</span>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a>    <span class="n">detect_speaker</span><span class="p">,</span>
@@ -83,11 +83,11 @@
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a>    <span class="n">detect_introduction</span><span class="p">,</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">intro_to_dict</span><span class="p">,</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="p">)</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="kn">from</span> <span class="nn">.match_mp</span> <span class="kn">import</span> <span class="n">multiple_replace</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">.match_mp</span><span class="w"> </span><span class="kn">import</span> <span class="n">multiple_replace</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="k">def</span> <span class="nf">redetect_protocol</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="k">def</span><span class="w"> </span><span class="nf">redetect_protocol</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    For each intro in a protocol, detect which MP is mentioned and map it to metadata.</span>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>
@@ -161,7 +161,7 @@
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>    <span class="k">return</span> <span class="n">unk</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="k">def</span> <span class="nf">detect_mps</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">names_ids</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">mp_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db_secondary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">speaker_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">party_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">protocol_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unknown_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_mps</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">names_ids</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">mp_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db_secondary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">speaker_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">party_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">protocol_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unknown_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a><span class="sd">    For each intro in a protocol, detect which MP is mentioned and map it to metadata.</span>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>
@@ -286,7 +286,7 @@
 </span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a>    <span class="k">return</span> <span class="n">root</span><span class="p">,</span> <span class="n">unknowns</span>
 </span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>
 </span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>
-</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="k">def</span> <span class="nf">find_introductions</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">intro_ids</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="k">def</span><span class="w"> </span><span class="nf">find_introductions</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">intro_ids</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="sd">    Find instances of curation patterns in all files in a folder.</span>
 </span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>
@@ -402,7 +402,7 @@
 </span><span id="L-332"><a href="#L-332"><span class="linenos">332</span></a>    <span class="k">return</span> <span class="n">root</span>
 </span><span id="L-333"><a href="#L-333"><span class="linenos">333</span></a>
 </span><span id="L-334"><a href="#L-334"><span class="linenos">334</span></a>
-</span><span id="L-335"><a href="#L-335"><span class="linenos">335</span></a><span class="k">def</span> <span class="nf">detect_date</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">skip_doctors_notes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+</span><span id="L-335"><a href="#L-335"><span class="linenos">335</span></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_date</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">skip_doctors_notes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 </span><span id="L-336"><a href="#L-336"><span class="linenos">336</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-337"><a href="#L-337"><span class="linenos">337</span></a><span class="sd">    Detects notes with dates in them. Updates the docDate metadata in the teiHeader accordingly.</span>
 </span><span id="L-338"><a href="#L-338"><span class="linenos">338</span></a>
@@ -425,10 +425,10 @@
 </span><span id="L-355"><a href="#L-355"><span class="linenos">355</span></a>    <span class="n">protocol_years</span> <span class="o">=</span> <span class="p">{</span><span class="n">protocol_year</span><span class="p">,</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secondary_year&quot;</span><span class="p">,</span> <span class="n">protocol_year</span><span class="p">)}</span>
 </span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a>    <span class="n">yearless</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span id="L-357"><a href="#L-357"><span class="linenos">357</span></a>
-</span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a>    <span class="k">def</span> <span class="nf">_parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a>        <span class="k">return</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sv&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;RETURN_AS_TIMEZONE_AWARE&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
 </span><span id="L-360"><a href="#L-360"><span class="linenos">360</span></a>
-</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a>    <span class="k">def</span> <span class="nf">_is_sjukbetyg</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_is_sjukbetyg</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
 </span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a><span class="sd">        check if elem with date is part of a (lakar|sjul)(be|in)tyg</span>
 </span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -539,7 +539,7 @@
 </span><span id="L-469"><a href="#L-469"><span class="linenos">469</span></a>    <span class="k">return</span> <span class="n">root</span><span class="p">,</span> <span class="n">dates</span>
 </span><span id="L-470"><a href="#L-470"><span class="linenos">470</span></a>
 </span><span id="L-471"><a href="#L-471"><span class="linenos">471</span></a>
-</span><span id="L-472"><a href="#L-472"><span class="linenos">472</span></a><span class="k">def</span> <span class="nf">update_ids</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">protocol_id</span><span class="p">):</span>
+</span><span id="L-472"><a href="#L-472"><span class="linenos">472</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_ids</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">protocol_id</span><span class="p">):</span>
 </span><span id="L-473"><a href="#L-473"><span class="linenos">473</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-474"><a href="#L-474"><span class="linenos">474</span></a><span class="sd">    Update element IDs. TODO</span>
 </span><span id="L-475"><a href="#L-475"><span class="linenos">475</span></a>
@@ -586,7 +586,7 @@
 
     </div>
     <a class="headerlink" href="#redetect_protocol"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="redetect_protocol-21"><a href="#redetect_protocol-21"><span class="linenos">21</span></a><span class="k">def</span> <span class="nf">redetect_protocol</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="redetect_protocol-21"><a href="#redetect_protocol-21"><span class="linenos">21</span></a><span class="k">def</span><span class="w"> </span><span class="nf">redetect_protocol</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
 </span><span id="redetect_protocol-22"><a href="#redetect_protocol-22"><span class="linenos">22</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="redetect_protocol-23"><a href="#redetect_protocol-23"><span class="linenos">23</span></a><span class="sd">    For each intro in a protocol, detect which MP is mentioned and map it to metadata.</span>
 </span><span id="redetect_protocol-24"><a href="#redetect_protocol-24"><span class="linenos">24</span></a>
@@ -684,7 +684,7 @@
 
     </div>
     <a class="headerlink" href="#detect_mps"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="detect_mps-95"><a href="#detect_mps-95"><span class="linenos"> 95</span></a><span class="k">def</span> <span class="nf">detect_mps</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">names_ids</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">mp_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db_secondary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">speaker_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">party_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">protocol_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unknown_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="detect_mps-95"><a href="#detect_mps-95"><span class="linenos"> 95</span></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_mps</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">names_ids</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">mp_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">minister_db_secondary</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">speaker_db</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">party_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">protocol_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unknown_variables</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="detect_mps-96"><a href="#detect_mps-96"><span class="linenos"> 96</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="detect_mps-97"><a href="#detect_mps-97"><span class="linenos"> 97</span></a><span class="sd">    For each intro in a protocol, detect which MP is mentioned and map it to metadata.</span>
 </span><span id="detect_mps-98"><a href="#detect_mps-98"><span class="linenos"> 98</span></a>
@@ -840,7 +840,7 @@
 
     </div>
     <a class="headerlink" href="#find_introductions"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="find_introductions-220"><a href="#find_introductions-220"><span class="linenos">220</span></a><span class="k">def</span> <span class="nf">find_introductions</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">intro_ids</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="find_introductions-220"><a href="#find_introductions-220"><span class="linenos">220</span></a><span class="k">def</span><span class="w"> </span><span class="nf">find_introductions</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pattern_db</span><span class="p">,</span> <span class="n">intro_ids</span><span class="p">,</span> <span class="n">minister_db</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 </span><span id="find_introductions-221"><a href="#find_introductions-221"><span class="linenos">221</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="find_introductions-222"><a href="#find_introductions-222"><span class="linenos">222</span></a><span class="sd">    Find instances of curation patterns in all files in a folder.</span>
 </span><span id="find_introductions-223"><a href="#find_introductions-223"><span class="linenos">223</span></a>
@@ -979,7 +979,7 @@
 
     </div>
     <a class="headerlink" href="#detect_date"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="detect_date-336"><a href="#detect_date-336"><span class="linenos">336</span></a><span class="k">def</span> <span class="nf">detect_date</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">skip_doctors_notes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="detect_date-336"><a href="#detect_date-336"><span class="linenos">336</span></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_date</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">skip_doctors_notes</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 </span><span id="detect_date-337"><a href="#detect_date-337"><span class="linenos">337</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="detect_date-338"><a href="#detect_date-338"><span class="linenos">338</span></a><span class="sd">    Detects notes with dates in them. Updates the docDate metadata in the teiHeader accordingly.</span>
 </span><span id="detect_date-339"><a href="#detect_date-339"><span class="linenos">339</span></a>
@@ -1002,10 +1002,10 @@
 </span><span id="detect_date-356"><a href="#detect_date-356"><span class="linenos">356</span></a>    <span class="n">protocol_years</span> <span class="o">=</span> <span class="p">{</span><span class="n">protocol_year</span><span class="p">,</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;secondary_year&quot;</span><span class="p">,</span> <span class="n">protocol_year</span><span class="p">)}</span>
 </span><span id="detect_date-357"><a href="#detect_date-357"><span class="linenos">357</span></a>    <span class="n">yearless</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 </span><span id="detect_date-358"><a href="#detect_date-358"><span class="linenos">358</span></a>
-</span><span id="detect_date-359"><a href="#detect_date-359"><span class="linenos">359</span></a>    <span class="k">def</span> <span class="nf">_parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+</span><span id="detect_date-359"><a href="#detect_date-359"><span class="linenos">359</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_parse_date</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
 </span><span id="detect_date-360"><a href="#detect_date-360"><span class="linenos">360</span></a>        <span class="k">return</span> <span class="n">dateparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">languages</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sv&quot;</span><span class="p">],</span> <span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;RETURN_AS_TIMEZONE_AWARE&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">})</span>
 </span><span id="detect_date-361"><a href="#detect_date-361"><span class="linenos">361</span></a>
-</span><span id="detect_date-362"><a href="#detect_date-362"><span class="linenos">362</span></a>    <span class="k">def</span> <span class="nf">_is_sjukbetyg</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
+</span><span id="detect_date-362"><a href="#detect_date-362"><span class="linenos">362</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_is_sjukbetyg</span><span class="p">(</span><span class="n">elem</span><span class="p">):</span>
 </span><span id="detect_date-363"><a href="#detect_date-363"><span class="linenos">363</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="detect_date-364"><a href="#detect_date-364"><span class="linenos">364</span></a><span class="sd">        check if elem with date is part of a (lakar|sjul)(be|in)tyg</span>
 </span><span id="detect_date-365"><a href="#detect_date-365"><span class="linenos">365</span></a><span class="sd">        &quot;&quot;&quot;</span>
@@ -1141,7 +1141,7 @@
 
     </div>
     <a class="headerlink" href="#update_ids"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="update_ids-473"><a href="#update_ids-473"><span class="linenos">473</span></a><span class="k">def</span> <span class="nf">update_ids</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">protocol_id</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="update_ids-473"><a href="#update_ids-473"><span class="linenos">473</span></a><span class="k">def</span><span class="w"> </span><span class="nf">update_ids</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">protocol_id</span><span class="p">):</span>
 </span><span id="update_ids-474"><a href="#update_ids-474"><span class="linenos">474</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="update_ids-475"><a href="#update_ids-475"><span class="linenos">475</span></a><span class="sd">    Update element IDs. TODO</span>
 </span><span id="update_ids-476"><a href="#update_ids-476"><span class="linenos">476</span></a>

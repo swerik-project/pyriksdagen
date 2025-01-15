@@ -107,7 +107,7 @@ def common_args(args):
         for py in args.parliament_year:
             args.specific_files.extend(glob(f"{args.data_folder}/{py}/*.xml"))
     else:
-        args.specific_files = sorted(list(corpus_iterator(args.doctype, start=args.start, end=args.end)))
+        args.specific_files = sorted(list(corpus_iterator(args.doctype, corpus_root=args.data_folder, start=args.start, end=args.end)))
     if args.specific_files is not None and len(list(args.specific_files)) != 0:
         args.specific_files = sorted(list(args.specific_files))
     return rename_file_list(args)

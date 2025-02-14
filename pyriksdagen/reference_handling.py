@@ -2,6 +2,8 @@
 """
 Functions related to bibliographic data
 """
+from tqdm import tqdm
+from glob import glob
 
 def validate_bib_data(data, bib):
     """
@@ -58,7 +60,7 @@ def validate_bib_data(data, bib):
         return False, errors
 
 
-def compile_bib_list(bib_dir="./references/bibtex/", output_file="./references/compiled_references.bib")
+def compile_bib_list(bib_dir="./references/bibtex/", output_file="./references/compiled_references.bib"):
     """
     Compile a list of references in the references directory
 

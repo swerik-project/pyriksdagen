@@ -329,8 +329,8 @@ def find_introductions(root, pattern_db, intro_ids, remove_missing=True, ministe
 
                     else:
                         pass  # print("OLD", elem.text)
-            elif elem.attrib.get("type") == "speaker" and remove_missing:
-                del elem.attrib["type"]
+                elif elem.attrib.get("type") == "speaker" and remove_missing:
+                    del elem.attrib["type"]
 
     return root
 

@@ -72,7 +72,8 @@ def detect_speaker(matched_txt, speaker_db, metadata=None):
         LOGGER.debug(f"Match found: {matched_value}")
         return matched_value
     elif number_of_matches >= 2:
-        LOGGER.debug(f"Ambiguous matches: {set(speaker_db["id"])}")
+        matched_values = set(speaker_db["id"])
+        LOGGER.debug(f"Ambiguous matches: {matched_values}")
     else:
         LOGGER.debug(f"No matches")
 

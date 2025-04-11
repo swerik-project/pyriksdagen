@@ -419,7 +419,7 @@ def detect_date(root, metadata, skip_doctors_notes=False):
 
             # Dates without a year or weekday
             elif den_and_date is not None and not _is_sjukbetyg(elem):
-                if len(" ".join(elem.text.split())) < 30: # and elem.text.strip()[:3] != "den":
+                if len(" ".join(elem.text.split())) < 30:
                     if elem.attrib.get("type") != "title":
                         elem.attrib["type"] = "date"
 

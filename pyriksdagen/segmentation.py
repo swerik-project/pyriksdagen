@@ -7,6 +7,8 @@ import re, hashlib
 from .db import load_expressions
 from .match_mp import match_mp, name_equals, name_almost_equals, names_in, names_in_rev
 from itertools import combinations
+from trainerlog import get_logger
+LOGGER = get_logger("segmentation")
 
 # Classify paragraph
 def classify_paragraph(paragraph, classifier, prior=np.log([0.8, 0.2])):
@@ -136,6 +138,7 @@ def detect_mp(intro_dict, db, party_map=None, match_fuzzily=False):
 
     If multiple people are matched, defaults to returning None.
     """
+    LOGGER.debug(f"Detect MP based on: {intro_dict}")
 
     intro_dict["party_abbrev"] = party_map.get(intro_dict.get("party", ""), "")
     variables = ['party_abbrev', 'specifier', 'name']

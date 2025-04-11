@@ -4,6 +4,8 @@ import re
 import textdistance
 from unidecode import unidecode
 from nltk.metrics.distance import edit_distance
+from trainerlog import get_logger
+LOGGER = get_logger("match_mp")
 
 def multiple_replace(text, i_start=192, i_end=383):
 	d = [chr(c) for c in range(i_start, i_end+1)]
@@ -149,17 +151,24 @@ def match_mp(person, db, variables, matching_funs):
 		
 		if len(matched_mps) == 0:
 			if fun == matching_funs[-1]:
+				LOGGER.debug("Intro not matched after all functions")
 				return
 			continue # restart if no match was found
 		
-		if len(set(matched_mps["id"])) == 1:
+		number_of_matches = len(set(matched_mps["id"]))
+		if number_of_matches == 1:
 			return matched_mps["id"].iloc[0]
+		elif number_of_matches >= 2:
+			LOGGER.debug(f"Multiple matches obtained with {fun}")
 
 		# Iterates over combinations of variables to find a unique match
 		for v in variables:
 			
 			matched_mps_new = matched_mps.iloc[np.where(matched_mps[v] == p[v])[0]]
 
-			if len(set(matched_mps_new["id"])) == 1:
+			number_of_matches = len(set(matched_mps_new["id"]))
+			if number_of_matches == 1:
 				return matched_mps_new["id"].iloc[0]
+			elif number_of_matches >= 2:
+				LOGGER.debug(f"Multiple matches obtained with {v}")
 			

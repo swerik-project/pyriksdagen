@@ -15,6 +15,8 @@ from .segmentation import (
 )
 from .match_mp import multiple_replace
 from datetime import datetime
+from trainerlog import get_logger
+LOGGER = get_logger("refine")
 
 
 def redetect_protocol(metadata, protocol):
@@ -165,7 +167,7 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
                     #                (join_intros['xml_id1'] == elem.attrib.get(xml_ns + "id")) |
                     #                (join_intros['xml_id2'] == elem.attrib.get(xml_ns + "id")), 'text']
                     #    text = join_intro.iloc[0]
-
+                    LOGGER.debug(f"Detect intro with the text: {text}")
                     if type(text) == str:
                         d = intro_to_dict(text, mp_expressions)
                         if 'name' in d:

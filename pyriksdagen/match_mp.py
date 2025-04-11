@@ -157,7 +157,9 @@ def match_mp(person, db, variables, matching_funs):
 		
 		number_of_matches = len(set(matched_mps["id"]))
 		if number_of_matches == 1:
-			return matched_mps["id"].iloc[0]
+			matched_value = matched_mps["id"].iloc[0]
+			LOGGER.debug(f"Match found with {fun}: {matched_value}")
+			return matched_value
 		elif number_of_matches >= 2:
 			LOGGER.debug(f"Multiple matches obtained with {fun}")
 
@@ -168,7 +170,9 @@ def match_mp(person, db, variables, matching_funs):
 
 			number_of_matches = len(set(matched_mps_new["id"]))
 			if number_of_matches == 1:
-				return matched_mps_new["id"].iloc[0]
+				matched_value = matched_mps_new["id"].iloc[0]
+				LOGGER.debug(f"Match found with {v}: {matched_value}")
+				return matched_value
 			elif number_of_matches >= 2:
 				LOGGER.debug(f"Multiple matches obtained with {v}")
 			

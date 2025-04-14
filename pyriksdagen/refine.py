@@ -113,8 +113,9 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
     """
     scanned_protocol = False
     try:
-        if root.findall(".//{http://www.tei-c.org/ns/1.0}pb")[0].get('facs').startswith("https://betalab.kb.se/"):
-            scanned_protocol = True
+        # TODO: Fetch this from the metadata block! This solution is hacky and has broken before
+        url = root.findall(".//{http://www.tei-c.org/ns/1.0}pb")[0].get('facs')
+        scanned_protocol = url.startswith("https://betalab.kb.se/") or url.startswith("https://swerik-project.github.io/")
     except:
         pass
 

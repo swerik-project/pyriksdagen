@@ -7,6 +7,8 @@ import re, hashlib
 from .db import load_expressions
 from .match_mp import match_mp, name_equals, name_almost_equals, names_in, names_in_rev
 from itertools import combinations
+from trainerlog import get_logger
+LOGGER = get_logger("segmentation")
 
 # Classify paragraph
 def classify_paragraph(paragraph, classifier, prior=np.log([0.8, 0.2])):
@@ -64,8 +66,17 @@ def detect_speaker(matched_txt, speaker_db, metadata=None):
     elif re.search(r'(herr|fru)?\s?talman', lower_txt):
         speaker_db = speaker_db[speaker_db["role"] == 'talman']
 
-    if len(set(speaker_db["id"])) == 1:
-        return speaker_db["id"].iloc[0]
+    number_of_matches = len(set(speaker_db["id"]))
+    if number_of_matches == 1:
+        matched_value = speaker_db["id"].iloc[0]
+        LOGGER.debug(f"Match found: {matched_value}")
+        return matched_value
+    elif number_of_matches >= 2:
+        matched_values = set(speaker_db["id"])
+        LOGGER.debug(f"Ambiguous matches: {matched_values}")
+    else:
+        LOGGER.debug(f"No matches")
+
 
 def detect_minister(matched_txt, minister_db, intro_dict):
     """
@@ -104,7 +115,9 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         name_matches = names_in(name, minister_db)
         if not name_matches.empty:
             if len(set(name_matches["id"])) == 1:
-                return name_matches["id"].iloc[0]
+                matched_value = name_matches["id"].iloc[0]
+                LOGGER.debug(f"Match by name {matched_value}")
+                return matched_value
 
     # Match by role
     # Catch "utrikesdepartementet"
@@ -113,7 +126,9 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         role_matches = minister_db[minister_db["role"].str.contains(r, regex=False)]
         if not role_matches.empty:
             if len(set(role_matches["id"])) == 1:
-                return role_matches["id"].iloc[0]
+                matched_value = role_matches["id"].iloc[0]
+                LOGGER.debug(f"Matched by role {matched_value}")
+                return matched_value
 
     # Catch "ministern för utrikes ärendena (...)"
     elif role := re.search(r'(?:ministern för )([A-Za-zÀ-ÿ]+)', lower_txt):
@@ -136,6 +151,7 @@ def detect_mp(intro_dict, db, party_map=None, match_fuzzily=False):
 
     If multiple people are matched, defaults to returning None.
     """
+    LOGGER.debug(f"Detect MP based on: {intro_dict}")
 
     intro_dict["party_abbrev"] = party_map.get(intro_dict.get("party", ""), "")
     variables = ['party_abbrev', 'specifier', 'name']

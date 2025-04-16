@@ -15,6 +15,8 @@ from .segmentation import (
 )
 from .match_mp import multiple_replace
 from datetime import datetime
+from trainerlog import get_logger
+LOGGER = get_logger("refine")
 
 
 def redetect_protocol(metadata, protocol):
@@ -111,8 +113,9 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
     """
     scanned_protocol = False
     try:
-        if root.findall(".//{http://www.tei-c.org/ns/1.0}pb")[0].get('facs').startswith("https://betalab.kb.se/"):
-            scanned_protocol = True
+        # TODO: Fetch this from the metadata block! This solution is hacky and has broken before
+        url = root.findall(".//{http://www.tei-c.org/ns/1.0}pb")[0].get('facs')
+        scanned_protocol = url.startswith("https://betalab.kb.se/") or url.startswith("https://swerik-project.github.io/")
     except:
         pass
 
@@ -165,7 +168,7 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
                     #                (join_intros['xml_id1'] == elem.attrib.get(xml_ns + "id")) |
                     #                (join_intros['xml_id2'] == elem.attrib.get(xml_ns + "id")), 'text']
                     #    text = join_intro.iloc[0]
-
+                    LOGGER.debug(f"Detect intro with the text: {' '.join(text.split())}")
                     if type(text) == str:
                         d = intro_to_dict(text, mp_expressions)
                         if 'name' in d:
@@ -216,14 +219,15 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
     return root, unknowns
 
 
-def find_introductions(root, pattern_db, intro_ids, minister_db=None):
+def find_introductions(root, pattern_db, intro_ids, remove_missing=True, minister_db=None):
     """
     Find instances of curation patterns in all files in a folder.
 
     Args:
         root (lxml.etree): protocol as a lxml tree
         pattern_db: Patterns to be matched as a Pandas DataFrame.
-        intro_ids: List of IDs that have been detected as intros.
+        intro_ids (pd.DataFrame): List of IDs that have been detected as intros.
+        remove_missing (bool): remove intros not found in 'intro_ids'
         minister_db: deprecated
     """
 
@@ -328,6 +332,8 @@ def find_introductions(root, pattern_db, intro_ids, minister_db=None):
 
                     else:
                         pass  # print("OLD", elem.text)
+                elif elem.attrib.get("type") == "speaker" and remove_missing:
+                    del elem.attrib["type"]
 
     return root
 
@@ -427,8 +433,8 @@ def detect_date(root, metadata, skip_doctors_notes=False):
             if elem.attrib.get("type") == "REMOVE":
                 del elem.attrib["type"]
 
-
-
+    # Dates WITH a number are actually preferred in the hierarchy
+    dates, number_dates = number_dates, dates
     if len(dates) > 0:
         protocol_year = list(dates)[0].year
     elif len(number_dates) > 0:

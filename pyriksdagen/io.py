@@ -20,8 +20,8 @@ def parse_tei(_path, get_ns=True) -> tuple:
     root = etree.parse(_path, parser).getroot()
     if get_ns:
         ns = {
-                "tei_ns": "{http://www.w3.org/XML/1998/namespace}",
-                "xml_ns": "{http://www.tei-c.org/ns/1.0}",
+                "xml_ns": "{http://www.w3.org/XML/1998/namespace}",
+                "tei_ns": "{http://www.tei-c.org/ns/1.0}",
             }
         return root, ns
     else:
@@ -157,7 +157,7 @@ def write_tei(root, dest_path, ns="{http://www.tei-c.org/ns/1.0}", custom_order=
         else:
             # assume tei header doesn't mix child elements and text
             if has_text and elem.text.strip() != '' and len(elem) == 0:
-                parts[-1] += f"{elem.text.strip()}</{elem.tag.replace(ns, '')}>"
+                parts[-1] += f"{' '.join([escape(_.strip()) for _ in elem.text.split() if _.strip() != ''])}</{elem.tag.replace(ns, '')}>"
             else:
                 for child in elem:
                     parts.append(_serialize(child, padding=padding+2, custom_order=custom_order, is_body=False))

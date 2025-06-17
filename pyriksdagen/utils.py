@@ -170,7 +170,8 @@ def corpus_iterator(document_type, corpus_root=None, start=None, end=None):
         "motions":"motions",
         "mot": "motions",
         "prot": "records",
-        "records": "records"
+        "records": "records",
+        "volg": "volg",
     }
     if document_type not in doctypes:
         raise ValueError(f"{document_type} not valid")
@@ -324,6 +325,7 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     d["metadata_db"] = os.environ.get("METADATA_DB", "data")               # path to csv or pkl of compiled Corpus()
     d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")
+    d["volg"] = os.environ.get("VOLUMEG_PATH", "data")
     assert partition in d, f"Provide valid partition of the dataset ({list(d.keys())})"
     return d[partition]
 

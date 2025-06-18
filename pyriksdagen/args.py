@@ -288,6 +288,28 @@ def impute_args(args):
 
 
 
+def fetch_doctype_parser(raw_args, docstring=None):
+    def _no_doctype_arg_error(err, corpora):
+        errs = {
+                1: "You didn't set any first argument.",
+                2: "You passed an invalid doctype."
+            }
+        raise ValueError(f"You have to pass the document type as the first argument of this script ({' '.join(['--'+k+',' for k in corpora.keys()])})\n{errs[err]}")
+
+    corpora = {
+            "records": record_parser,
+            "motions": motion_parser,
+            "interpellations": interpellation_parser,
+            "volg": volg_parser,
+        }
+    if not raw_args[1]:
+        _no_doctype_arg_error(1, corpora)
+    if raw_args[1][2:] in corpora:
+        return fetch_parser(raw_args[1][2:], docstring=__doc__), raw_args[2:]
+
+    else:
+        _no_doctype_arg_error(2, corpora)
+
 
 # test
 if __name__ == '__main__':

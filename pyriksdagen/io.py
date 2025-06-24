@@ -1,8 +1,20 @@
-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Utilities for reading and writing TEI files
+"""
 from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import escape
 
+
+XML_NS = "{http://www.w3.org/XML/1998/namespace}"
+TEI_NS = "{http://www.tei-c.org/ns/1.0}"
+
+
+def fetch_ns():
+    return {"tei_ns": TEI_NS,
+            "xml_ns": XML_NS}
 
 
 def parse_tei(_path, get_ns=True) -> tuple:
@@ -19,11 +31,7 @@ def parse_tei(_path, get_ns=True) -> tuple:
     parser = etree.XMLParser(remove_blank_text=True)
     root = etree.parse(_path, parser).getroot()
     if get_ns:
-        ns = {
-                "xml_ns": "{http://www.w3.org/XML/1998/namespace}",
-                "tei_ns": "{http://www.tei-c.org/ns/1.0}",
-            }
-        return root, ns
+        return root, fetch_ns()
     else:
         return root
 

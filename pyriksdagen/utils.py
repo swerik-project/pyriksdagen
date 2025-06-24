@@ -10,6 +10,11 @@ from pathlib import Path
 from pyparlaclarin.refine import format_texts
 from pyriksdagen.io import parse_tei as parse_tei_new
 from pyriksdagen.io import write_tei as write_tei_new
+from pyriksdagen.io import (
+    fetch_ns,
+    TEI_NS,
+    XML_NS,
+)
 from tqdm import tqdm
 from trainerlog import get_logger
 import base58
@@ -25,13 +30,7 @@ import zipfile
 
 
 LOGGER = get_logger("pyriksdagen")
-XML_NS = "{http://www.w3.org/XML/1998/namespace}"
-TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
-
-def fetch_ns():
-    return {"tei_ns": TEI_NS,
-            "xml_ns": XML_NS}
 
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):

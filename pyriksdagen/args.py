@@ -214,6 +214,34 @@ def interpellation_args(args):
     return args
 
 
+def volg_parser(parser):
+    """
+    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen volume G.
+
+    Args:
+        parser: parser
+
+    Returns:
+        parser
+    """
+    parser = populate_common_arguments(parser)
+    # leaving the interpellations-specific function in place, in case we need volg-specific args
+    return parser
+
+
+def volg_args(args):
+    """
+    Takes an argparse namespace object for working with riksdagen volume G and imputes standard stuff
+
+    Args:
+        args: args
+
+    Returns:
+        args
+    """
+    args = common_args(args)
+    # leaving the interpellations-specific function in place, in case we need volG-specific actions
+    return args
 
 
 def fetch_parser(doctype, docstring=None):
@@ -231,6 +259,7 @@ def fetch_parser(doctype, docstring=None):
             "records": record_parser,
             "motions": motion_parser,
             "interpellations": interpellation_parser,
+            "volg": volg_parser,
         }
     parser = argparse.ArgumentParser(description=docstring)
     parser.add_argument("--doctype", default=doctype, help=argparse.SUPPRESS)
@@ -253,10 +282,33 @@ def impute_args(args):
             "records": record_args,
             "motions": motion_args,
             "interpellations": interpellation_args,
+            "volg": volg_args
         }
     return D[args.doctype](args)
 
 
+
+def fetch_doctype_parser(raw_args, docstring=None):
+    def _no_doctype_arg_error(err, corpora):
+        errs = {
+                1: "You didn't set any first argument.",
+                2: "You passed an invalid doctype."
+            }
+        raise ValueError(f"You have to pass the document type as the first argument of this script ({' '.join(['--'+k+',' for k in corpora.keys()])})\n{errs[err]}")
+
+    corpora = {
+            "records": record_parser,
+            "motions": motion_parser,
+            "interpellations": interpellation_parser,
+            "volg": volg_parser,
+        }
+    if not raw_args[1]:
+        _no_doctype_arg_error(1, corpora)
+    if raw_args[1][2:] in corpora:
+        return fetch_parser(raw_args[1][2:], docstring=__doc__), raw_args[2:]
+
+    else:
+        _no_doctype_arg_error(2, corpora)
 
 
 # test

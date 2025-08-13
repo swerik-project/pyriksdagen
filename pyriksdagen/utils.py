@@ -8,6 +8,13 @@ from datetime import datetime
 from lxml import etree
 from pathlib import Path
 from pyparlaclarin.refine import format_texts
+from pyriksdagen.io import parse_tei as parse_tei_new
+from pyriksdagen.io import write_tei as write_tei_new
+from pyriksdagen.io import (
+    fetch_ns,
+    TEI_NS,
+    XML_NS,
+)
 from tqdm import tqdm
 from trainerlog import get_logger
 import base58
@@ -23,13 +30,7 @@ import zipfile
 
 
 LOGGER = get_logger("pyriksdagen")
-XML_NS = "{http://www.w3.org/XML/1998/namespace}"
-TEI_NS = "{http://www.tei-c.org/ns/1.0}"
 
-
-def fetch_ns():
-    return {"tei_ns": TEI_NS,
-            "xml_ns": XML_NS}
 
 
 def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
@@ -168,7 +169,8 @@ def corpus_iterator(document_type, corpus_root=None, start=None, end=None):
         "motions":"motions",
         "mot": "motions",
         "prot": "records",
-        "records": "records"
+        "records": "records",
+        "volg": "volg",
     }
     if document_type not in doctypes:
         raise ValueError(f"{document_type} not valid")
@@ -189,24 +191,6 @@ def corpus_iterator(document_type, corpus_root=None, start=None, end=None):
                 yield str(doc.relative_to("."))
         else:
             yield str(doc.relative_to("."))
-
-
-def protocol_iterators(corpus_root=None, document_type=None, start=None, end=None):
-    """
-    Deprecate - Use corpus_iterator() instead.
-    Returns an iterator of protocol paths in a corpus.
-
-    Args:
-        corpus_root (str): path to the corpus root. If env variable RECORDS_PATH exists, uses that as a default
-        document_type (str): type of document (prot, mot, etc.). If None, fetches all types
-        start (int): start year
-        end (int): end year
-
-    Returns:
-        iterator of the protocols as relative paths to current location
-    """
-    warnings.warn("protocol_iterators is replaced by corpus_iterator() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
-    return corpus_iterator("prot", corpus_root=corpus_root, start=start, end=end)
 
 
 def parse_date(s):
@@ -327,72 +311,6 @@ def get_doc_dates(protocol):
     return match_error, dates
 
 
-def write_tei(elem, dest_path) -> None:
-    """
-    Write a corpus document to disk.
-
-    Args:
-        elem (etree._Element): tei root element
-        dest_path (str): protocol path
-    """
-    elem = format_texts(elem, padding=10)
-    b = etree.tostring(
-        elem,
-        pretty_print=True,
-        encoding="utf-8",
-        xml_declaration=True
-    )
-    with open(dest_path, "wb") as f:
-        f.write(b)
-
-
-def write_protocol(prot_elem, prot_path) -> None:
-    """
-    Write the protocol to a file.
-
-    Args:
-        prot_elem (etree._Element): protocol root element
-        prot_path (str): protocol path
-    """
-    warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
-    write_tei(prot_elem, prot_path)
-
-
-def parse_tei(_path, get_ns=True) -> tuple:
-    """
-    Parse a protocol, return root element (and namespace defnitions).
-
-    Args:
-        _path (str): path to tei-xml doc
-        get_ns (bool): also return namespace dict
-
-    Returns:
-        tuple/etree._Element: root and an optional namespace dict
-    """
-    parser = etree.XMLParser(remove_blank_text=True)
-    root = etree.parse(_path, parser).getroot()
-    if get_ns:
-        ns = fetch_ns()
-        return root, ns
-    else:
-        return root
-
-
-def parse_protocol(protocol_path, get_ns=False) -> tuple:
-    """
-    Parse a protocol, return root element (and namespace defnitions).
-
-    Args:
-        protocol_path (str): protocol path
-        get_ns (bool): also return namespace dict
-
-    Returns:
-        tuple/etree._Element: root and an optional namespace dict
-    """
-    warnings.warn("parse_protocol is replaced by parse_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
-    return parse_tei(protocol_path, get_ns=get_ns)
-
-
 def get_data_location(partition):
     """
     Get data location for a specific path. Tries the env variables
@@ -406,6 +324,7 @@ def get_data_location(partition):
     d["metadata"] = os.environ.get("METADATA_PATH", "data")
     d["metadata_db"] = os.environ.get("METADATA_DB", "data")               # path to csv or pkl of compiled Corpus()
     d["interpellations"] = os.environ.get("INTERPELLATIONS_PATH", "data")
+    d["volg"] = os.environ.get("VOLUMEG_PATH", "data")
     assert partition in d, f"Provide valid partition of the dataset ({list(d.keys())})"
     return d[partition]
 
@@ -546,3 +465,81 @@ def pathize_protocol_id(protocol_id):
         if os.path.exists(path_):
             return path_
     raise FileNotFoundError(f"Can't find {path_}")
+
+
+
+##########################
+    """
+#   Deprecated functions #
+    """
+##########################
+def parse_tei(_path, get_ns=True) -> tuple:
+    """
+    Parse a protocol, return root element (and namespace defnitions).
+
+    Args:
+        _path (str): path to tei-xml doc
+        get_ns (bool): also return namespace dict
+
+    Returns:
+        tuple/etree._Element: root and an optional namespace dict
+    """
+    warnings.warn("parse_tei() has been moved to the pyriksdagen.io submodule and will be removed from pyriksdagen.utils in the next major release -- use parse_tei() from pyriksdagen.io instead.", DeprecationWarning, stacklevel=2)
+    return parse_tei_new(_path, get_ns=get_ns)
+
+
+def parse_protocol(protocol_path, get_ns=False) -> tuple:
+    """
+    Parse a protocol, return root element (and namespace defnitions).
+
+    Args:
+        protocol_path (str): protocol path
+        get_ns (bool): also return namespace dict
+
+    Returns:
+        tuple/etree._Element: root and an optional namespace dict
+    """
+    warnings.warn("parse_protocol is replaced by parse_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    return parse_tei(protocol_path, get_ns=get_ns)
+
+
+def protocol_iterators(corpus_root=None, document_type=None, start=None, end=None):
+    """
+    Deprecate - Use corpus_iterator() instead.
+    Returns an iterator of protocol paths in a corpus.
+
+    Args:
+        corpus_root (str): path to the corpus root. If env variable RECORDS_PATH exists, uses that as a default
+        document_type (str): type of document (prot, mot, etc.). If None, fetches all types
+        start (int): start year
+        end (int): end year
+
+    Returns:
+        iterator of the protocols as relative paths to current location
+    """
+    warnings.warn("protocol_iterators is replaced by corpus_iterator() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    return corpus_iterator("prot", corpus_root=corpus_root, start=start, end=end)
+
+
+def write_tei(root, dest_path, ns="{http://www.tei-c.org/ns/1.0}") -> None:
+    """
+    Write a corpus document to disk.
+
+    Args:
+        elem (etree._Element): tei root element
+        dest_path (str): protocol path
+    """
+    warnings.warn("write_tei() as been moved to the pyriksdagen.io submodule and removed from pyriksdagen.utils in the next major release -- use write_tei() from pyriksdagen.io instead.", DeprecationWarning, stacklevel=2)
+    write_tei_new(root, dest_path)
+
+
+def write_protocol(prot_elem, prot_path) -> None:
+    """
+    Write the protocol to a file.
+
+    Args:
+        prot_elem (etree._Element): protocol root element
+        prot_path (str): protocol path
+    """
+    warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
+    write_tei(prot_elem, prot_path)

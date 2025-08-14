@@ -59,15 +59,24 @@
                     <a class="function" href="#interpellation_args">interpellation_args</a>
             </li>
             <li>
+                    <a class="function" href="#volg_parser">volg_parser</a>
+            </li>
+            <li>
+                    <a class="function" href="#volg_args">volg_args</a>
+            </li>
+            <li>
                     <a class="function" href="#fetch_parser">fetch_parser</a>
             </li>
             <li>
                     <a class="function" href="#impute_args">impute_args</a>
             </li>
+            <li>
+                    <a class="function" href="#fetch_doctype_parser">fetch_doctype_parser</a>
+            </li>
     </ul>
 
 
-            <footer>v1.8.1</footer>
+            <footer>v1.9.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -304,55 +313,107 @@
 </span><span id="L-214"><a href="#L-214"><span class="linenos">214</span></a>    <span class="k">return</span> <span class="n">args</span>
 </span><span id="L-215"><a href="#L-215"><span class="linenos">215</span></a>
 </span><span id="L-216"><a href="#L-216"><span class="linenos">216</span></a>
-</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a>
-</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a>
-</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_parser</span><span class="p">(</span><span class="n">doctype</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="sd">    Fetch an argparse argument parser based on the doctype.</span>
-</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a>
-</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a><span class="sd">    Args:</span>
-</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="sd">        doctype (str): doctype, one listed in D</span>
-</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">        docstring (str): string describing scripts for which the parser is called.</span>
-</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a>
-</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a><span class="sd">    Returns:</span>
-</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a><span class="sd">        argparse Parser object</span>
-</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
-</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
-</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
-</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a>        <span class="p">}</span>
-</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">docstring</span><span class="p">)</span>
-</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--doctype&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">doctype</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">doctype</span><span class="p">](</span><span class="n">parser</span><span class="p">)</span>
+</span><span id="L-217"><a href="#L-217"><span class="linenos">217</span></a><span class="k">def</span><span class="w"> </span><span class="nf">volg_parser</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+</span><span id="L-218"><a href="#L-218"><span class="linenos">218</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-219"><a href="#L-219"><span class="linenos">219</span></a><span class="sd">    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen volume G.</span>
+</span><span id="L-220"><a href="#L-220"><span class="linenos">220</span></a>
+</span><span id="L-221"><a href="#L-221"><span class="linenos">221</span></a><span class="sd">    Args:</span>
+</span><span id="L-222"><a href="#L-222"><span class="linenos">222</span></a><span class="sd">        parser: parser</span>
+</span><span id="L-223"><a href="#L-223"><span class="linenos">223</span></a>
+</span><span id="L-224"><a href="#L-224"><span class="linenos">224</span></a><span class="sd">    Returns:</span>
+</span><span id="L-225"><a href="#L-225"><span class="linenos">225</span></a><span class="sd">        parser</span>
+</span><span id="L-226"><a href="#L-226"><span class="linenos">226</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-227"><a href="#L-227"><span class="linenos">227</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">populate_common_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+</span><span id="L-228"><a href="#L-228"><span class="linenos">228</span></a>    <span class="c1"># leaving the interpellations-specific function in place, in case we need volg-specific args</span>
+</span><span id="L-229"><a href="#L-229"><span class="linenos">229</span></a>    <span class="k">return</span> <span class="n">parser</span>
+</span><span id="L-230"><a href="#L-230"><span class="linenos">230</span></a>
+</span><span id="L-231"><a href="#L-231"><span class="linenos">231</span></a>
+</span><span id="L-232"><a href="#L-232"><span class="linenos">232</span></a><span class="k">def</span><span class="w"> </span><span class="nf">volg_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+</span><span id="L-233"><a href="#L-233"><span class="linenos">233</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-234"><a href="#L-234"><span class="linenos">234</span></a><span class="sd">    Takes an argparse namespace object for working with riksdagen volume G and imputes standard stuff</span>
+</span><span id="L-235"><a href="#L-235"><span class="linenos">235</span></a>
+</span><span id="L-236"><a href="#L-236"><span class="linenos">236</span></a><span class="sd">    Args:</span>
+</span><span id="L-237"><a href="#L-237"><span class="linenos">237</span></a><span class="sd">        args: args</span>
 </span><span id="L-238"><a href="#L-238"><span class="linenos">238</span></a>
-</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a>
-</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a>
-</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a>
-</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a><span class="k">def</span><span class="w"> </span><span class="nf">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a><span class="sd">    Impute args based on the doctype (args.doctype).</span>
+</span><span id="L-239"><a href="#L-239"><span class="linenos">239</span></a><span class="sd">    Returns:</span>
+</span><span id="L-240"><a href="#L-240"><span class="linenos">240</span></a><span class="sd">        args</span>
+</span><span id="L-241"><a href="#L-241"><span class="linenos">241</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-242"><a href="#L-242"><span class="linenos">242</span></a>    <span class="n">args</span> <span class="o">=</span> <span class="n">common_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span id="L-243"><a href="#L-243"><span class="linenos">243</span></a>    <span class="c1"># leaving the interpellations-specific function in place, in case we need volG-specific actions</span>
+</span><span id="L-244"><a href="#L-244"><span class="linenos">244</span></a>    <span class="k">return</span> <span class="n">args</span>
 </span><span id="L-245"><a href="#L-245"><span class="linenos">245</span></a>
-</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a><span class="sd">    Args:</span>
-</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="sd">        args: argparse parsed args namespace</span>
-</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a>
-</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a><span class="sd">    Returns:</span>
-</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a><span class="sd">        argparse parsed args namespace</span>
-</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_args</span><span class="p">,</span>
-</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_args</span><span class="p">,</span>
-</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_args</span><span class="p">,</span>
-</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a>        <span class="p">}</span>
-</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">doctype</span><span class="p">](</span><span class="n">args</span><span class="p">)</span>
-</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>
-</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>
-</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a>
-</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a>
-</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a><span class="c1"># test</span>
-</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>    <span class="n">args</span> <span class="o">=</span> <span class="n">fetch_parser</span><span class="p">(</span><span class="s2">&quot;motions&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
-</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+</span><span id="L-246"><a href="#L-246"><span class="linenos">246</span></a>
+</span><span id="L-247"><a href="#L-247"><span class="linenos">247</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_parser</span><span class="p">(</span><span class="n">doctype</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-248"><a href="#L-248"><span class="linenos">248</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-249"><a href="#L-249"><span class="linenos">249</span></a><span class="sd">    Fetch an argparse argument parser based on the doctype.</span>
+</span><span id="L-250"><a href="#L-250"><span class="linenos">250</span></a>
+</span><span id="L-251"><a href="#L-251"><span class="linenos">251</span></a><span class="sd">    Args:</span>
+</span><span id="L-252"><a href="#L-252"><span class="linenos">252</span></a><span class="sd">        doctype (str): doctype, one listed in D</span>
+</span><span id="L-253"><a href="#L-253"><span class="linenos">253</span></a><span class="sd">        docstring (str): string describing scripts for which the parser is called.</span>
+</span><span id="L-254"><a href="#L-254"><span class="linenos">254</span></a>
+</span><span id="L-255"><a href="#L-255"><span class="linenos">255</span></a><span class="sd">    Returns:</span>
+</span><span id="L-256"><a href="#L-256"><span class="linenos">256</span></a><span class="sd">        argparse Parser object</span>
+</span><span id="L-257"><a href="#L-257"><span class="linenos">257</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-258"><a href="#L-258"><span class="linenos">258</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-259"><a href="#L-259"><span class="linenos">259</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
+</span><span id="L-260"><a href="#L-260"><span class="linenos">260</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
+</span><span id="L-261"><a href="#L-261"><span class="linenos">261</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
+</span><span id="L-262"><a href="#L-262"><span class="linenos">262</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_parser</span><span class="p">,</span>
+</span><span id="L-263"><a href="#L-263"><span class="linenos">263</span></a>        <span class="p">}</span>
+</span><span id="L-264"><a href="#L-264"><span class="linenos">264</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">docstring</span><span class="p">)</span>
+</span><span id="L-265"><a href="#L-265"><span class="linenos">265</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--doctype&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">doctype</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+</span><span id="L-266"><a href="#L-266"><span class="linenos">266</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">doctype</span><span class="p">](</span><span class="n">parser</span><span class="p">)</span>
+</span><span id="L-267"><a href="#L-267"><span class="linenos">267</span></a>
+</span><span id="L-268"><a href="#L-268"><span class="linenos">268</span></a>
+</span><span id="L-269"><a href="#L-269"><span class="linenos">269</span></a>
+</span><span id="L-270"><a href="#L-270"><span class="linenos">270</span></a>
+</span><span id="L-271"><a href="#L-271"><span class="linenos">271</span></a><span class="k">def</span><span class="w"> </span><span class="nf">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+</span><span id="L-272"><a href="#L-272"><span class="linenos">272</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-273"><a href="#L-273"><span class="linenos">273</span></a><span class="sd">    Impute args based on the doctype (args.doctype).</span>
+</span><span id="L-274"><a href="#L-274"><span class="linenos">274</span></a>
+</span><span id="L-275"><a href="#L-275"><span class="linenos">275</span></a><span class="sd">    Args:</span>
+</span><span id="L-276"><a href="#L-276"><span class="linenos">276</span></a><span class="sd">        args: argparse parsed args namespace</span>
+</span><span id="L-277"><a href="#L-277"><span class="linenos">277</span></a>
+</span><span id="L-278"><a href="#L-278"><span class="linenos">278</span></a><span class="sd">    Returns:</span>
+</span><span id="L-279"><a href="#L-279"><span class="linenos">279</span></a><span class="sd">        argparse parsed args namespace</span>
+</span><span id="L-280"><a href="#L-280"><span class="linenos">280</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-281"><a href="#L-281"><span class="linenos">281</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-282"><a href="#L-282"><span class="linenos">282</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_args</span><span class="p">,</span>
+</span><span id="L-283"><a href="#L-283"><span class="linenos">283</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_args</span><span class="p">,</span>
+</span><span id="L-284"><a href="#L-284"><span class="linenos">284</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_args</span><span class="p">,</span>
+</span><span id="L-285"><a href="#L-285"><span class="linenos">285</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_args</span>
+</span><span id="L-286"><a href="#L-286"><span class="linenos">286</span></a>        <span class="p">}</span>
+</span><span id="L-287"><a href="#L-287"><span class="linenos">287</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">doctype</span><span class="p">](</span><span class="n">args</span><span class="p">)</span>
+</span><span id="L-288"><a href="#L-288"><span class="linenos">288</span></a>
+</span><span id="L-289"><a href="#L-289"><span class="linenos">289</span></a>
+</span><span id="L-290"><a href="#L-290"><span class="linenos">290</span></a>
+</span><span id="L-291"><a href="#L-291"><span class="linenos">291</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_doctype_parser</span><span class="p">(</span><span class="n">raw_args</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="L-292"><a href="#L-292"><span class="linenos">292</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_no_doctype_arg_error</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">corpora</span><span class="p">):</span>
+</span><span id="L-293"><a href="#L-293"><span class="linenos">293</span></a>        <span class="n">errs</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-294"><a href="#L-294"><span class="linenos">294</span></a>                <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t set any first argument.&quot;</span><span class="p">,</span>
+</span><span id="L-295"><a href="#L-295"><span class="linenos">295</span></a>                <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;You passed an invalid doctype.&quot;</span>
+</span><span id="L-296"><a href="#L-296"><span class="linenos">296</span></a>            <span class="p">}</span>
+</span><span id="L-297"><a href="#L-297"><span class="linenos">297</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You have to pass the document type as the first argument of this script (</span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;--&#39;</span><span class="o">+</span><span class="n">k</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">corpora</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="si">{</span><span class="n">errs</span><span class="p">[</span><span class="n">err</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="L-298"><a href="#L-298"><span class="linenos">298</span></a>
+</span><span id="L-299"><a href="#L-299"><span class="linenos">299</span></a>    <span class="n">corpora</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-300"><a href="#L-300"><span class="linenos">300</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
+</span><span id="L-301"><a href="#L-301"><span class="linenos">301</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
+</span><span id="L-302"><a href="#L-302"><span class="linenos">302</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
+</span><span id="L-303"><a href="#L-303"><span class="linenos">303</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_parser</span><span class="p">,</span>
+</span><span id="L-304"><a href="#L-304"><span class="linenos">304</span></a>        <span class="p">}</span>
+</span><span id="L-305"><a href="#L-305"><span class="linenos">305</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span><span id="L-306"><a href="#L-306"><span class="linenos">306</span></a>        <span class="n">_no_doctype_arg_error</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">corpora</span><span class="p">)</span>
+</span><span id="L-307"><a href="#L-307"><span class="linenos">307</span></a>    <span class="k">if</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">:]</span> <span class="ow">in</span> <span class="n">corpora</span><span class="p">:</span>
+</span><span id="L-308"><a href="#L-308"><span class="linenos">308</span></a>        <span class="k">return</span> <span class="n">fetch_parser</span><span class="p">(</span><span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">:],</span> <span class="n">docstring</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">),</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+</span><span id="L-309"><a href="#L-309"><span class="linenos">309</span></a>
+</span><span id="L-310"><a href="#L-310"><span class="linenos">310</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-311"><a href="#L-311"><span class="linenos">311</span></a>        <span class="n">_no_doctype_arg_error</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">corpora</span><span class="p">)</span>
+</span><span id="L-312"><a href="#L-312"><span class="linenos">312</span></a>
+</span><span id="L-313"><a href="#L-313"><span class="linenos">313</span></a>
+</span><span id="L-314"><a href="#L-314"><span class="linenos">314</span></a><span class="c1"># test</span>
+</span><span id="L-315"><a href="#L-315"><span class="linenos">315</span></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+</span><span id="L-316"><a href="#L-316"><span class="linenos">316</span></a>    <span class="n">args</span> <span class="o">=</span> <span class="n">fetch_parser</span><span class="p">(</span><span class="s2">&quot;motions&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</span><span id="L-317"><a href="#L-317"><span class="linenos">317</span></a>    <span class="nb">print</span><span class="p">(</span><span class="n">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
 </span></pre></div>
 
 
@@ -751,6 +812,82 @@ Returns:
 
 
                 </section>
+                <section id="volg_parser">
+                            <input id="volg_parser-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">volg_parser</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">parser</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="volg_parser-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#volg_parser"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="volg_parser-218"><a href="#volg_parser-218"><span class="linenos">218</span></a><span class="k">def</span><span class="w"> </span><span class="nf">volg_parser</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+</span><span id="volg_parser-219"><a href="#volg_parser-219"><span class="linenos">219</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="volg_parser-220"><a href="#volg_parser-220"><span class="linenos">220</span></a><span class="sd">    Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen volume G.</span>
+</span><span id="volg_parser-221"><a href="#volg_parser-221"><span class="linenos">221</span></a>
+</span><span id="volg_parser-222"><a href="#volg_parser-222"><span class="linenos">222</span></a><span class="sd">    Args:</span>
+</span><span id="volg_parser-223"><a href="#volg_parser-223"><span class="linenos">223</span></a><span class="sd">        parser: parser</span>
+</span><span id="volg_parser-224"><a href="#volg_parser-224"><span class="linenos">224</span></a>
+</span><span id="volg_parser-225"><a href="#volg_parser-225"><span class="linenos">225</span></a><span class="sd">    Returns:</span>
+</span><span id="volg_parser-226"><a href="#volg_parser-226"><span class="linenos">226</span></a><span class="sd">        parser</span>
+</span><span id="volg_parser-227"><a href="#volg_parser-227"><span class="linenos">227</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="volg_parser-228"><a href="#volg_parser-228"><span class="linenos">228</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">populate_common_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+</span><span id="volg_parser-229"><a href="#volg_parser-229"><span class="linenos">229</span></a>    <span class="c1"># leaving the interpellations-specific function in place, in case we need volg-specific args</span>
+</span><span id="volg_parser-230"><a href="#volg_parser-230"><span class="linenos">230</span></a>    <span class="k">return</span> <span class="n">parser</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Take an argparse ArgumentParser object and populate standard arguments for working with riksdagen volume G.</p>
+
+<p>Args:
+    parser: parser</p>
+
+<p>Returns:
+    parser</p>
+</div>
+
+
+                </section>
+                <section id="volg_args">
+                            <input id="volg_args-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">volg_args</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">args</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="volg_args-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#volg_args"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="volg_args-233"><a href="#volg_args-233"><span class="linenos">233</span></a><span class="k">def</span><span class="w"> </span><span class="nf">volg_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+</span><span id="volg_args-234"><a href="#volg_args-234"><span class="linenos">234</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="volg_args-235"><a href="#volg_args-235"><span class="linenos">235</span></a><span class="sd">    Takes an argparse namespace object for working with riksdagen volume G and imputes standard stuff</span>
+</span><span id="volg_args-236"><a href="#volg_args-236"><span class="linenos">236</span></a>
+</span><span id="volg_args-237"><a href="#volg_args-237"><span class="linenos">237</span></a><span class="sd">    Args:</span>
+</span><span id="volg_args-238"><a href="#volg_args-238"><span class="linenos">238</span></a><span class="sd">        args: args</span>
+</span><span id="volg_args-239"><a href="#volg_args-239"><span class="linenos">239</span></a>
+</span><span id="volg_args-240"><a href="#volg_args-240"><span class="linenos">240</span></a><span class="sd">    Returns:</span>
+</span><span id="volg_args-241"><a href="#volg_args-241"><span class="linenos">241</span></a><span class="sd">        args</span>
+</span><span id="volg_args-242"><a href="#volg_args-242"><span class="linenos">242</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="volg_args-243"><a href="#volg_args-243"><span class="linenos">243</span></a>    <span class="n">args</span> <span class="o">=</span> <span class="n">common_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span id="volg_args-244"><a href="#volg_args-244"><span class="linenos">244</span></a>    <span class="c1"># leaving the interpellations-specific function in place, in case we need volG-specific actions</span>
+</span><span id="volg_args-245"><a href="#volg_args-245"><span class="linenos">245</span></a>    <span class="k">return</span> <span class="n">args</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Takes an argparse namespace object for working with riksdagen volume G and imputes standard stuff</p>
+
+<p>Args:
+    args: args</p>
+
+<p>Returns:
+    args</p>
+</div>
+
+
+                </section>
                 <section id="fetch_parser">
                             <input id="fetch_parser-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
@@ -762,25 +899,26 @@ Returns:
 
     </div>
     <a class="headerlink" href="#fetch_parser"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="fetch_parser-220"><a href="#fetch_parser-220"><span class="linenos">220</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_parser</span><span class="p">(</span><span class="n">doctype</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="fetch_parser-221"><a href="#fetch_parser-221"><span class="linenos">221</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="fetch_parser-222"><a href="#fetch_parser-222"><span class="linenos">222</span></a><span class="sd">    Fetch an argparse argument parser based on the doctype.</span>
-</span><span id="fetch_parser-223"><a href="#fetch_parser-223"><span class="linenos">223</span></a>
-</span><span id="fetch_parser-224"><a href="#fetch_parser-224"><span class="linenos">224</span></a><span class="sd">    Args:</span>
-</span><span id="fetch_parser-225"><a href="#fetch_parser-225"><span class="linenos">225</span></a><span class="sd">        doctype (str): doctype, one listed in D</span>
-</span><span id="fetch_parser-226"><a href="#fetch_parser-226"><span class="linenos">226</span></a><span class="sd">        docstring (str): string describing scripts for which the parser is called.</span>
-</span><span id="fetch_parser-227"><a href="#fetch_parser-227"><span class="linenos">227</span></a>
-</span><span id="fetch_parser-228"><a href="#fetch_parser-228"><span class="linenos">228</span></a><span class="sd">    Returns:</span>
-</span><span id="fetch_parser-229"><a href="#fetch_parser-229"><span class="linenos">229</span></a><span class="sd">        argparse Parser object</span>
-</span><span id="fetch_parser-230"><a href="#fetch_parser-230"><span class="linenos">230</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="fetch_parser-231"><a href="#fetch_parser-231"><span class="linenos">231</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="fetch_parser-232"><a href="#fetch_parser-232"><span class="linenos">232</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
-</span><span id="fetch_parser-233"><a href="#fetch_parser-233"><span class="linenos">233</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
-</span><span id="fetch_parser-234"><a href="#fetch_parser-234"><span class="linenos">234</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
-</span><span id="fetch_parser-235"><a href="#fetch_parser-235"><span class="linenos">235</span></a>        <span class="p">}</span>
-</span><span id="fetch_parser-236"><a href="#fetch_parser-236"><span class="linenos">236</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">docstring</span><span class="p">)</span>
-</span><span id="fetch_parser-237"><a href="#fetch_parser-237"><span class="linenos">237</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--doctype&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">doctype</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
-</span><span id="fetch_parser-238"><a href="#fetch_parser-238"><span class="linenos">238</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">doctype</span><span class="p">](</span><span class="n">parser</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="fetch_parser-248"><a href="#fetch_parser-248"><span class="linenos">248</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_parser</span><span class="p">(</span><span class="n">doctype</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="fetch_parser-249"><a href="#fetch_parser-249"><span class="linenos">249</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="fetch_parser-250"><a href="#fetch_parser-250"><span class="linenos">250</span></a><span class="sd">    Fetch an argparse argument parser based on the doctype.</span>
+</span><span id="fetch_parser-251"><a href="#fetch_parser-251"><span class="linenos">251</span></a>
+</span><span id="fetch_parser-252"><a href="#fetch_parser-252"><span class="linenos">252</span></a><span class="sd">    Args:</span>
+</span><span id="fetch_parser-253"><a href="#fetch_parser-253"><span class="linenos">253</span></a><span class="sd">        doctype (str): doctype, one listed in D</span>
+</span><span id="fetch_parser-254"><a href="#fetch_parser-254"><span class="linenos">254</span></a><span class="sd">        docstring (str): string describing scripts for which the parser is called.</span>
+</span><span id="fetch_parser-255"><a href="#fetch_parser-255"><span class="linenos">255</span></a>
+</span><span id="fetch_parser-256"><a href="#fetch_parser-256"><span class="linenos">256</span></a><span class="sd">    Returns:</span>
+</span><span id="fetch_parser-257"><a href="#fetch_parser-257"><span class="linenos">257</span></a><span class="sd">        argparse Parser object</span>
+</span><span id="fetch_parser-258"><a href="#fetch_parser-258"><span class="linenos">258</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="fetch_parser-259"><a href="#fetch_parser-259"><span class="linenos">259</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="fetch_parser-260"><a href="#fetch_parser-260"><span class="linenos">260</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
+</span><span id="fetch_parser-261"><a href="#fetch_parser-261"><span class="linenos">261</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
+</span><span id="fetch_parser-262"><a href="#fetch_parser-262"><span class="linenos">262</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
+</span><span id="fetch_parser-263"><a href="#fetch_parser-263"><span class="linenos">263</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_parser</span><span class="p">,</span>
+</span><span id="fetch_parser-264"><a href="#fetch_parser-264"><span class="linenos">264</span></a>        <span class="p">}</span>
+</span><span id="fetch_parser-265"><a href="#fetch_parser-265"><span class="linenos">265</span></a>    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">docstring</span><span class="p">)</span>
+</span><span id="fetch_parser-266"><a href="#fetch_parser-266"><span class="linenos">266</span></a>    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--doctype&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">doctype</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">SUPPRESS</span><span class="p">)</span>
+</span><span id="fetch_parser-267"><a href="#fetch_parser-267"><span class="linenos">267</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">doctype</span><span class="p">](</span><span class="n">parser</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -807,22 +945,23 @@ Returns:
 
     </div>
     <a class="headerlink" href="#impute_args"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="impute_args-243"><a href="#impute_args-243"><span class="linenos">243</span></a><span class="k">def</span><span class="w"> </span><span class="nf">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-</span><span id="impute_args-244"><a href="#impute_args-244"><span class="linenos">244</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="impute_args-245"><a href="#impute_args-245"><span class="linenos">245</span></a><span class="sd">    Impute args based on the doctype (args.doctype).</span>
-</span><span id="impute_args-246"><a href="#impute_args-246"><span class="linenos">246</span></a>
-</span><span id="impute_args-247"><a href="#impute_args-247"><span class="linenos">247</span></a><span class="sd">    Args:</span>
-</span><span id="impute_args-248"><a href="#impute_args-248"><span class="linenos">248</span></a><span class="sd">        args: argparse parsed args namespace</span>
-</span><span id="impute_args-249"><a href="#impute_args-249"><span class="linenos">249</span></a>
-</span><span id="impute_args-250"><a href="#impute_args-250"><span class="linenos">250</span></a><span class="sd">    Returns:</span>
-</span><span id="impute_args-251"><a href="#impute_args-251"><span class="linenos">251</span></a><span class="sd">        argparse parsed args namespace</span>
-</span><span id="impute_args-252"><a href="#impute_args-252"><span class="linenos">252</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="impute_args-253"><a href="#impute_args-253"><span class="linenos">253</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="impute_args-254"><a href="#impute_args-254"><span class="linenos">254</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_args</span><span class="p">,</span>
-</span><span id="impute_args-255"><a href="#impute_args-255"><span class="linenos">255</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_args</span><span class="p">,</span>
-</span><span id="impute_args-256"><a href="#impute_args-256"><span class="linenos">256</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_args</span><span class="p">,</span>
-</span><span id="impute_args-257"><a href="#impute_args-257"><span class="linenos">257</span></a>        <span class="p">}</span>
-</span><span id="impute_args-258"><a href="#impute_args-258"><span class="linenos">258</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">doctype</span><span class="p">](</span><span class="n">args</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="impute_args-272"><a href="#impute_args-272"><span class="linenos">272</span></a><span class="k">def</span><span class="w"> </span><span class="nf">impute_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+</span><span id="impute_args-273"><a href="#impute_args-273"><span class="linenos">273</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="impute_args-274"><a href="#impute_args-274"><span class="linenos">274</span></a><span class="sd">    Impute args based on the doctype (args.doctype).</span>
+</span><span id="impute_args-275"><a href="#impute_args-275"><span class="linenos">275</span></a>
+</span><span id="impute_args-276"><a href="#impute_args-276"><span class="linenos">276</span></a><span class="sd">    Args:</span>
+</span><span id="impute_args-277"><a href="#impute_args-277"><span class="linenos">277</span></a><span class="sd">        args: argparse parsed args namespace</span>
+</span><span id="impute_args-278"><a href="#impute_args-278"><span class="linenos">278</span></a>
+</span><span id="impute_args-279"><a href="#impute_args-279"><span class="linenos">279</span></a><span class="sd">    Returns:</span>
+</span><span id="impute_args-280"><a href="#impute_args-280"><span class="linenos">280</span></a><span class="sd">        argparse parsed args namespace</span>
+</span><span id="impute_args-281"><a href="#impute_args-281"><span class="linenos">281</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="impute_args-282"><a href="#impute_args-282"><span class="linenos">282</span></a>    <span class="n">D</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="impute_args-283"><a href="#impute_args-283"><span class="linenos">283</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_args</span><span class="p">,</span>
+</span><span id="impute_args-284"><a href="#impute_args-284"><span class="linenos">284</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_args</span><span class="p">,</span>
+</span><span id="impute_args-285"><a href="#impute_args-285"><span class="linenos">285</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_args</span><span class="p">,</span>
+</span><span id="impute_args-286"><a href="#impute_args-286"><span class="linenos">286</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_args</span>
+</span><span id="impute_args-287"><a href="#impute_args-287"><span class="linenos">287</span></a>        <span class="p">}</span>
+</span><span id="impute_args-288"><a href="#impute_args-288"><span class="linenos">288</span></a>    <span class="k">return</span> <span class="n">D</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">doctype</span><span class="p">](</span><span class="n">args</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -835,6 +974,44 @@ Returns:
     argparse parsed args namespace</p>
 </div>
 
+
+                </section>
+                <section id="fetch_doctype_parser">
+                            <input id="fetch_doctype_parser-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">fetch_doctype_parser</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">raw_args</span>, </span><span class="param"><span class="n">docstring</span><span class="o">=</span><span class="kc">None</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="fetch_doctype_parser-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#fetch_doctype_parser"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="fetch_doctype_parser-292"><a href="#fetch_doctype_parser-292"><span class="linenos">292</span></a><span class="k">def</span><span class="w"> </span><span class="nf">fetch_doctype_parser</span><span class="p">(</span><span class="n">raw_args</span><span class="p">,</span> <span class="n">docstring</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="fetch_doctype_parser-293"><a href="#fetch_doctype_parser-293"><span class="linenos">293</span></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_no_doctype_arg_error</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">corpora</span><span class="p">):</span>
+</span><span id="fetch_doctype_parser-294"><a href="#fetch_doctype_parser-294"><span class="linenos">294</span></a>        <span class="n">errs</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="fetch_doctype_parser-295"><a href="#fetch_doctype_parser-295"><span class="linenos">295</span></a>                <span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;You didn&#39;t set any first argument.&quot;</span><span class="p">,</span>
+</span><span id="fetch_doctype_parser-296"><a href="#fetch_doctype_parser-296"><span class="linenos">296</span></a>                <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;You passed an invalid doctype.&quot;</span>
+</span><span id="fetch_doctype_parser-297"><a href="#fetch_doctype_parser-297"><span class="linenos">297</span></a>            <span class="p">}</span>
+</span><span id="fetch_doctype_parser-298"><a href="#fetch_doctype_parser-298"><span class="linenos">298</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;You have to pass the document type as the first argument of this script (</span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;--&#39;</span><span class="o">+</span><span class="n">k</span><span class="o">+</span><span class="s1">&#39;,&#39;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">corpora</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="si">{</span><span class="n">errs</span><span class="p">[</span><span class="n">err</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</span><span id="fetch_doctype_parser-299"><a href="#fetch_doctype_parser-299"><span class="linenos">299</span></a>
+</span><span id="fetch_doctype_parser-300"><a href="#fetch_doctype_parser-300"><span class="linenos">300</span></a>    <span class="n">corpora</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="fetch_doctype_parser-301"><a href="#fetch_doctype_parser-301"><span class="linenos">301</span></a>            <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="n">record_parser</span><span class="p">,</span>
+</span><span id="fetch_doctype_parser-302"><a href="#fetch_doctype_parser-302"><span class="linenos">302</span></a>            <span class="s2">&quot;motions&quot;</span><span class="p">:</span> <span class="n">motion_parser</span><span class="p">,</span>
+</span><span id="fetch_doctype_parser-303"><a href="#fetch_doctype_parser-303"><span class="linenos">303</span></a>            <span class="s2">&quot;interpellations&quot;</span><span class="p">:</span> <span class="n">interpellation_parser</span><span class="p">,</span>
+</span><span id="fetch_doctype_parser-304"><a href="#fetch_doctype_parser-304"><span class="linenos">304</span></a>            <span class="s2">&quot;volg&quot;</span><span class="p">:</span> <span class="n">volg_parser</span><span class="p">,</span>
+</span><span id="fetch_doctype_parser-305"><a href="#fetch_doctype_parser-305"><span class="linenos">305</span></a>        <span class="p">}</span>
+</span><span id="fetch_doctype_parser-306"><a href="#fetch_doctype_parser-306"><span class="linenos">306</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+</span><span id="fetch_doctype_parser-307"><a href="#fetch_doctype_parser-307"><span class="linenos">307</span></a>        <span class="n">_no_doctype_arg_error</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">corpora</span><span class="p">)</span>
+</span><span id="fetch_doctype_parser-308"><a href="#fetch_doctype_parser-308"><span class="linenos">308</span></a>    <span class="k">if</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">:]</span> <span class="ow">in</span> <span class="n">corpora</span><span class="p">:</span>
+</span><span id="fetch_doctype_parser-309"><a href="#fetch_doctype_parser-309"><span class="linenos">309</span></a>        <span class="k">return</span> <span class="n">fetch_parser</span><span class="p">(</span><span class="n">raw_args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">:],</span> <span class="n">docstring</span><span class="o">=</span><span class="vm">__doc__</span><span class="p">),</span> <span class="n">raw_args</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+</span><span id="fetch_doctype_parser-310"><a href="#fetch_doctype_parser-310"><span class="linenos">310</span></a>
+</span><span id="fetch_doctype_parser-311"><a href="#fetch_doctype_parser-311"><span class="linenos">311</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="fetch_doctype_parser-312"><a href="#fetch_doctype_parser-312"><span class="linenos">312</span></a>        <span class="n">_no_doctype_arg_error</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">corpora</span><span class="p">)</span>
+</span></pre></div>
+
+
+    
 
                 </section>
     </main>

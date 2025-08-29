@@ -20,6 +20,7 @@ from trainerlog import get_logger
 import base58
 import hashlib
 import os
+import re
 import requests
 import uuid
 import warnings
@@ -543,3 +544,19 @@ def write_protocol(prot_elem, prot_path) -> None:
     """
     warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
     write_tei(prot_elem, prot_path)
+
+
+def version_number_is_valid(version_number):
+    """
+    Check that a version number is a valid semantic version number
+
+    Args:
+        version_number (str): version number to test
+
+    Returns:
+        Bool: return True or raise valueError
+    """
+    exp = re.compile(r"v([0-9]+)([.])([0-9]+)([.])([0-9]+)(b|rc)?([0-9]+)?")
+    if exp.search(version_number) is None:
+        raise ValueError(f"{version_number} is not a valid version number. Exiting")
+    return True

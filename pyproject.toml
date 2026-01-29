@@ -33,6 +33,13 @@ textdistance = "*"
 py-markdown-table = "*"
 alto-xml = "*"
 trainerlog = "*"
+
+# Define a torch group so that you don't need to install
+# it if you don't want to
+[tool.poetry.group.torch]
+optional = true
+
+[tool.poetry.group.torch.dependencies]
 transformers = "*"
 
 [tool.poetry.dev-dependencies]

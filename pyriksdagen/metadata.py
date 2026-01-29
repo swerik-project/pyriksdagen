@@ -58,7 +58,8 @@ def impute_member_dates(db, metadata_folder):
         elif pd.isna(row['start']) and pd.isna(row['end']):
             return row
         else:
-            riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
+            riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv",
+                                   dtype={"start": "string", "end": "string"})
             if pd.isna(row['start']) or row['start'] == 'nan':
                 try:
                     py = riksmote.loc[

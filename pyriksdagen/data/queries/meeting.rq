@@ -1,0 +1,10 @@
+SELECT ?riksmoteLabel ?start ?end ?startPrecision ?endPrecision ?riksmote
+WHERE
+{
+  {
+  ?riksmote wdt:P31 wd:Q10655253.
+  }
+  ?riksmote p:P580/psv:P580 [ wikibase:timeValue ?start; wikibase:timePrecision ?startPrecision ]
+  OPTIONAL{ ?riksmote p:P582/psv:P582 [ wikibase:timeValue ?end; wikibase:timePrecision ?endPrecision ] }.           
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "sv". }
+}

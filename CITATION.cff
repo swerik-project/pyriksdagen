@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: To cite this reposository, please use these metadata.
 title: "The Swedish Parliament Corpus: pyriksdagen"
-version: v1.10.0
+version: v1.10.1
 authors:
   - given-names: Väinö
     family-names: Yrjänäinen

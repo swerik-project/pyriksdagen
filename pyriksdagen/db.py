@@ -3,13 +3,17 @@ import os, json, re, hashlib
 from .utils import get_data_location
 from .metadata import load_Corpus_metadata
 from importlib_resources import files
+from trainerlog import get_logger
+
+LOGGER = get_logger("db")
+
 
 def year_iterator(file_db):
     """
     Iterate over triplets of (corpus_year, package_ids, year_db) for provided file database.
     """
     file_db_years = sorted(list(set(file_db["year"])))
-    print("Years to be iterated", file_db_years)
+    LOGGER.info("Years to be iterated", file_db_years)
     for corpus_year in file_db_years:
         year_db = file_db[file_db["year"] == corpus_year]
         package_ids = year_db["protocol_id"]
@@ -89,11 +93,13 @@ def load_metadata(metadata_location=None, processed_metadata_folder=None):
         metadata_location = get_data_location("metadata")
     party_mapping = pd.read_csv(f'{metadata_location}/party_abbreviation.csv')
     mb_db, minister_db, speaker_db = None, None, None
+    LOGGER.info("Attempting to load data from the preprocessed data folder")
     try:
         mp_db = pd.read_csv(f'{processed_metadata_folder}/member_of_parliament.csv')
         minister_db = pd.read_csv(f'{processed_metadata_folder}/minister.csv')
         speaker_db = pd.read_csv(f'{processed_metadata_folder}/speaker.csv')
     except Exception:
+        LOGGER.info("Loading preprocessed data failed... compiling the metadata corpus")
         df = load_Corpus_metadata(metadata_location)        
         mp_db  = df[df['source'] == 'member_of_parliament']
         minister_db  = df[df['source'] == 'minister']

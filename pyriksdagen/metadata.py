@@ -70,7 +70,7 @@ def impute_member_dates(db, metadata_folder):
                     row['start'] = py['start'].unique()[0]
                 except:
                     #pass
-                    LOGGER.error("no bueno ---------------------> end:", row['end'], row['person_id'])
+                    LOGGER.error(f"no bueno ---------------------> end: {row['end']}, {row['person_id']}")
             elif pd.isna(row['end']) or row['end'] == 'nan':
                 if int(row['start'][:4]) < 1867:
                     row['end'] = 'nan'

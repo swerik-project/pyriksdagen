@@ -13,7 +13,7 @@ def year_iterator(file_db):
     Iterate over triplets of (corpus_year, package_ids, year_db) for provided file database.
     """
     file_db_years = sorted(list(set(file_db["year"])))
-    LOGGER.info("Years to be iterated", file_db_years)
+    LOGGER.info(f"Years to be iterated\n{file_db_years}")
     for corpus_year in file_db_years:
         year_db = file_db[file_db["year"] == corpus_year]
         package_ids = year_db["protocol_id"]

@@ -6,13 +6,14 @@ Class declaration and functions related to corpus metadata
 from functools import partial
 from pyriksdagen.match_mp import multiple_replace
 from pyriksdagen.utils import get_data_location
+from trainerlog import get_logger
 import pandas as pd
 import calendar
 import datetime
 import os
 import re
 
-
+LOGGER = get_logger("metadata")
 
 
 def increase_date_precision(date, start=True):
@@ -56,9 +57,10 @@ def impute_member_dates(db, metadata_folder):
         if row['start'] == 'nan' and row['end'] == 'nan':
             return row
         elif pd.isna(row['start']) and pd.isna(row['end']):
+            row['start'] = 'nan'
+            row['end'] = 'nan'
             return row
         else:
-            riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
             if pd.isna(row['start']) or row['start'] == 'nan':
                 try:
                     py = riksmote.loc[
@@ -68,9 +70,10 @@ def impute_member_dates(db, metadata_folder):
                     row['start'] = py['start'].unique()[0]
                 except:
                     #pass
-                    print("no bueno ---------------------> end:", row['end'], row['person_id'])
+                    LOGGER.error(f"no bueno ---------------------> end: {row['end']}, {row['person_id']}")
             elif pd.isna(row['end']) or row['end'] == 'nan':
                 if int(row['start'][:4]) < 1867:
+                    row['end'] = 'nan'
                     return row
                 try:
                     py = riksmote.loc[
@@ -107,7 +110,7 @@ def impute_member_dates(db, metadata_folder):
             if len(s) > 0:
                 return s[0]
             else:
-                print(f"Problem with start date: {date} not in riksmote")
+                LOGGER.debug(f"Problem with start date: {date} not in riksmote")
                 return date + '-01-01'
 
     def _impute_end(date, **kwargs):
@@ -127,16 +130,21 @@ def impute_member_dates(db, metadata_folder):
             if len(s) > 0:
                 return s[0]
             else:
-                print(f"Problem with end date: {date} not in riksmote")
+                LOGGER.debug(f"Problem with end date: {date} not in riksmote")
                 return date + '-12-31'
 
     riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
-    riksmote[['start', 'end']] = riksmote[['start', 'end']].astype(str)
+    riksmote[['start', 'end', 'parliament_year']] = riksmote[['start', 'end', 'parliament_year']].astype(str)
 
     idx = (db['source'] == 'member_of_parliament') &\
-            (((pd.isna(db['start'])) | (db['start'] == 'nan')) |\
-            ((pd.isna(db['end'])) | (db['end'] == 'nan')))
-    db.loc[idx] = db.loc[idx].apply(lambda x: _fill_na(x, riksmote=riksmote), axis = 1)
+            (((db['start'].isna()) | (db['start'] == 'nan')) |\
+            ((db['end'].isna()) | (db['end'] == 'nan')))
+    filled = db.loc[idx, ["start", "end"]].apply(
+        lambda r: _fill_na(r, riksmote=riksmote),
+        axis=1,
+        result_type="expand",
+    )
+    db.loc[idx, ["start", "end"]] = filled.astype("string")
 
     idx = (db['source'] == 'member_of_parliament') &\
             (pd.notnull(db['start'])) & (db['start'] != 'nan')
@@ -158,11 +166,16 @@ def impute_minister_date(db, gov_db):
         return minister
 
     # Impute missing minister dates using government dates
-    if 'source' in db.columns:
-        db.loc[db['source'] == 'minister'] =\
-        db.loc[db['source'] == 'minister'].apply(partial(_impute_minister_date, gov_db=gov_db), axis=1)
-    else:
-        db = db.apply(partial(_impute_minister_date, gov_db=gov_db), axis=1)
+    mask = db["source"].eq("minister") if "source" in db.columns else pd.Series(True, index=db.index)
+
+    # only operate on the 3 columns needed, and only write back start/end
+    subset = db.loc[mask, ["government", "start", "end"]].apply(
+        partial(_impute_minister_date, gov_db=gov_db),
+        axis=1,
+        result_type="expand",
+    )
+
+    db.loc[mask, ["start", "end"]] = subset[["start", "end"]].astype("string")
     return db
 
 
@@ -223,7 +236,7 @@ def impute_party(db, party):
                 try:
                     res = check_date_overlap(row['start'], sow['start'], row['end'], sow['end'])
                 except:
-                    print("Impute dates on Corpus using impute_date() before imputing parties!\n")
+                    LOGGER.error("Impute dates on Corpus using impute_date() before imputing parties!\n")
                     raise
                 if res:
                     m = row.copy()
@@ -293,15 +306,12 @@ class Corpus(pd.DataFrame):
         # Adjust to new structure where party information
         # is not included in member_of_parliament.csv
         if file == "member_of_parliament":
-            print(df)
             columns = list(df.columns) + ["party"]
             party_df = pd.read_csv(f"{metadata_folder}/party_affiliation.csv")
             party_df = party_df[party_df["start"].notnull()]
             party_df = party_df[party_df["end"].notnull()]
             df = df.merge(party_df, on=["person_id", "start", "end"], how="left")
             df = df[columns]
-            print(df)
-            print(df[df["party"].notnull()])
         if source:
             df['source'] = file
         return df
@@ -365,14 +375,14 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
             if not os.path.exists(read_db_from):
                 raise FileNotFoundError(f"File not found at {read_db_from}. Try compiling the database or set the METADATA_DB variable in your environment.")
 
-        print("Reading metadata db from a file.")
+        LOGGER.info("Reading metadata db from a file.")
         try:
             corpus = pd.read_csv(read_db_from)
         except:
             corpus = pd.read_pickle(read_db_from)
         assert type(corpus) == Corpus, f"{read_db_from} is not a CSV or pickle file."
     else:
-        print("Compiling metadata db from source.")
+        LOGGER.info("Compiling metadata db from source.")
         if metadata_folder is None:
             metadata_folder = get_data_location("metadata")
 
@@ -413,9 +423,9 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
 
         # Remove redundancy and split file
         corpus = corpus.drop_duplicates()
-        #print( corpus.loc[(pd.isna(corpus['start'])) | (pd.isna(corpus['end']))] )
         corpus = corpus.dropna(subset=['name', 'start', 'end'])
         corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
+
 
     return corpus
 

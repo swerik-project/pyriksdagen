@@ -61,6 +61,7 @@ def clean_sparql_df(df, query_name):
 	# Clean columns
 	df = df.rename(columns={'wiki_idLabel.value':'name'}) # avoid duplicate colnames
 	df = df.rename(columns={'government.value':'government_id.value'})
+	df = df.rename(columns={'riksmote.value':'riksmote_id.value'})
 	df = df.rename(columns={'party.value':'party_id.value'})
 	df = df[[c for c in df.columns if c.endswith('.value') or c == 'name']]
 	

@@ -134,6 +134,14 @@ def impute_member_dates(db, metadata_folder):
                 return date + '-12-31'
 
     riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
+    
+    # If the riksmote is missing an end date, set it to start date + 1 year
+    def impute_riksmote_end(start):
+        start_year = int(start.split("-")[0])
+        end_year = str(start_year + 1)
+        return end_year + "-" + start[5:]
+    riksmote.loc[riksmote["end"].isnull(),'end'] = riksmote['start'].apply(lambda s: impute_riksmote_end(s))
+
     riksmote[['start', 'end', 'parliament_year']] = riksmote[['start', 'end', 'parliament_year']].astype(str)
 
     idx = (db['source'] == 'member_of_parliament') &\

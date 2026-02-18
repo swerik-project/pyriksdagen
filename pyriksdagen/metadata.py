@@ -96,7 +96,7 @@ def impute_member_dates(db, metadata_folder):
                             rs = sorted(py['end'].unique(), reverse=True)[0]
                         row['end'] = rs
                     except Exception as e:
-                        warnings.warning(f"Error encountered when trying to fill na of row: {row}, with riksmote data: {riksmote}")
+                        warnings.warn(f"Error encountered when trying to fill na of row: {row}, with riksmote data: {riksmote}")
                         raise e
         return row
 

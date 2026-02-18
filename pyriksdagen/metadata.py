@@ -12,6 +12,7 @@ import calendar
 import datetime
 import os
 import re
+import warnings
 
 LOGGER = get_logger("metadata")
 
@@ -82,17 +83,21 @@ def impute_member_dates(db, metadata_folder):
                         ].copy()
                     row['end'] = py['end'].unique()[0]
                 except:
-                    py = riksmote.loc[
-                            riksmote['end'].str.startswith(row['start'][:4])
-                        ].copy()
-                    rs = sorted(py['end'].unique(), reverse=True)[0]
-                    if rs < row['start']:
+                    try:
                         py = riksmote.loc[
-                                riksmote['end'].str.startswith(
-                                    str(int(row['start'][:4])+1))
+                                riksmote['end'].str.startswith(row['start'][:4])
                             ].copy()
                         rs = sorted(py['end'].unique(), reverse=True)[0]
-                    row['end'] = rs
+                        if rs < row['start']:
+                            py = riksmote.loc[
+                                    riksmote['end'].str.startswith(
+                                        str(int(row['start'][:4])+1))
+                                ].copy()
+                            rs = sorted(py['end'].unique(), reverse=True)[0]
+                        row['end'] = rs
+                    except Exception as e:
+                        warnings.warning(f"Error encountered when trying to fill na of row: {row}, with riksmote data: {riksmote}")
+                        raise e
         return row
 
     def _impute_start(date, **kwargs):

@@ -327,7 +327,8 @@ def yearize_mandates(debug_id=None, metadata_folder="data"):
             end_y = None
 
             if pd.notnull(start):
-                if "timestamps.Timestamp" in str(type(start)):
+                print(type(start))
+                if "timestamps.Timestamp" in str(type(start)) or "pandas.Timestamp" in str(type(start)):
                     start_p = "year"
                     start_y = start.strftime('%Y')
                     start = start.strftime('%Y-%m-%d')
@@ -353,7 +354,7 @@ def yearize_mandates(debug_id=None, metadata_folder="data"):
                         print(r, len(start))
 
             if pd.notnull(end):
-                if "timestamps.Timestamp" in str(type(end)):
+                if "timestamps.Timestamp" in str(type(end)) or "pandas.Timestamp" in str(type(end)):
                     end_p = "year"
                     end_y = end.strftime('%Y')
                     end = end.strftime('%Y-%m-%d')
@@ -426,7 +427,7 @@ def test_yearize_mandates():
     #print(m.head(50))
     #print(m.sample(50).head(50))
     #print(sorted(m["parliament_year"].unique()))
-    m.to_csv("_scripts/chairs/yearized_mandates.csv", index=False)
+    m.to_csv("../_scripts/chairs/yearized_mandates.csv", index=False)
 
 
 def test_yearize_date():

@@ -85,8 +85,8 @@ def infer_metadata(filename):
             - "urtima" (bool): Whether the document is an urtima session
     """
     metadata = {}
-    fname = os.path.basename(filename).replace(".xml", "")
-    parts = fname.replace("-", "_").split("_")
+    fname = Path(filename).stem.replace("-", "_")
+    parts = fname.split("_")
     if not parts:
         return metadata
 
@@ -94,21 +94,18 @@ def infer_metadata(filename):
 
     year = None
     secondary_year = None
-    for part in parts[1:3]:
-        m4 = re.match(r"^(1[89]\d{2}|20\d{2})$", part)
-        m6 = re.match(r"^(1[89]\d{2}|20\d{2})([0-9]{2})$", part)
-        m8 = re.match(r"^(1[89]\d{2})([0-9]{4})$", part)
-        if m4:
-            year = int(m4.group(1))
-            break
-        elif m6:
-            year = int(m6.group(1))
-            secondary_year = year + 1
-            break
-        elif m8:
-            year = int(m8.group(1))
-            secondary_year = int(m8.group(2))
-            break
+
+    part = parts[1]
+
+    if len(part) == 4 and part.isdigit():
+        year = int(part)
+    elif len(part) == 6 and part.isdigit():
+        year = int(part[:4])
+        secondary_year = year + 1
+    elif len(part) == 8 and part.isdigit():
+        year = int(part[:4])
+        secondary_year = int(part[4:])
+
     metadata["year"] = year
     if secondary_year:
         metadata["secondary_year"] = secondary_year
@@ -137,14 +134,27 @@ def infer_metadata(filename):
     else:
         metadata["committee"] = None
 
-    for p in reversed(parts):
-        if p.isdigit():
-            metadata["number"] = int(p)
-            break
+    metadata["number"] = int(parts[-1]) if parts[-1].isdigit() else None
 
     metadata["protocol"] = fname
 
     return metadata
+
+
+def version_number_is_valid(version_number):
+    """
+    Check that a version number is a valid semantic version number
+
+    Args:
+        version_number (str): version number to test
+
+    Returns:
+        Bool: return True or raise valueError
+    """
+    exp = re.compile(r"v([0-9]+)([.])([0-9]+)([.])([0-9]+)(b|rc)?([0-9]+)?")
+    if exp.search(version_number) is None:
+        raise ValueError(f"{version_number} is not a valid version number. Exiting")
+    return True
 
 
 def clean_html(s):

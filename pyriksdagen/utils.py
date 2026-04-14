@@ -64,46 +64,97 @@ def elem_iter(root, ns="{http://www.tei-c.org/ns/1.0}"):
 
 def infer_metadata(filename):
     """
-    Heuristically infer metadata from a protocol id or filename.
+    Heuristically infer metadata from a protocol or motion filename.
+
+    Supports both protocol ("prot") and motion ("mot") file formats and is
+    agnostic to dashes and underscores in the filename. Can handle relative
+    or absolute paths.
 
     Args:
-        filename (str): the protocols filename. Agnostic wrt. dashes and underscores. Can be relative or absolute.
+        filename (str): The filename or full path to the XML document.
 
-    Returns a dict with keys "protocol", "chamber", "year", and "number"
+    Returns:
+        dict: A dictionary containing inferred metadata with the following keys:
+            - "protocol" (str): Filename without extension
+            - "document_type" (str): Document type (e.g. "prot", "mot")
+            - "year" (int): Primary year of the document
+            - "secondary_year" (int, optional): Secondary year for multi-year sessions
+            - "chamber" (str): Parliamentary chamber
+            - "number" (int): Document number
+            - "committee" (str or None): Committee (motions only)
+            - "urtima" (bool): Whether the document is an urtima session
     """
-    metadata = dict()
-    filename = filename.replace("-", "_")
-    metadata["protocol"] = filename.split("/")[-1].split(".")[0]
-    split = filename.split("/")[-1].split("_")
-    metadata["document_type"] = split[0]
+    metadata = {}
+    fname = Path(filename).stem.replace("-", "_")
+    parts = fname.split("_")
+    if not parts:
+        return metadata
 
-    # Year
-    for s in split:
-        yearstr = s[:4]
-        if yearstr.isdigit():
-            year = int(yearstr)
-            if year > 1800 and year < 2100:
-                metadata["year"] = year
-                metadata["sitting"] = str(year)
+    metadata["document_type"] = parts[0]
 
-                # Protocol ids of format 197879 have two years, eg. 1978 and 1979
-                if s[4:6].isdigit() or "urtima" in metadata["protocol"]:
-                    metadata["secondary_year"] = year + 1
-                    metadata["sitting"] += f"{s[4:6]}"
+    year = None
+    secondary_year = None
 
-    # Chamber
+    part = parts[1]
+
+    if len(part) == 4 and part.isdigit():
+        year = int(part)
+    elif len(part) == 6 and part.isdigit():
+        year = int(part[:4])
+        secondary_year = year + 1
+    elif len(part) == 8 and part.isdigit():
+        year = int(part[:4])
+        secondary_year = int(part[4:])
+
+    metadata["year"] = year
+    if secondary_year:
+        metadata["secondary_year"] = secondary_year
+
     metadata["chamber"] = "Enkammarriksdagen"
-    if "_ak_" in filename:
-        metadata["chamber"] = "Andra kammaren"
-    elif "_fk_" in filename:
-        metadata["chamber"] = "Första kammaren"
+    for token in parts:
+        if token.lower() == "ak":
+            metadata["chamber"] = "Andra kammaren"
+        elif token.lower() == "fk":
+            metadata["chamber"] = "Första kammaren"
 
-    try:
-        metadata["number"] = int(split[-1])
-    except:
-        pass  # print("Number parsing unsuccesful", filename)
+    metadata["urtima"] = any("urtima" in p.lower() for p in parts)
+
+    if metadata["document_type"].lower() == "mot":
+        for p in parts[1:]:
+            if re.match(r"\d{4,8}", p):
+                continue
+            if p.lower() in ("ak", "fk"):
+                continue
+            if "urtima" in p.lower():
+                continue
+            metadata["committee"] = p
+            break
+        else:
+            metadata["committee"] = None
+    else:
+        metadata["committee"] = None
+
+    metadata["number"] = int(parts[-1]) if parts[-1].isdigit() else None
+
+    metadata["protocol"] = fname
 
     return metadata
+
+
+def version_number_is_valid(version_number):
+    """
+    Check that a version number is a valid semantic version number
+
+    Args:
+        version_number (str): version number to test
+
+    Returns:
+        Bool: return True or raise valueError
+    """
+    exp = re.compile(r"v([0-9]+)([.])([0-9]+)([.])([0-9]+)(b|rc)?([0-9]+)?")
+    if exp.search(version_number) is None:
+        raise ValueError(f"{version_number} is not a valid version number. Exiting")
+    return True
 
 
 def clean_html(s):
@@ -544,19 +595,3 @@ def write_protocol(prot_elem, prot_path) -> None:
     """
     warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
     write_tei(prot_elem, prot_path)
-
-
-def version_number_is_valid(version_number):
-    """
-    Check that a version number is a valid semantic version number
-
-    Args:
-        version_number (str): version number to test
-
-    Returns:
-        Bool: return True or raise valueError
-    """
-    exp = re.compile(r"v([0-9]+)([.])([0-9]+)([.])([0-9]+)(b|rc)?([0-9]+)?")
-    if exp.search(version_number) is None:
-        raise ValueError(f"{version_number} is not a valid version number. Exiting")
-    return True

@@ -1,10 +1,10 @@
 import datetime
 import unittest
 
-from pyriksdagen.metadata import parse_date_interval
+from pyriksdagen.date_handling import parse_date_interval
 
 
-class TestMetadataDates(unittest.TestCase):
+class TestDateHandling(unittest.TestCase):
     def test_parse_date_interval_expands_start_boundaries(self):
         self.assertEqual(
             parse_date_interval("2020", is_end=False),

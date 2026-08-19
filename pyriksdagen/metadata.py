@@ -26,12 +26,17 @@ def parse_date_interval(value, is_end):
     comparisons can use `start < other_end and end > other_start`.
 
     Returns:
-        tuple: `(timestamp, precision, issue)`, where issue is `"blank"`,
+        tuple: `(datetime, precision, issue)`, where issue is `"blank"`,
         `"malformed"`, or `None`.
     """
     if pd.isna(value) or str(value).strip() == "":
         if is_end:
-            return pd.Timestamp.max.normalize(), None, "blank"
+            return datetime.datetime.max.replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            ), None, "blank"
         return None, None, "blank"
 
     value = str(value).strip()
@@ -46,17 +51,17 @@ def parse_date_interval(value, is_end):
     try:
         if month is None:
             if is_end:
-                return pd.Timestamp(year + 1, 1, 1), "year", None
-            return pd.Timestamp(year, 1, 1), "year", None
+                return datetime.datetime(year + 1, 1, 1), "year", None
+            return datetime.datetime(year, 1, 1), "year", None
 
         if day is None:
             if is_end:
                 if month == 12:
-                    return pd.Timestamp(year + 1, 1, 1), "month", None
-                return pd.Timestamp(year, month + 1, 1), "month", None
-            return pd.Timestamp(year, month, 1), "month", None
+                    return datetime.datetime(year + 1, 1, 1), "month", None
+                return datetime.datetime(year, month + 1, 1), "month", None
+            return datetime.datetime(year, month, 1), "month", None
 
-        return pd.Timestamp(year, month, day), "day", None
+        return datetime.datetime(year, month, day), "day", None
     except ValueError:
         return None, None, "malformed"
 
@@ -561,5 +566,4 @@ def fetch_person_party(person_id, corpus, date=None):
         if parties is not None:
             return parties
     return _party(df)
-
 

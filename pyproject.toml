@@ -33,6 +33,7 @@ textdistance = "*"
 py-markdown-table = "*"
 alto-xml = "*"
 trainerlog = "*"
+PyYAML = "*"
 
 # Define a torch group so that you don't need to install
 # it if you don't want to

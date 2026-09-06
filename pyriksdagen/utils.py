@@ -28,6 +28,8 @@ import xmlschema
 import zipfile
 
 
+PROTOCOL_SUFFIX_RE = re.compile(r"--+(\d+)(?:-(\d+))?$")
+
 
 
 LOGGER = get_logger("pyriksdagen")
@@ -81,6 +83,7 @@ def infer_metadata(filename):
             - "secondary_year" (int, optional): Secondary year for multi-year sessions
             - "chamber" (str): Parliamentary chamber
             - "number" (int): Document number
+            - "part" (int or None): Split protocol part number, if present
             - "committee" (str or None): Committee (motions only)
             - "urtima" (bool): Whether the document is an urtima session
     """
@@ -135,6 +138,13 @@ def infer_metadata(filename):
         metadata["committee"] = None
 
     metadata["number"] = int(parts[-1]) if parts[-1].isdigit() else None
+    metadata["part"] = None
+    if metadata["document_type"].lower() == "prot":
+        match = PROTOCOL_SUFFIX_RE.search(Path(filename).stem)
+        if match is not None:
+            metadata["number"] = int(match.group(1))
+            if match.group(2) is not None:
+                metadata["part"] = int(match.group(2))
 
     metadata["protocol"] = fname
 

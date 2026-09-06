@@ -141,6 +141,49 @@ def infer_metadata(filename):
     return metadata
 
 
+def expected_pre_1875_date_from_filename(filename, year=None):
+    """
+    Infer the expected protocol date from pre-1875 protocol filenames.
+
+    Early bicameral protocol filenames encode the sitting date as a final
+    four-digit MMDD component, for example ``prot-1867--ak--0204.xml``.
+    Later protocol filenames use that final component as a protocol number, so
+    this helper only returns dates for protocol years before 1875.
+
+    Args:
+        filename (str or pathlib.Path): The filename or full path to inspect.
+        year (int, optional): Protocol year. If omitted, the year is inferred
+            from the filename.
+
+    Returns:
+        str or None: The ISO date (YYYY-MM-DD), or None when the filename does
+        not encode a valid pre-1875 protocol date.
+    """
+    metadata = infer_metadata(filename)
+    if metadata.get("document_type") != "prot":
+        return None
+
+    protocol_year = year if year is not None else metadata.get("year")
+    try:
+        protocol_year = int(protocol_year)
+    except (TypeError, ValueError):
+        return None
+
+    if protocol_year >= 1875:
+        return None
+
+    match = re.search(r"(?:--|_)(\d{4})$", Path(filename).stem)
+    if match is None:
+        return None
+
+    mmdd = match.group(1)
+    try:
+        expected_date = datetime(protocol_year, int(mmdd[:2]), int(mmdd[2:]))
+        return expected_date.strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+
+
 def version_number_is_valid(version_number):
     """
     Check that a version number is a valid semantic version number

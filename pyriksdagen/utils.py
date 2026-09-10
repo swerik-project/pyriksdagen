@@ -16,6 +16,7 @@ from pyriksdagen.io import (
     XML_NS,
 )
 from tqdm import tqdm
+import polars as pl
 from trainerlog import get_logger
 import base58
 import hashlib
@@ -560,3 +561,27 @@ def version_number_is_valid(version_number):
     if exp.search(version_number) is None:
         raise ValueError(f"{version_number} is not a valid version number. Exiting")
     return True
+
+def first_and_last_names(df_names, df_iort):
+    """
+    Find all first names, last names and iort that are not any of the other
+    """
+    
+    # First names: the first word in each multi-word name
+    first_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
+    first_names = first_names.with_columns(pl.col("name").str.split(" ").list[0])
+    first_names = set(first_names.get_column("name"))
+
+    # Last names: the last word in each multi-word name
+    last_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
+    last_names = last_names.with_columns(pl.col("name").str.split(" ").list[-1])
+    last_names = set(last_names.get_column("name"))
+    
+    iort = set(df_iort.get_column("location"))
+
+    # Remove any potential multi-category names
+    first_names_clean = (first_names - last_names) - iort
+    last_names_clean = (last_names - first_names) - iort
+    iort_clean = (iort - last_names) - first_names
+    return first_names_clean, last_names_clean, iort_clean
+

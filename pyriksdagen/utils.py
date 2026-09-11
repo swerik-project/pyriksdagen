@@ -610,7 +610,14 @@ def write_protocol(prot_elem, prot_path) -> None:
 
 def first_and_last_names(df_names, df_iort):
     """
-    Find all first names, last names and iort that are not any of the other
+    Find all first names, last names and iort in the database.
+
+    Args:
+        df_names (pl.DataFrame): the name.csv table
+        df_iort (pl.DataFrame): the location_specifier.csv table
+    
+    Returns:
+        first_names, last_names, iort (Set[str]): three non-intersecting sets of strings
     """
     
     # First names: the first word in each multi-word name

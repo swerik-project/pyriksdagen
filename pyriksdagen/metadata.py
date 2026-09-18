@@ -516,5 +516,3 @@ def fetch_person_party(person_id, corpus, date=None):
         if parties is not None:
             return parties
     return _party(df)
-
-

@@ -16,11 +16,28 @@ import re
 LOGGER = get_logger("metadata")
 
 
-def _dataframe_from_rows(rows, columns=None):
+def _dataframe_from_rows(rows, columns=None, schema=None):
     if not rows:
-        return pl.DataFrame(schema=columns)
+        return pl.DataFrame(schema=schema if schema is not None else columns)
     df = pl.DataFrame(rows, infer_schema_length=None)
+    if schema is not None:
+        df = df.with_columns(
+            pl.col(col).cast(dtype).alias(col)
+            for col, dtype in schema.items()
+            if col in df.columns and df.schema[col] == pl.Null and dtype != pl.Null
+        )
     return df.select(columns) if columns is not None else df
+
+
+def _normalize_pseudo_nan_dates(db):
+    date_cols = [col for col in ["start", "end"] if col in db.columns]
+    return db.with_columns(
+        pl.when(pl.col(col).str.to_lowercase() == "nan")
+        .then(None)
+        .otherwise(pl.col(col))
+        .alias(col)
+        for col in date_cols
+    )
 
 
 def increase_date_precision(date, start=True):
@@ -43,6 +60,8 @@ def increase_date_precision(date, start=True):
 
 
 def check_date_overlap(start1, end1, start2, end2):
+    if None in [start1, end1, start2, end2]:
+        return False
     latest_start = max(start1, start2)
     earliest_end = min(end1, end2)
     delta = (earliest_end - latest_start).days + 1
@@ -66,35 +85,47 @@ def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
 
 
 def impute_member_dates(db, metadata_folder):
+    def _first_start_for_end(end, riksmote):
+        py = riksmote.filter((pl.col('start') <= end) & (pl.col('end') >= end))
+        return None if py.is_empty() else py['start'][0]
+
+    def _first_end_for_start(start, riksmote):
+        py = riksmote.filter((pl.col('start') <= start) & (pl.col('end') > start))
+        return None if py.is_empty() else py['end'][0]
+
+    def _fallback_end_for_start_year(start, riksmote):
+        py = riksmote.filter(pl.col('end').str.starts_with(start[:4]))
+        if py.is_empty():
+            return None
+
+        end = sorted(py['end'].to_list(), reverse=True)[0]
+        if end >= start:
+            return end
+
+        py = riksmote.filter(pl.col('end').str.starts_with(str(int(start[:4])+1)))
+        if py.is_empty():
+            return None
+        return sorted(py['end'].to_list(), reverse=True)[0]
+
     def _fill_na(row, **kwargs):
-        if row['start'] == 'nan' and row['end'] == 'nan':
+        if row['start'] is None and row['end'] is None:
             return row
-        elif row['start'] is None and row['end'] is None:
-            row['start'] = 'nan'
-            row['end'] = 'nan'
+
+        if row['start'] is None:
+            row['start'] = _first_start_for_end(row['end'], riksmote)
+            if row['start'] is None:
+                LOGGER.debug(f"Could not infer start date for {row['person_id']} from end date {row['end']}.")
             return row
-        else:
-            if row['start'] is None or row['start'] == 'nan':
-                try:
-                    py = riksmote.filter((pl.col('start') <= row['end']) & (pl.col('end') >= row['end']))
-                    row['start'] = py['start'].unique()[0]
-                except:
-                    #pass
-                    LOGGER.error(f"no bueno ---------------------> end: {row['end']}, {row['person_id']}")
-            elif row['end'] is None or row['end'] == 'nan':
-                if int(row['start'][:4]) < 1867:
-                    row['end'] = 'nan'
-                    return row
-                try:
-                    py = riksmote.filter((pl.col('start') <= row['start']) & (pl.col('end') > row['start']))
-                    row['end'] = py['end'].unique()[0]
-                except:
-                    py = riksmote.filter(pl.col('end').str.starts_with(row['start'][:4]))
-                    rs = sorted(py['end'].unique(), reverse=True)[0]
-                    if rs < row['start']:
-                        py = riksmote.filter(pl.col('end').str.starts_with(str(int(row['start'][:4])+1)))
-                        rs = sorted(py['end'].unique(), reverse=True)[0]
-                    row['end'] = rs
+
+        if row['end'] is None:
+            if int(row['start'][:4]) < 1867:
+                return row
+
+            row['end'] = _first_end_for_start(row['start'], riksmote)
+            if row['end'] is None:
+                row['end'] = _fallback_end_for_start_year(row['start'], riksmote)
+            if row['end'] is None:
+                LOGGER.debug(f"Could not infer end date for {row['person_id']} from start date {row['start']}.")
         return row
 
     def _impute_start(date, **kwargs):
@@ -143,22 +174,19 @@ def impute_member_dates(db, metadata_folder):
     for row in db.to_dicts():
         if row["source"] == "member_of_parliament" and (
             row["start"] is None
-            or row["start"] == "nan"
             or row["end"] is None
-            or row["end"] == "nan"
         ):
             row = _fill_na(row, riksmote=riksmote)
-        if row["source"] == "member_of_parliament" and row["start"] is not None and row["start"] != "nan":
+        if row["source"] == "member_of_parliament" and row["start"] is not None:
             row["start"] = _impute_start(row["start"], riksmote=riksmote)
         if (
             row["source"] == "member_of_parliament"
             and row["start"] is not None
             and row["end"] is not None
-            and row["end"] != "nan"
         ):
             row["end"] = _impute_end(row["end"], riksmote=riksmote)
         rows.append(row)
-    return _dataframe_from_rows(rows, db.columns)
+    return _dataframe_from_rows(rows, db.columns, db.schema)
 
 
 def impute_minister_date(db, gov_db):
@@ -175,7 +203,7 @@ def impute_minister_date(db, gov_db):
         if "source" not in db.columns or row["source"] == "minister":
             row = _impute_minister_date(row, gov_db=gov_db)
         rows.append(row)
-    return _dataframe_from_rows(rows, db.columns)
+    return _dataframe_from_rows(rows, db.columns, db.schema)
 
 
 def impute_speaker_date(db):
@@ -189,6 +217,7 @@ def impute_speaker_date(db):
 
 def impute_date(db, metadata_folder):
     db = db.with_columns(pl.col(["start", "end"]).cast(pl.String))
+    db = _normalize_pseudo_nan_dates(db)
     if 'source' in db.columns:
         sources = set(db['source'])
         if 'member_of_parliament' in sources:
@@ -239,21 +268,19 @@ def impute_party(db, party):
                 row['party'] = next(iter(party_values))
             if len(party_values) >= 2:
                 for sow in parties.to_dicts():
-                    try:
-                        res = check_date_overlap(row['start'], sow['start'], row['end'], sow['end'])
-                    except:
-                        LOGGER.error("Impute dates on Corpus using impute_date() before imputing parties!\n")
-                        raise
-                    if res:
+                    if check_date_overlap(row['start'], row['end'], sow['start'], sow['end']):
                         m = row.copy()
                         m['party'] = sow['party']
                         data.append(m)
     if data:
         return pl.concat(
-            [_dataframe_from_rows(rows, db.columns), _dataframe_from_rows(data, db.columns)],
+            [
+                _dataframe_from_rows(rows, db.columns, db.schema),
+                _dataframe_from_rows(data, db.columns, db.schema),
+            ],
             how="diagonal",
         )
-    return _dataframe_from_rows(rows, db.columns)
+    return _dataframe_from_rows(rows, db.columns, db.schema)
 
 
 def abbreviate_party(db, party):

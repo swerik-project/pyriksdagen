@@ -623,11 +623,13 @@ def first_and_last_names(df_names, df_iort):
     # First names: the first word in each multi-word name
     first_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
     first_names = first_names.with_columns(pl.col("name").str.split(" ").list[0])
+    first_names = first_names.filter(pl.col("name").str.len_chars() >= 2)
     first_names = set(first_names.get_column("name"))
 
     # Last names: the last word in each multi-word name
     last_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
     last_names = last_names.with_columns(pl.col("name").str.split(" ").list[-1])
+    last_names = last_names.filter(pl.col("name").str.len_chars() >= 2)
     last_names = set(last_names.get_column("name"))
     
     iort = set(df_iort.get_column("location"))

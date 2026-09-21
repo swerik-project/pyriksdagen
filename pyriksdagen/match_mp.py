@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import polars as pl
 import re
 import textdistance
 from unidecode import unidecode
@@ -20,14 +20,14 @@ def clean_names(names):
 		names = names.replace('-',' ') # Carl-Eric Lindblad --> Carl Eric Lindblad
 		names = names.lower()
 	else:
-		names = names.str.replace(',','', regex=False) # Allard, Henry --> Allard Henry
-		names = names.str.replace('.','', regex=False) # A.C. Lindblad --> AC Lindblad
-		names = names.str.replace('-',' ', regex=False) # Carl-Eric Lindblad --> Carl Eric Lindblad
-		names = names.str.lower()
+		names = names.str.replace_all(',','') # Allard, Henry --> Allard Henry
+		names = names.str.replace_all('.','', literal=True) # A.C. Lindblad --> AC Lindblad
+		names = names.str.replace_all('-',' ', literal=True) # Carl-Eric Lindblad --> Carl Eric Lindblad
+		names = names.str.to_lowercase()
 	return names
 
 def name_equals(name, db):
-	matches = db[db["name"] == name]
+	matches = db.filter(pl.col("name") == name)
 	return matches
 
 def name_almost_equals(name, db):
@@ -50,24 +50,28 @@ def name_almost_equals(name, db):
 				return False
 		return perfect_matches >= 1
 
-	matches = db[db["name"].apply(lambda x: _rough_equality(name, x))]
+	matches = db.filter(pl.col("name").map_elements(lambda x: _rough_equality(name, x), return_dtype=pl.Boolean))
 	return matches
 
 def names_in(name, db):
 	names = name.split()
-	matches = db[db["name"].apply(lambda x:
-		len([n for n in names if n in x.split()]) == len(names))]
+	matches = db.filter(pl.col("name").map_elements(
+		lambda x: len([n for n in names if n in x.split()]) == len(names),
+		return_dtype=pl.Boolean,
+	))
 	return matches
 
 def names_in_rev(name, db):
 	names = name.split()
-	matches = db[db["name"].apply(lambda x:
-		len([n for n in x.split() if n in names]) == len(x.split()))]
+	matches = db.filter(pl.col("name").map_elements(
+		lambda x: len([n for n in x.split() if n in names]) == len(x.split()),
+		return_dtype=pl.Boolean,
+	))
 	return matches
 
 def fuzzy_name(name, db):
 	d = textdistance.levenshtein
-	matches = db[db["name"].apply(lambda x: d(name, x) == 1)]
+	matches = db.filter(pl.col("name").map_elements(lambda x: d(name, x) == 1, return_dtype=pl.Boolean))
 	return matches
 
 ### Depreceated functions below
@@ -75,47 +79,47 @@ def fuzzy_name(name, db):
 def subnames_in_mpname(name, db):
 	if debug:
 		print(name, len(name))
-	indices = [i for i,row in db.iterrows() if
+	indices = [i for i,row in enumerate(db.iter_rows(named=True)) if
 			   all(any(n == subname for n in row["name"].split())
 			   for subname in name.split())]
-	return db.loc[indices]
+	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def mpsubnames_in_name(name, db):
 	if debug:
 		print(name, len(name))
-	indices = [i for i,row in db.iterrows() if
+	indices = [i for i,row in enumerate(db.iter_rows(named=True)) if
 			   all(any(n == subname for n in name.split())
 			   for subname in row["name"].split())]
-	return db.loc[indices]
+	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def firstname_lastname(name, db):
 	if debug:
 		print(name, len(name))
 	if len(subnames := name.split()) <= 1: return []
-	indices = [i for i,row in db.iterrows() \
+	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if subnames[0] == row["name"].split()[0] and subnames[-1] == row["name"].split()[-1]]
-	return db.loc[indices]
+	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def firstname_lastname_reversed(name, db):
 	if debug:
 		print(name, len(name))
 	if len(subnames := name.split()) <= 1: return []
-	indices = [i for i,row in db.iterrows() \
+	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if subnames[0] == row["name"].split()[-1] and subnames[-1] == row["name"].split()[0]]
-	return db.loc[indices]
+	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def two_lastnames(name, db):
 	if debug:
 		print(name, len(name))
 	if len(subnames := name.split()) <= 1: return []
-	indices = [i for i,row in db.iterrows() \
+	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if name.split()[-1] == row["name"].split()[-1] and name.split()[-2] == row["name"].split()[1:]]
-	return db.loc[indices]
+	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def lastname(name, db):
 	if debug:
 		print(name, len(name))
-	return db[db["name"].str.split().str[-1] == name]
+	return db.filter(pl.col("name").str.split(" ").list.last() == name)
 
 def match_mp(person, db, variables, matching_funs):
 	"""
@@ -136,15 +140,11 @@ def match_mp(person, db, variables, matching_funs):
 	for key in ["name", "party_abbrev", "specifier"]:
 		if key not in p:
 			p[key] = ""
-	for key in p:
-		p[key] = [p[key]]
-	p = pd.DataFrame.from_dict(p)
-	p = p.astype(str)
-	p = p.iloc[0]
+	p = {key: str(value) for key, value in p.items()}
 
 	# statskalender file currently lacks gender
 	if 'gender' in p:
-		db = db[db["gender"] == p["gender"]]
+		db = db.filter(pl.col("gender") == p["gender"])
 
 	for fun in matching_funs:
 		matched_mps = fun(p["name"], db)
@@ -157,7 +157,7 @@ def match_mp(person, db, variables, matching_funs):
 		
 		number_of_matches = len(set(matched_mps["id"]))
 		if number_of_matches == 1:
-			matched_value = matched_mps["id"].iloc[0]
+			matched_value = matched_mps["id"][0]
 			LOGGER.debug(f"Match found with {fun}: {matched_value}")
 			return matched_value
 		elif number_of_matches >= 2:
@@ -166,11 +166,12 @@ def match_mp(person, db, variables, matching_funs):
 		# Iterates over combinations of variables to find a unique match
 		for v in variables:
 			
-			matched_mps_new = matched_mps.iloc[np.where(matched_mps[v] == p[v])[0]]
+			expr = pl.all_horizontal([pl.col(col) == p[col] for col in v])
+			matched_mps_new = matched_mps.filter(expr)
 
 			number_of_matches = len(set(matched_mps_new["id"]))
 			if number_of_matches == 1:
-				matched_value = matched_mps_new["id"].iloc[0]
+				matched_value = matched_mps_new["id"][0]
 				LOGGER.debug(f"Match found with {v}: {matched_value}")
 				return matched_value
 			elif number_of_matches >= 2:

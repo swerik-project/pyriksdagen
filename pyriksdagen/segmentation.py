@@ -3,6 +3,7 @@ Implements the segmentation of the data into speeches and
 ultimately into the Parla-Clarin XML format.
 """
 import numpy as np
+import polars as pl
 import re, hashlib
 from .db import load_expressions
 from .match_mp import match_mp, name_equals, name_almost_equals, names_in, names_in_rev
@@ -42,7 +43,7 @@ def detect_speaker(matched_txt, speaker_db, metadata=None):
 
     Args:
         matched_txt (str): intro text
-        speaker_db (pd.df): dataframe containing the speaker metadata
+        speaker_db (pl.DataFrame): dataframe containing the speaker metadata
         metadata (dict): metadata about the protocol. Deprecated.
 
     Returns
@@ -52,23 +53,23 @@ def detect_speaker(matched_txt, speaker_db, metadata=None):
 
     # Second vice speaker
     if re.search('andre vice', lower_txt):
-        speaker_db = speaker_db[speaker_db["role"].str.contains('andre')]
+        speaker_db = speaker_db.filter(pl.col("role").str.contains('andre'))
         
     # Third vice speaker
     elif re.search('tredje vice', lower_txt):
-        speaker_db = speaker_db[speaker_db["role"].str.contains('tredje')]
+        speaker_db = speaker_db.filter(pl.col("role").str.contains('tredje'))
 
     # First vice speaker
     elif re.search(r'(förste)?\svice', lower_txt):
-        speaker_db = speaker_db[speaker_db["role"].str.contains('förste')]
+        speaker_db = speaker_db.filter(pl.col("role").str.contains('förste'))
 
     # Speaker
     elif re.search(r'(herr|fru)?\s?talman', lower_txt):
-        speaker_db = speaker_db[speaker_db["role"] == 'talman']
+        speaker_db = speaker_db.filter(pl.col("role") == 'talman')
 
     number_of_matches = len(set(speaker_db["id"]))
     if number_of_matches == 1:
-        matched_value = speaker_db["id"].iloc[0]
+        matched_value = speaker_db["id"][0]
         LOGGER.debug(f"Match found: {matched_value}")
         return matched_value
     elif number_of_matches >= 2:
@@ -84,7 +85,7 @@ def detect_minister(matched_txt, minister_db, intro_dict):
 
     Args:
         matched_txt (str): intro text
-        minister_db (pd.df): dataframe containing the minister metadata
+        minister_db (pl.DataFrame): dataframe containing the minister metadata
         intro_dict (dict): processed information about the intro text, possibly containing eg. 'gender' 
     
     Returns:
@@ -95,17 +96,15 @@ def detect_minister(matched_txt, minister_db, intro_dict):
     # Filter by gender
     if 'gender' in intro_dict:
         gender = intro_dict["gender"]
-        minister_db = minister_db[minister_db["gender"] == gender]
+        minister_db = minister_db.filter(pl.col("gender") == gender)
 
     # Filter by date
     if 'date' in intro_dict:
 
-        minister_db = minister_db[
-                (minister_db["start"] <= intro_dict['date']) &
-                (minister_db["end"] >= intro_dict['date'])]
-        if not minister_db.empty:
+        minister_db = minister_db.filter((pl.col("start") <= intro_dict['date']) & (pl.col("end") >= intro_dict['date']))
+        if not minister_db.is_empty():
             if len(set(minister_db["id"])) == 1:
-                return minister_db["id"].iloc[0]
+                return minister_db["id"][0]
 
     # Match by name
     if 'name' in intro_dict:
@@ -113,9 +112,9 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         # thage petterson
         #print(minister_db)
         name_matches = names_in(name, minister_db)
-        if not name_matches.empty:
+        if not name_matches.is_empty():
             if len(set(name_matches["id"])) == 1:
-                matched_value = name_matches["id"].iloc[0]
+                matched_value = name_matches["id"][0]
                 LOGGER.debug(f"Match by name {matched_value}")
                 return matched_value
 
@@ -123,27 +122,27 @@ def detect_minister(matched_txt, minister_db, intro_dict):
     # Catch "utrikesdepartementet"
     if role := re.search(r'([A-Za-zÀ-ÿ]+)(?:departementet)', lower_txt):
         r = role.group(0).replace('departementet', '')
-        role_matches = minister_db[minister_db["role"].str.contains(r, regex=False)]
-        if not role_matches.empty:
+        role_matches = minister_db.filter(pl.col("role").str.contains(r, literal=True))
+        if not role_matches.is_empty():
             if len(set(role_matches["id"])) == 1:
-                matched_value = role_matches["id"].iloc[0]
+                matched_value = role_matches["id"][0]
                 LOGGER.debug(f"Matched by role {matched_value}")
                 return matched_value
 
     # Catch "ministern för utrikes ärendena (...)"
     elif role := re.search(r'(?:ministern för )([A-Za-zÀ-ÿ]+)', lower_txt):
         r = role.group(0).split()[-1]
-        role_matches = minister_db[minister_db["role"].str.contains(r, regex=False)]
-        if not role_matches.empty:
+        role_matches = minister_db.filter(pl.col("role").str.contains(r, literal=True))
+        if not role_matches.is_empty():
             if len(set(role_matches["id"])) == 1:
-                return role_matches["id"].iloc[0]
+                return role_matches["id"][0]
 
     elif role := re.search(r'[A-Za-zÀ-ÿ]+minister', lower_txt):
         r = role.group(0).replace('minister', '')
-        role_matches = minister_db[minister_db["role"].str.contains(r, regex=False)]
-        if not role_matches.empty:
+        role_matches = minister_db.filter(pl.col("role").str.contains(r, literal=True))
+        if not role_matches.is_empty():
             if len(set(role_matches["id"])) == 1:
-                return role_matches["id"].iloc[0]
+                return role_matches["id"][0]
 
 def detect_mp(intro_dict, db, party_map=None, match_fuzzily=False):
     """
@@ -213,7 +212,7 @@ def intro_to_dict(intro_text, expressions=None):
 def expression_dicts(pattern_db):
     expressions = dict()
     manual = dict()
-    for _, row in pattern_db.iterrows():
+    for row in pattern_db.iter_rows(named=True):
         pattern = row["pattern"]
         exp = re.compile(pattern)
         # Calculate digest for distringuishing patterns without ugly characters

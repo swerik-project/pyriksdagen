@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import os, re
 import getpass
 import kblab
@@ -178,7 +178,7 @@ def count_pages(start, end):
             rows.append([package_id, year, page_count])
 
     columns = ["protocol_id", "year", "pages"]
-    db_pages = pd.DataFrame(rows, columns=columns)
+    db_pages = pl.DataFrame(rows, schema=columns, orient="row")
     return db_pages
 
 
@@ -223,7 +223,7 @@ def randomize_ordinals(files):
     """
     columns = ["package_id", "year", "pagenumber", "ordinal"]
     data = []
-    for index, row in files.iterrows():
+    for row in files.iter_rows(named=True):
         # print(index, row)
         package_id = row["package_id"]
         pages = row["pages"]
@@ -237,4 +237,4 @@ def randomize_ordinals(files):
             new_row = [package_id, year, page, ordinal]
             data.append(new_row)
 
-    return pd.DataFrame(data, columns=columns)
+    return pl.DataFrame(data, schema=columns, orient="row")

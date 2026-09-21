@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import os, json, re, hashlib
 from .utils import get_data_location
 from .metadata import load_Corpus_metadata
@@ -12,12 +12,12 @@ def year_iterator(file_db):
     """
     Iterate over triplets of (corpus_year, package_ids, year_db) for provided file database.
     """
-    file_db_years = sorted(list(set(file_db["year"])))
+    file_db_years = sorted(list(set(file_db["year"].to_list())))
     LOGGER.info(f"Years to be iterated\n{file_db_years}")
     for corpus_year in file_db_years:
-        year_db = file_db[file_db["year"] == corpus_year]
+        year_db = file_db.filter(pl.col("year") == corpus_year)
         package_ids = year_db["protocol_id"]
-        package_ids = list(package_ids)
+        package_ids = package_ids.to_list()
         package_ids = sorted(package_ids)
 
         yield corpus_year, package_ids, year_db
@@ -29,18 +29,18 @@ def load_patterns(year=None, phase="segmentation"):
     """
     file = files(f'pyriksdagen.data.{phase}').joinpath('patterns.json')
     with file.open() as f:
-        patterns = pd.read_json(f, orient="records", lines=True)
+        patterns = pl.read_ndjson(f)
     if year is not None:
-        patterns = patterns[patterns["start"] >= year]
-        patterns = patterns[patterns["end"] <= year]
+        patterns = patterns.filter(pl.col("start") >= year)
+        patterns = patterns.filter(pl.col("end") <= year)
 
-    patterns["protocol_id"] = None
+    patterns = patterns.with_columns(pl.lit(None).alias("protocol_id"))
 
     manual_path = "input/" + phase + "/manual.csv"
     if os.path.exists(manual_path):
-        manual = pd.read_csv(manual_path)
-        manual["type"] = "manual"
-        return pd.concat([manual, patterns])
+        manual = pl.read_csv(manual_path)
+        manual = manual.with_columns(pl.lit("manual").alias("type"))
+        return pl.concat([manual, patterns], how="diagonal")
     else:
         return patterns
 
@@ -53,21 +53,23 @@ def filter_db(db, start_date=None, end_date=None, year=None, protocol_id=None):
         year is not None or protocol_id is not None or (start_date is not None and end_date is not None)
     ), "Provide either year or protocol id"
     if start_date is not None and end_date is not None:
-        filtered_db = db[(db["start"].dt.date <= end_date.date()) & (db["end"].dt.date >= start_date.date())]
+        start_value = start_date.date() if hasattr(start_date, "date") else start_date
+        end_value = end_date.date() if hasattr(end_date, "date") else end_date
+        filtered_db = db.filter((pl.col("start") <= end_value) & (pl.col("end") >= start_value))
         return filtered_db
     elif year is not None:
         if "start" in db.columns:
-            filtered_db = db[db["start"].dt.year <= year]
-            filtered_db = filtered_db[filtered_db["end"].dt.year >= year]
+            filtered_db = db.filter(pl.col("start").dt.year() <= year)
+            filtered_db = filtered_db.filter(pl.col("end").dt.year() >= year)
             return filtered_db
         elif "year" in db.columns:
-            filtered_db = db[db["year"] == year]
+            filtered_db = db.filter(pl.col("year") == year)
             return filtered_db
         else:
             return None
 
     else:
-        return db[db["protocol_id"] == protocol_id]
+        return db.filter(pl.col("protocol_id") == protocol_id)
 
 def load_ministers(path='corpus/wiki-data/minister.json'):
     '''Unpacks very nested minister.json file to a df.'''
@@ -85,36 +87,35 @@ def load_ministers(path='corpus/wiki-data/minister.json'):
                 s = pos["start"]
                 e = pos["end"]
                 data.append([g, Q, n, r, s, e])
-    minister = pd.DataFrame(data, columns=["government", "wiki_id", "name", "role", "start", "end"])
+    minister = pl.DataFrame(data, schema=["government", "wiki_id", "name", "role", "start", "end"], orient="row")
     return minister
 
 def load_metadata(metadata_location=None, processed_metadata_folder=None):
     if metadata_location is None:
         metadata_location = get_data_location("metadata")
-    party_mapping = pd.read_csv(f'{metadata_location}/party_abbreviation.csv')
+    party_mapping = pl.read_csv(f'{metadata_location}/party_abbreviation.csv')
     mb_db, minister_db, speaker_db = None, None, None
     LOGGER.info("Attempting to load data from the preprocessed data folder")
     try:
-        mp_db = pd.read_csv(f'{processed_metadata_folder}/member_of_parliament.csv')
-        minister_db = pd.read_csv(f'{processed_metadata_folder}/minister.csv')
-        speaker_db = pd.read_csv(f'{processed_metadata_folder}/speaker.csv')
+        mp_db = pl.read_csv(f'{processed_metadata_folder}/member_of_parliament.csv')
+        minister_db = pl.read_csv(f'{processed_metadata_folder}/minister.csv')
+        speaker_db = pl.read_csv(f'{processed_metadata_folder}/speaker.csv')
     except Exception:
         LOGGER.info("Loading preprocessed data failed... compiling the metadata corpus")
         df = load_Corpus_metadata(metadata_location)        
-        mp_db  = df[df['source'] == 'member_of_parliament']
-        minister_db  = df[df['source'] == 'minister']
-        speaker_db  = df[df['source'] == 'speaker']
+        mp_db = df.filter(pl.col('source') == 'member_of_parliament')
+        minister_db = df.filter(pl.col('source') == 'minister')
+        speaker_db = df.filter(pl.col('source') == 'speaker')
 
     ### Temporary colname changes
-    mp_db["specifier"] = mp_db["location"]
-    mp_db = mp_db.rename(columns={'person_id':'id'})
-    minister_db = minister_db.rename(columns={'person_id':'id'})
-    speaker_db = speaker_db.rename(columns={'person_id':'id'})
+    mp_db = mp_db.with_columns(pl.col("location").alias("specifier")).rename({'person_id':'id'})
+    minister_db = minister_db.rename({'person_id':'id'})
+    speaker_db = speaker_db.rename({'person_id':'id'})
 
     # Datetime format
-    mp_db[["start", "end"]] = mp_db[["start", "end"]].apply(pd.to_datetime, errors="coerce")
-    minister_db[["start", "end"]] = minister_db[["start", "end"]].apply(pd.to_datetime, errors="coerce")
-    speaker_db[["start", "end"]] = speaker_db[["start", "end"]].apply(pd.to_datetime, errors="coerce")
+    mp_db = mp_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
+    minister_db = minister_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
+    speaker_db = speaker_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
 
     return party_mapping, mp_db, minister_db, speaker_db
 
@@ -122,7 +123,7 @@ def load_expressions(phase="segmentation", year=None):
     if phase == "segmentation":
         patterns = load_patterns(year=year)
         expressions = dict()
-        for _, row in patterns.iterrows():
+        for row in patterns.iter_rows(named=True):
             pattern = row["pattern"]
             exp = re.compile(pattern)
             # Calculate digest for distringuishing patterns without ugly characters
@@ -132,57 +133,60 @@ def load_expressions(phase="segmentation", year=None):
     elif phase == "mp":
         file = files(f'pyriksdagen.data.segmentation').joinpath('detection.csv')
         with file.open() as f:
-            patterns = pd.read_csv(f, sep=";")
+            patterns = pl.read_csv(f, separator=";")
         expressions = []
-        for _, row in patterns.iterrows():
-            exp, t = row[["pattern", "type"]]
+        for row in patterns.iter_rows(named=True):
+            exp, t = row["pattern"], row["type"]
             expressions.append((re.compile(exp), t))
         return expressions
     elif phase == "join_intros":
         file = files(f'pyriksdagen.data.segmentation').joinpath('join_intro_pattern.csv')
         with file.open() as f:
             #"input/segmentation/join_intro_pattern.csv"
-            patterns = pd.read_csv(f, sep=";")
+            patterns = pl.read_csv(f, separator=";")
         expressions = []
-        for _, row in patterns.iterrows():
-            exp, t = row[["pattern", "type"]]
+        for row in patterns.iter_rows(named=True):
+            exp, t = row["pattern"], row["type"]
             expressions.append((re.compile(exp), t))
         return expressions
 
 def _keep_most_significant(df, cols, id="wiki_id"):
     for col in cols:
-        primary = df[df[col] != df[col].str[:4]]
-        primary = primary[primary[col].notnull()]
+        df = df.with_columns(pl.col(col).cast(pl.String))
+        primary = df.filter(pl.col(col) != pl.col(col).str.slice(0, 4))
+        primary = primary.filter(pl.col(col).is_not_null())
 
         #primary = primary.drop_duplicates([id, col])
-        secondary = df[df[col] == df[col].str[:4]]
-        secondary = secondary[secondary[col].notnull()]
+        secondary = df.filter(pl.col(col) == pl.col(col).str.slice(0, 4))
+        secondary = secondary.filter(pl.col(col).is_not_null())
 
-        secondary = secondary.drop_duplicates([id, col])
+        secondary = secondary.unique(subset=[id, col])
 
-        col_df = pd.concat([primary, secondary])
-        col_df = col_df.drop_duplicates(id)
-        col_df = col_df[[id, col]]
+        col_df = pl.concat([primary, secondary], how="diagonal")
+        col_df = col_df.unique(subset=id, keep="first")
+        col_df = col_df.select([id, col])
 
-        df = df[[c for c in df.columns if c != col]]
-        df = df.drop_duplicates()
-        df = pd.merge(df, col_df, how="left", on=id)
+        df = df.select([c for c in df.columns if c != col])
+        df = df.unique()
+        df = df.join(col_df, how="left", on=id)
 
     col = cols[0]
-    primary = df[df[col] != df[col].str[:4]]
-    secondary = df[df[col] == df[col].str[:4]]
+    df = df.with_columns(pl.col(col).cast(pl.String))
+    primary = df.filter(pl.col(col) != pl.col(col).str.slice(0, 4))
+    secondary = df.filter(pl.col(col) == pl.col(col).str.slice(0, 4))
 
-    df = pd.concat([primary, secondary])
-    df = df.drop_duplicates(id)
+    df = pl.concat([primary, secondary], how="diagonal")
+    df = df.unique(subset=id, keep="first")
     return df
 
 def clean_person_duplicates(df):
-    dupl = df[df.duplicated("person_id", keep=False)].copy()
-    df = df[~df.duplicated("person_id", keep=False)]
+    counts = df.group_by("person_id").len().rename({"len": "person_count"})
+    dupl = df.join(counts, on="person_id").filter(pl.col("person_count") > 1).drop("person_count")
+    df = df.join(counts, on="person_id").filter(pl.col("person_count") == 1).drop("person_count")
     dupl = _keep_most_significant(dupl, ["born", "dead"], id="person_id")
     cols = list(df.columns)
-    df = pd.concat([dupl, df])
-    df = df[cols]
-    df = df.drop_duplicates(list(df.columns))
-    df = df.sort_values(list(df.columns))
+    df = pl.concat([dupl, df], how="diagonal")
+    df = df.select(cols)
+    df = df.unique(subset=list(df.columns))
+    df = df.sort(list(df.columns))
     return df

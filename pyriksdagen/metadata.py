@@ -7,7 +7,7 @@ from functools import partial
 from pyriksdagen.match_mp import multiple_replace
 from pyriksdagen.utils import get_data_location
 from trainerlog import get_logger
-import pandas as pd
+import polars as pl
 import calendar
 import datetime
 import os
@@ -17,7 +17,7 @@ LOGGER = get_logger("metadata")
 
 
 def increase_date_precision(date, start=True):
-    if pd.isna(date):
+    if date is None:
         return date
     # Year
     if len(date) == 4 and start:
@@ -44,53 +44,48 @@ def check_date_overlap(start1, end1, start2, end2):
 
 
 def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
-    gov_start = gov_db.loc[gov_db['government'] == from_gov, 'start'].iloc[0]
-    idx =     (db['source'] == 'member_of_parliament') &\
-            (db['start'] > gov_start) &\
-            (db['end'].isna())
-    db.loc[idx, 'end'] = gov_db['end'].max()
-    return db
+    gov_start = gov_db.filter(pl.col("government") == from_gov)["start"][0]
+    gov_end = gov_db["end"].max()
+    return db.with_columns(
+        pl.when(
+            (pl.col("source") == "member_of_parliament")
+            & (pl.col("start") > gov_start)
+            & pl.col("end").is_null()
+        )
+        .then(pl.lit(gov_end))
+        .otherwise(pl.col("end"))
+        .alias("end")
+    )
 
 
 def impute_member_dates(db, metadata_folder):
     def _fill_na(row, **kwargs):
         if row['start'] == 'nan' and row['end'] == 'nan':
             return row
-        elif pd.isna(row['start']) and pd.isna(row['end']):
+        elif row['start'] is None and row['end'] is None:
             row['start'] = 'nan'
             row['end'] = 'nan'
             return row
         else:
-            if pd.isna(row['start']) or row['start'] == 'nan':
+            if row['start'] is None or row['start'] == 'nan':
                 try:
-                    py = riksmote.loc[
-                            (riksmote['start'] <= row['end']) &
-                            (riksmote['end'] >= row['end'])
-                        ].copy()
+                    py = riksmote.filter((pl.col('start') <= row['end']) & (pl.col('end') >= row['end']))
                     row['start'] = py['start'].unique()[0]
                 except:
                     #pass
                     LOGGER.error(f"no bueno ---------------------> end: {row['end']}, {row['person_id']}")
-            elif pd.isna(row['end']) or row['end'] == 'nan':
+            elif row['end'] is None or row['end'] == 'nan':
                 if int(row['start'][:4]) < 1867:
                     row['end'] = 'nan'
                     return row
                 try:
-                    py = riksmote.loc[
-                            (riksmote['start'] <= row['start']) &
-                            (riksmote['end'] > row['start'])
-                        ].copy()
+                    py = riksmote.filter((pl.col('start') <= row['start']) & (pl.col('end') > row['start']))
                     row['end'] = py['end'].unique()[0]
                 except:
-                    py = riksmote.loc[
-                            riksmote['end'].str.startswith(row['start'][:4])
-                        ].copy()
+                    py = riksmote.filter(pl.col('end').str.starts_with(row['start'][:4]))
                     rs = sorted(py['end'].unique(), reverse=True)[0]
                     if rs < row['start']:
-                        py = riksmote.loc[
-                                riksmote['end'].str.startswith(
-                                    str(int(row['start'][:4])+1))
-                            ].copy()
+                        py = riksmote.filter(pl.col('end').str.starts_with(str(int(row['start'][:4])+1)))
                         rs = sorted(py['end'].unique(), reverse=True)[0]
                     row['end'] = rs
         return row
@@ -100,13 +95,13 @@ def impute_member_dates(db, metadata_folder):
         if len(date) == 10:
             return date
         elif len(date) == 7:
-            s = sorted(list(riksmote.loc[riksmote['start'].str.startswith(date, na=False), 'start']))
+            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
             if len(s) > 0:
                 return s[0]
             else:
                 return date + "-01"
         else:
-            s = sorted(list(riksmote.loc[riksmote['start'].str.startswith(date, na=False), 'start']))
+            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
             if len(s) > 0:
                 return s[0]
             else:
@@ -118,7 +113,7 @@ def impute_member_dates(db, metadata_folder):
         if len(date) == 10:
             return date
         elif len(date) == 7:
-            s = sorted(list(riksmote.loc[riksmote['end'].str.startswith(date, na=False), 'end']), reverse=True)
+            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
             if len(s) > 0:
                 return s[0]
             else:
@@ -126,88 +121,88 @@ def impute_member_dates(db, metadata_folder):
                 last_day_of_the_month = calendar.monthrange(int(date_year), int(date_month))[1]
                 return date + f'-{last_day_of_the_month}'
         else:
-            s = sorted(list(riksmote.loc[riksmote['end'].str.startswith(date, na=False), 'end']), reverse=True)
+            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
             if len(s) > 0:
                 return s[0]
             else:
                 LOGGER.debug(f"Problem with end date: {date} not in riksmote")
                 return date + '-12-31'
 
-    riksmote = pd.read_csv(f"{metadata_folder}/riksdag-year.csv")
-    riksmote[['start', 'end', 'parliament_year']] = riksmote[['start', 'end', 'parliament_year']].astype(str)
-
-    idx = (db['source'] == 'member_of_parliament') &\
-            (((db['start'].isna()) | (db['start'] == 'nan')) |\
-            ((db['end'].isna()) | (db['end'] == 'nan')))
-    filled = db.loc[idx, ["start", "end"]].apply(
-        lambda r: _fill_na(r, riksmote=riksmote),
-        axis=1,
-        result_type="expand",
+    riksmote = pl.read_csv(f"{metadata_folder}/riksdag-year.csv").with_columns(
+        pl.col(["start", "end", "parliament_year"]).cast(pl.String)
     )
-    db.loc[idx, ["start", "end"]] = filled.astype("string")
 
-    idx = (db['source'] == 'member_of_parliament') &\
-            (pd.notnull(db['start'])) & (db['start'] != 'nan')
-    db.loc[idx, 'start'] = db.loc[idx, 'start'].apply(_impute_start, riksmote=riksmote)
-
-    idx = (db['source'] == 'member_of_parliament') &\
-            (pd.notnull(db['start'])) &\
-            (pd.notnull(db['end']))  & (db['end'] != 'nan')
-    db.loc[idx, 'end'] = db.loc[idx, 'end'].apply(_impute_end, riksmote=riksmote)
-    return db
+    rows = []
+    for row in db.to_dicts():
+        if row["source"] == "member_of_parliament" and (
+            row["start"] is None
+            or row["start"] == "nan"
+            or row["end"] is None
+            or row["end"] == "nan"
+        ):
+            row = _fill_na(row, riksmote=riksmote)
+        if row["source"] == "member_of_parliament" and row["start"] is not None and row["start"] != "nan":
+            row["start"] = _impute_start(row["start"], riksmote=riksmote)
+        if (
+            row["source"] == "member_of_parliament"
+            and row["start"] is not None
+            and row["end"] is not None
+            and row["end"] != "nan"
+        ):
+            row["end"] = _impute_end(row["end"], riksmote=riksmote)
+        rows.append(row)
+    return pl.DataFrame(rows)
 
 
 def impute_minister_date(db, gov_db):
     def _impute_minister_date(minister, gov_db):
-        if pd.isna(minister['start']):
-            minister['start'] = gov_db.loc[gov_db['government'] == minister['government'], 'start'].iloc[0]
-        if pd.isna(minister['end']):
-            minister['end'] = gov_db.loc[gov_db['government'] == minister['government'], 'end'].iloc[0]
+        if minister['start'] is None:
+            minister['start'] = gov_db.filter(pl.col('government') == minister['government'])['start'][0]
+        if minister['end'] is None:
+            minister['end'] = gov_db.filter(pl.col('government') == minister['government'])['end'][0]
         return minister
 
     # Impute missing minister dates using government dates
-    mask = db["source"].eq("minister") if "source" in db.columns else pd.Series(True, index=db.index)
-
-    # only operate on the 3 columns needed, and only write back start/end
-    subset = db.loc[mask, ["government", "start", "end"]].apply(
-        partial(_impute_minister_date, gov_db=gov_db),
-        axis=1,
-        result_type="expand",
-    )
-
-    db.loc[mask, ["start", "end"]] = subset[["start", "end"]].astype("string")
-    return db
+    rows = []
+    for row in db.to_dicts():
+        if "source" not in db.columns or row["source"] == "minister":
+            row = _impute_minister_date(row, gov_db=gov_db)
+        rows.append(row)
+    return pl.DataFrame(rows)
 
 
 def impute_speaker_date(db):
+    fallback_end = pl.col('start') + datetime.timedelta(days=365*4)
     if "source" in db.columns:
-        idx =     (db['source'] == 'speaker') &\
-                (db['end'].isna()) &\
-                (db['role'].str.contains('kammare') == False)
-        db.loc[idx, 'end'] = db.loc[idx, 'start'] + datetime.timedelta(days = 365*4)
+        idx = (pl.col('source') == 'speaker') & pl.col('end').is_null() & ~pl.col('role').str.contains('kammare')
     else:
-        idx =     (db['end'].isna()) &\
-                (db['role'].str.contains('kammare') == False)
-        db.loc[idx, 'end'] = db.loc[idx, 'start'] + datetime.timedelta(days = 365*4)
-    return db
+        idx = pl.col('end').is_null() & ~pl.col('role').str.contains('kammare')
+    return db.with_columns(pl.when(idx).then(fallback_end).otherwise(pl.col('end')).alias('end'))
 
 
 def impute_date(db, metadata_folder):
-    db[["start", "end"]] = db[["start", "end"]].astype(str)
+    db = db.with_columns(pl.col(["start", "end"]).cast(pl.String))
     if 'source' in db.columns:
         sources = set(db['source'])
         if 'member_of_parliament' in sources:
             #db = impute_member_date(db, gov_db)
             db = impute_member_dates(db, metadata_folder)
 
-        db['start'] = db['start'].apply(increase_date_precision, start=True)
-        db['end'] = db['end'].apply(increase_date_precision, start=False)
-        db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
+        db = db.with_columns(
+            pl.col('start').map_elements(partial(increase_date_precision, start=True), return_dtype=pl.String),
+            pl.col('end').map_elements(partial(increase_date_precision, start=False), return_dtype=pl.String),
+        ).with_columns(pl.col(["start", "end"]).str.to_date("%Y-%m-%d"))
 
-        gov_db = pd.read_csv(f'{metadata_folder}/government.csv')
-        gov_db[["start", "end"]] = gov_db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
-        idx = gov_db['start'].idxmax()
-        gov_db.loc[idx, 'end'] = gov_db.loc[idx, 'start'] + datetime.timedelta(days = 365*4)
+        gov_db = pl.read_csv(f'{metadata_folder}/government.csv').with_columns(
+            pl.col(["start", "end"]).str.to_date("%Y-%m-%d")
+        )
+        latest_start = gov_db['start'].max()
+        gov_db = gov_db.with_columns(
+            pl.when(pl.col('start') == latest_start)
+            .then(pl.col('start') + datetime.timedelta(days=365*4))
+            .otherwise(pl.col('end'))
+            .alias('end')
+        )
 
         if 'member_of_parliament' in sources:
             db = impute_member_date(db, gov_db)
@@ -217,48 +212,58 @@ def impute_date(db, metadata_folder):
             db = impute_speaker_date(db)
 
     else:
-        db['start'] = db['start'].apply(increase_date_precision, start=True)
-        db['end'] = db['end'].apply(increase_date_precision, start=False)
-        db[["start", "end"]] = db[["start", "end"]].apply(pd.to_datetime, format='%Y-%m-%d')
+        db = db.with_columns(
+            pl.col('start').map_elements(partial(increase_date_precision, start=True), return_dtype=pl.String),
+            pl.col('end').map_elements(partial(increase_date_precision, start=False), return_dtype=pl.String),
+        ).with_columns(pl.col(["start", "end"]).str.to_date("%Y-%m-%d"))
     return db
 
 
 def impute_party(db, party):
     if 'party' not in db.columns:
-        db['party'] = pd.Series(dtype=str)
+        db = db.with_columns(pl.lit(None, dtype=pl.String).alias("party"))
     data = []
-    for i, row in db[db['party'].isnull()].iterrows():
-        parties = party[party['person_id'] == row['person_id']]
-        if len(set(parties['party'])) == 1:
-            db.loc[i,'party'] = parties['party'].iloc[0]
-        if len(set(parties['party'])) >= 2:
-            for j, sow in parties.iterrows():
-                try:
-                    res = check_date_overlap(row['start'], sow['start'], row['end'], sow['end'])
-                except:
-                    LOGGER.error("Impute dates on Corpus using impute_date() before imputing parties!\n")
-                    raise
-                if res:
-                    m = row.copy()
-                    m['party'] = sow['party']
-                    data.append(m)
-    db = pd.concat([db, pd.DataFrame(data)]).reset_index(drop=True)
-    return db
+    rows = db.to_dicts()
+    for row in rows:
+        if row.get('party') is None:
+            parties = party.filter(pl.col('person_id') == row['person_id'])
+            party_values = set(parties['party'].to_list())
+            if len(party_values) == 1:
+                row['party'] = next(iter(party_values))
+            if len(party_values) >= 2:
+                for sow in parties.to_dicts():
+                    try:
+                        res = check_date_overlap(row['start'], sow['start'], row['end'], sow['end'])
+                    except:
+                        LOGGER.error("Impute dates on Corpus using impute_date() before imputing parties!\n")
+                        raise
+                    if res:
+                        m = row.copy()
+                        m['party'] = sow['party']
+                        data.append(m)
+    return pl.concat([pl.DataFrame(rows), pl.DataFrame(data)], how="diagonal") if data else pl.DataFrame(rows)
 
 
 def abbreviate_party(db, party):
-    party = {row['party']:row['abbreviation'] for _, row in party.iterrows()}
-    db["party_abbrev"] = db["party"].fillna('').map(party)
-    return db
+    party = {row['party']:row['abbreviation'] for row in party.to_dicts()}
+    return db.with_columns(
+        pl.col("party").fill_null("").replace(party, default=None).alias("party_abbrev")
+    )
 
 
 def clean_name(db):
-    idx = db['name'].notna()
-    db.loc[idx, 'name'] = db.loc[idx, 'name'].str.lower()
-    db.loc[idx, 'name'] = db.loc[idx, 'name'].astype(str).apply(multiple_replace)
-    db.loc[idx, 'name'] = db.loc[idx, 'name'].str.replace('-', ' ', regex=False)
-    db.loc[idx, 'name'] = db.loc[idx, 'name'].str.replace(r'[^a-zåäö\s\-]', '', regex=True)
-    return db
+    return db.with_columns(
+        pl.when(pl.col("name").is_not_null())
+        .then(
+            pl.col("name")
+            .str.to_lowercase()
+            .map_elements(multiple_replace, return_dtype=pl.String)
+            .str.replace_all('-', ' ', literal=True)
+            .str.replace_all(r'[^a-zåäö\s\-]', '')
+        )
+        .otherwise(pl.col("name"))
+        .alias("name")
+    )
 
 
 def infer_chamber(db):
@@ -266,31 +271,27 @@ def infer_chamber(db):
         d = {'första': 1, 'andra': 2}
         match = re.search(r'([a-zåäö]+)\s*(?:kammar)', role)
         return d[match.group(1)] if match else 0
-    db['chamber'] = db['role'].apply(_infer_chamber).astype(dtype=pd.Int8Dtype())
-    return db
+    return db.with_columns(pl.col('role').map_elements(_infer_chamber, return_dtype=pl.Int8).alias('chamber'))
 
 
 def format_member_role(db):
-    db['role'] = db['role'].str.extract(r'(ledamot)')
-    return db
+    return db.with_columns(pl.col('role').str.extract(r'(ledamot)').alias('role'))
 
 
 def format_minister_role(db):
-    db["role"] = db["role"].str.replace('Sveriges ', '').str.lower()
-    return db
+    return db.with_columns(pl.col("role").str.replace('Sveriges ', '').str.to_lowercase().alias("role"))
 
 
 def format_speaker_role(db):
     def _format_speaker_role(role):
         match = re.search(r'(andre |förste |tredje )?(vice )?talman', role)
         return match.group(0)
-    db['role'] = db['role'].apply(_format_speaker_role)
-    return db
+    return db.with_columns(pl.col('role').map_elements(_format_speaker_role, return_dtype=pl.String).alias('role'))
 
 
-class Corpus(pd.DataFrame):
+class Corpus(pl.DataFrame):
     """
-    Store corpus metadata as a single pandas DataFrame where
+    Store corpus metadata as a single Polars DataFrame where
     the column 'source' indicates the type of the row
     """
     def __init__(self, *args, **kwargs):
@@ -301,68 +302,68 @@ class Corpus(pd.DataFrame):
         return Corpus
 
     def _load_metadata(self, file, metadata_folder="corpus/metadata", source=False):
-        df = pd.read_csv(f"{metadata_folder}/{file}.csv")
+        df = pl.read_csv(f"{metadata_folder}/{file}.csv")
 
         # Adjust to new structure where party information
         # is not included in member_of_parliament.csv
         if file == "member_of_parliament":
             columns = list(df.columns) + ["party"]
-            party_df = pd.read_csv(f"{metadata_folder}/party_affiliation.csv")
-            party_df = party_df[party_df["start"].notnull()]
-            party_df = party_df[party_df["end"].notnull()]
-            df = df.merge(party_df, on=["person_id", "start", "end"], how="left")
-            df = df[columns]
+            party_df = pl.read_csv(f"{metadata_folder}/party_affiliation.csv")
+            party_df = party_df.filter(pl.col("start").is_not_null())
+            party_df = party_df.filter(pl.col("end").is_not_null())
+            df = df.join(party_df, on=["person_id", "start", "end"], how="left")
+            df = df.select(columns)
         if source:
-            df['source'] = file
+            df = df.with_columns(pl.lit(file).alias('source'))
         return df
 
     def add_mps(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('member_of_parliament', metadata_folder=metadata_folder, source=True)
         df = infer_chamber(df)
         df = format_member_role(df)
-        return Corpus(pd.concat([self, df]))
+        return Corpus(pl.concat([self, df], how="diagonal"))
 
     def add_ministers(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('minister', metadata_folder=metadata_folder, source=True)
         df = format_minister_role(df)
-        return Corpus(pd.concat([self, df]))
+        return Corpus(pl.concat([self, df], how="diagonal"))
 
     def add_speakers(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('speaker', metadata_folder=metadata_folder, source=True)
         df = infer_chamber(df)
         df = format_speaker_role(df)
-        return Corpus(pd.concat([self, df]))
+        return Corpus(pl.concat([self, df], how="diagonal"))
 
     def add_persons(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('person', metadata_folder=metadata_folder)
-        return self.merge(df, on='person_id', how='left')
+        return Corpus(self.join(df, on='person_id', how='left'))
 
     def add_location_specifiers(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('location_specifier', metadata_folder=metadata_folder)
-        return self.merge(df, on='person_id', how='left')
+        return Corpus(self.join(df, on='person_id', how='left'))
 
     def add_names(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('name', metadata_folder=metadata_folder)
-        return self.merge(df, on='person_id', how='left')
+        return Corpus(self.join(df, on='person_id', how='left'))
 
     def impute_dates(self, metadata_folder="corpus/metadata"):
-        return impute_date(self, metadata_folder)
+        return Corpus(impute_date(self, metadata_folder))
 
     def impute_parties(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('party_affiliation', metadata_folder=metadata_folder)
         df = impute_date(df, metadata_folder)
-        return impute_party(self, df)
+        return Corpus(impute_party(self, df))
 
     def abbreviate_parties(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('party_abbreviation', metadata_folder=metadata_folder)
-        return abbreviate_party(self, df)
+        return Corpus(abbreviate_party(self, df))
 
     def add_twitter(self, metadata_folder="corpus/metadata"):
         df = self._load_metadata('twitter', metadata_folder=metadata_folder)
-        return self.merge(df, on='person_id', how='left')
+        return Corpus(self.join(df, on='person_id', how='left'))
 
     def clean_names(self):
-        return clean_name(self)
+        return Corpus(clean_name(self))
 
 
 def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None):
@@ -377,10 +378,9 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
 
         LOGGER.info("Reading metadata db from a file.")
         try:
-            corpus = pd.read_csv(read_db_from)
+            corpus = pl.read_csv(read_db_from)
         except:
-            corpus = pd.read_pickle(read_db_from)
-        assert type(corpus) == Corpus, f"{read_db_from} is not a CSV or pickle file."
+            raise ValueError(f"{read_db_from} could not be read as a CSV file.")
     else:
         LOGGER.info("Compiling metadata db from source.")
         if metadata_folder is None:
@@ -403,7 +403,7 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
         corpus = corpus.clean_names()
 
         # Clean up speaker role formatting
-        corpus["role"] = corpus["role"].replace({
+        corpus = corpus.with_columns(pl.col("role").replace({
             'Sveriges riksdags talman':'speaker',
             'andra kammarens andre vice talman':'ak_2_vice_speaker',
             'andra kammarens förste vice talman':'ak_1_vice_speaker',
@@ -413,18 +413,18 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
             'första kammarens talman':'fk_speaker',
             'första kammarens vice talman':'fk_1_vice_speaker',
             'förste vice talman i första kammaren':'fk_1_vice_speaker'
-            })
+            }).alias("role"))
 
         # Temporary ids
-        corpus['person_id'] = corpus['person_id']
+        corpus = corpus.with_columns(pl.col('person_id'))
 
         # Drop individuals with missing names
-        corpus = corpus[corpus['name'].notna()]
+        corpus = corpus.filter(pl.col('name').is_not_null())
 
         # Remove redundancy and split file
-        corpus = corpus.drop_duplicates()
-        corpus = corpus.dropna(subset=['name', 'start', 'end'])
-        corpus = corpus.sort_values(['person_id', 'start', 'end', 'name'])
+        corpus = corpus.unique()
+        corpus = corpus.drop_nulls(subset=['name', 'start', 'end'])
+        corpus = corpus.sort(['person_id', 'start', 'end', 'name'])
 
 
     return corpus
@@ -447,9 +447,9 @@ def fetch_person_name(person_id, corpus, primary=True):
 
     if person_id is None or person_id == "unknown":
         return None
-    df = corpus.loc[corpus["person_id"] == person_id].copy()
+    df = corpus.filter(pl.col("person_id") == person_id)
     if primary == True:
-        df = df.loc[corpus["primary_name"] == True].copy()
+        df = df.filter(pl.col("primary_name") == True)
         names = _names(df)
         if len(names) == 1:
             return names[0]
@@ -472,7 +472,7 @@ def fetch_person_gender(person_id, corpus):
     """
     if person_id is None or person_id == "unknown":
         return None
-    df = corpus.loc[(corpus["person_id"] == person_id) & (pd.notnull(corpus["gender"]))].copy()
+    df = corpus.filter((pl.col("person_id") == person_id) & pl.col("gender").is_not_null())
     genders = df["gender"].unique()
     if len(genders) == 1:
         return genders[0]
@@ -509,12 +509,10 @@ def fetch_person_party(person_id, corpus, date=None):
     if person_id is None or person_id == "unknown":
         return None
 
-    df = corpus.loc[(corpus["person_id"] == person_id) & (pd.notnull(corpus["party"]))].copy()
+    df = corpus.filter((pl.col("person_id") == person_id) & pl.col("party").is_not_null())
     if date is not None:
-        df_date = df.loc[(df["start"] <= date) & (df["end"] >= date)]
+        df_date = df.filter((pl.col("start") <= date) & (pl.col("end") >= date))
         parties = _party(df_date)
         if parties is not None:
             return parties
     return _party(df)
-
-

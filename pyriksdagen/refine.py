@@ -2,7 +2,7 @@ from lxml import etree
 import re
 from pyparlaclarin.read import element_hash
 import dateparser
-import pandas as pd
+import polars as pl
 from .utils import elem_iter, infer_metadata, parse_date, XML_NS, TEI_NS, get_formatted_uuid
 from .db import load_expressions, filter_db, load_patterns, load_metadata
 from .segmentation import (
@@ -65,9 +65,7 @@ def redetect_protocol(metadata, protocol):
     
     # Introduction patterns
     pattern_db = load_patterns()
-    pattern_db = pattern_db[
-        (pattern_db["start"] <= year) & (pattern_db["end"] >= year)
-    ]
+    pattern_db = pattern_db.filter((pl.col("start") <= year) & (pl.col("end") >= year))
 
     root, unk = detect_mps(
         root,
@@ -99,9 +97,9 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
 
     Args:
         root (lxml.etree): protocol as an lxml tree
-        mp_db (pd.df): MP database
-        minister (pd.df): minister database 
-        speaker_db (pd.df): speaker database 
+        mp_db (pl.DataFrame): MP database
+        minister (pl.DataFrame): minister database 
+        speaker_db (pl.DataFrame): speaker database 
         metadata (dict): basic metadata on the protocol
         party_map (dict): map from party abbreviations to party names
         join_intros (???): intros to be joined
@@ -125,7 +123,7 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
     xml_ns = "{http://www.w3.org/XML/1998/namespace}"
     current_speaker = None
     prev = None
-    mp_db_secondary = pd.DataFrame()
+    mp_db_secondary = pl.DataFrame()
 
     # Extract information of unknown speakers
     unknowns = []
@@ -134,9 +132,9 @@ def detect_mps(root, names_ids, pattern_db, mp_db=None, minister_db=None, minist
     # For bicameral era, prioritize MPs from the same chamber as the protocol
     if "chamber" in metadata:
         chamber = {'Första kammaren': 1, 'Andra kammaren':2}.get(metadata['chamber'], 0)
-        mp_db_secondary = mp_db[mp_db['chamber'] != chamber]
-        mp_db = mp_db[mp_db['chamber'] == chamber]
-        speaker_db = speaker_db[speaker_db['chamber'] == chamber]
+        mp_db_secondary = mp_db.filter(pl.col('chamber') != chamber)
+        mp_db = mp_db.filter(pl.col('chamber') == chamber)
+        speaker_db = speaker_db.filter(pl.col('chamber') == chamber)
 
     for tag, elem in elem_iter(root):
         parent = elem.getparent()
@@ -226,7 +224,7 @@ def find_introductions(root, pattern_db, intro_ids, remove_missing=True, ministe
     Args:
         root (lxml.etree): protocol as a lxml tree
         pattern_db: Patterns to be matched as a Pandas DataFrame.
-        intro_ids (pd.DataFrame): List of IDs that have been detected as intros.
+        intro_ids (pl.DataFrame): List of IDs that have been detected as intros.
         remove_missing (bool): remove intros not found in 'intro_ids'
         minister_db: deprecated
     """
@@ -507,4 +505,3 @@ def update_ids(root, protocol_id):
             ids.add(x)
 
     return root, ids
-

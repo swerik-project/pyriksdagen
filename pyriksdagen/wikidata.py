@@ -1,7 +1,8 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 import numpy as np
-import pandas as pd
+import polars as pl
 from importlib_resources import files
+import re
 
 def impute_query_string(source=None):
 	# Defaults to all individuals
@@ -50,44 +51,59 @@ def fix_dates(df):
 	for c in df.columns:
 		if 'Precision' in c:
 			base_name = c.replace('Precision', '')
-			df.loc[df[base_name].notna(), base_name] =\
-			df.loc[df[base_name].notna()].apply(lambda x: reduce_date_precision(x[base_name], x[c]), axis=1)
-			df = df.drop(c, axis=1)
+			rows = []
+			for row in df.to_dicts():
+				if row.get(base_name) is not None:
+					row[base_name] = reduce_date_precision(row[base_name], row[c])
+				row.pop(c, None)
+				rows.append(row)
+			df = pl.DataFrame(rows)
 	return df
 
 def clean_sparql_df(df, query_name):
-	df = df.copy()
-
 	# Clean columns
-	df = df.rename(columns={'wiki_idLabel.value':'name'}) # avoid duplicate colnames
-	df = df.rename(columns={'government.value':'government_id.value'})
-	df = df.rename(columns={'riksmote.value':'riksmote_id.value'})
-	df = df.rename(columns={'party.value':'party_id.value'})
-	df = df[[c for c in df.columns if c.endswith('.value') or c == 'name']]
+	rename_map = {
+		'wiki_idLabel.value':'name',
+		'government.value':'government_id.value',
+		'riksmote.value':'riksmote_id.value',
+		'party.value':'party_id.value',
+	}
+	df = df.rename({old: new for old, new in rename_map.items() if old in df.columns}) # avoid duplicate colnames
+	df = df.select([c for c in df.columns if c.endswith('.value') or c == 'name'])
 	
-	df.columns = df.columns.str.replace('.value', '', regex=False)
-	df.columns = df.columns.str.replace('Label', '', regex=False)
+	df = df.rename({c: c.replace('.value', '').replace('Label', '') for c in df.columns})
 	df = fix_dates(df) # use and drop date precision columns
 
 	# Format values
 	for colname in df.columns:
 		if "_id" in colname:
-			df[colname] = df[colname].str.split('/').str[-1]
+			df = df.with_columns(pl.col(colname).str.split('/').list.last().alias(colname))
 
 	# Drop pseudo missing values of form "http://www.wikidata.org/.well-known..."
-	idx, idy = np.where(df.astype(str).applymap(lambda x: 'http' in x))
-	for x, y in zip(idx, idy):
-		df.loc[x][y] = ''
+	df = df.with_columns([
+		pl.col(col).map_elements(lambda x: '' if 'http' in str(x) else x, return_dtype=df.schema[col]).alias(col)
+		for col in df.columns
+	])
 
 	# Sort columns
 	first_cols = [c for c in ['person_id', 'wiki_id', 'start', 'end'] if c in df.columns]
 	other_cols = sorted([c for c in df.columns if c not in first_cols])
-	df = df[first_cols+other_cols]
+	df = df.select(first_cols+other_cols)
 
 	# Sort rows
 	first_cols.reverse()
-	df = df.sort_values(by=list(first_cols+other_cols))
+	df = df.sort(list(first_cols+other_cols))
 	return df
+
+def _json_normalize_sparql_bindings(bindings):
+	rows = []
+	for binding in bindings:
+		row = {}
+		for key, value in binding.items():
+			for subkey, subvalue in value.items():
+				row[f"{key}.{subkey}"] = subvalue
+		rows.append(row)
+	return pl.DataFrame(rows)
 
 def query2df(query_name, source=None):
 	query = get_query_string(query_name)
@@ -100,67 +116,61 @@ def query2df(query_name, source=None):
 		results = sparql.query().convert()
 	except:
 		print(f"Query {query_name} failed")
-	df = pd.json_normalize(results['results']['bindings'])
+	df = _json_normalize_sparql_bindings(results['results']['bindings'])
 	df = clean_sparql_df(df, query_name)
 	return df
 
 def separate_name_location(name_location_specifier, alias):
-	alias = alias[['person_id', 'alias']].rename(columns={'alias':'name'})
-	primary_df = name_location_specifier[['person_id', 'name']]
-	secondary_df = name_location_specifier[['person_id', 'alias']].rename(columns={'alias':'name'})
-	primary_df['primary_name'] = True
-	secondary_df['primary_name'] = False
-	alias['primary_name'] = False
-	df = pd.concat([primary_df, secondary_df, alias]).dropna().drop_duplicates().reset_index(drop=True)
+	rows = []
+	for row in name_location_specifier.select(['person_id', 'name']).iter_rows(named=True):
+		rows.append({**row, 'primary_name': True})
+	for row in name_location_specifier.select(['person_id', 'alias']).rename({'alias':'name'}).iter_rows(named=True):
+		rows.append({**row, 'primary_name': False})
+	for row in alias.select(['person_id', 'alias']).rename({'alias':'name'}).iter_rows(named=True):
+		rows.append({**row, 'primary_name': False})
 
-	# Split names and location specifiers
-	names = df['name'].str.split(' [io] ', expand=True)
-	loc_cols = [i for i in range(len(df.columns)-1)]
-	names.columns = ['name']+loc_cols
-	df = df.drop('name', axis=1)
-	df = df.join(names, how='left')
+	name_rows = []
+	loc_rows = []
+	for row in rows:
+		raw_name = row.get('name')
+		if raw_name is None or ',' in raw_name:
+			continue
+		parts = re.split(r' [io] ', raw_name)
+		clean_name = re.sub(r'\([^()]*\)', '', parts[0])
+		clean_name = ' '.join(clean_name.split())
+		name_rows.append({'person_id': row['person_id'], 'name': clean_name, 'primary_name': row['primary_name']})
+		for loc in parts[1:]:
+			loc = loc.replace('och', '').strip()
+			if loc:
+				loc_rows.append({'person_id': row['person_id'], 'location': loc})
 
-	# Cleaning
-	df = df[~df['name'].str.contains(',')]
-	df[loc_cols] = df[loc_cols].apply(lambda x: x.str.replace('och','').str.strip())
-	df['name'] = df['name'].str.replace(r'\([^()]*\)', '', regex=True)
-	df['name'] = df['name'].apply(lambda x: ' '.join(x.split()))
-
-	# Drop duplicates
-	name = 	df[['person_id', 'name', 'primary_name']].\
-			sort_values(by=['primary_name'], ascending=False).\
-			drop_duplicates(subset=['person_id', 'name', 'primary_name'])
-
-	loc =	pd.concat([df[['person_id', col]].rename(columns={col:'location'}) for col in loc_cols]).\
-			dropna().drop_duplicates()
-
-	# Sort values
-	name = name[['person_id'] + sorted([col for col in name.columns if col != 'person_id'])]
-	name = name.sort_values(by=list(name.columns))
-	loc = loc[['person_id'] + sorted([col for col in loc.columns if col != 'person_id'])]
-	loc = loc.sort_values(by=list(loc.columns))
+	name = pl.DataFrame(name_rows).drop_nulls().unique().sort('primary_name', descending=True)
+	name = name.unique(subset=['person_id', 'name', 'primary_name']).select(['person_id'] + sorted([col for col in name.columns if col != 'person_id']))
+	loc = pl.DataFrame(loc_rows).drop_nulls().unique()
+	loc = loc.select(['person_id'] + sorted([col for col in loc.columns if col != 'person_id'])).sort(['person_id', 'location'])
+	name = name.sort(list(name.columns))
 	return name, loc
 
 def move_party_to_party_df(mp_df, party_df):
-	mp_parties = mp_df[party_df.columns]
-	mp_parties = mp_parties[mp_parties['party_id'].notnull()]
+	mp_parties = mp_df.select(party_df.columns)
+	mp_parties = mp_parties.filter(pl.col('party_id').is_not_null())
 
-	mp_parties = mp_parties.sort_values(["person_id", "start"])
-	party_df = pd.concat([mp_parties, party_df])
-	party_df = party_df.drop_duplicates()
+	mp_parties = mp_parties.sort(["person_id", "start"])
+	party_df = pl.concat([mp_parties, party_df], how="diagonal")
+	party_df = party_df.unique()
 
 	mp_df_cols = [col for col in mp_df.columns if col not in ["party", "party_id"]]
 
-	return mp_df[mp_df_cols], party_df
+	return mp_df.select(mp_df_cols), party_df
 
 def elongate_external_ids(df):
 	rows = []
 	cols = ["person_id", "authority", "identifier"]
-	df.rename(columns={"wiki_id": "WiDaID"}, inplace=True)
+	df = df.rename({"wiki_id": "WiDaID"})
 	authorities = [_ for _ in df.columns if _ != "person_id"]
-	for i, r in df.iterrows():
+	for r in df.iter_rows(named=True):
 		swerik = r["person_id"]
 		for a in authorities:
-			if pd.notnull(r[a]):
+			if r[a] is not None:
 				rows.append([swerik, a, r[a]])
-	return pd.DataFrame(rows, columns=cols)
+	return pl.DataFrame(rows, schema=cols, orient="row")

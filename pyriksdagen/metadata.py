@@ -16,6 +16,13 @@ import re
 LOGGER = get_logger("metadata")
 
 
+def _dataframe_from_rows(rows, columns=None):
+    if not rows:
+        return pl.DataFrame(schema=columns)
+    df = pl.DataFrame(rows, infer_schema_length=None)
+    return df.select(columns) if columns is not None else df
+
+
 def increase_date_precision(date, start=True):
     if date is None:
         return date
@@ -151,7 +158,7 @@ def impute_member_dates(db, metadata_folder):
         ):
             row["end"] = _impute_end(row["end"], riksmote=riksmote)
         rows.append(row)
-    return pl.DataFrame(rows)
+    return _dataframe_from_rows(rows, db.columns)
 
 
 def impute_minister_date(db, gov_db):
@@ -168,7 +175,7 @@ def impute_minister_date(db, gov_db):
         if "source" not in db.columns or row["source"] == "minister":
             row = _impute_minister_date(row, gov_db=gov_db)
         rows.append(row)
-    return pl.DataFrame(rows)
+    return _dataframe_from_rows(rows, db.columns)
 
 
 def impute_speaker_date(db):
@@ -241,7 +248,12 @@ def impute_party(db, party):
                         m = row.copy()
                         m['party'] = sow['party']
                         data.append(m)
-    return pl.concat([pl.DataFrame(rows), pl.DataFrame(data)], how="diagonal") if data else pl.DataFrame(rows)
+    if data:
+        return pl.concat(
+            [_dataframe_from_rows(rows, db.columns), _dataframe_from_rows(data, db.columns)],
+            how="diagonal",
+        )
+    return _dataframe_from_rows(rows, db.columns)
 
 
 def abbreviate_party(db, party):

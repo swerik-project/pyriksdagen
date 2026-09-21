@@ -81,7 +81,7 @@ def clean_sparql_df(df, query_name):
 
 	# Drop pseudo missing values of form "http://www.wikidata.org/.well-known..."
 	df = df.with_columns([
-		pl.col(col).map_elements(lambda x: '' if 'http' in str(x) else x, return_dtype=df.schema[col]).alias(col)
+		pl.col(col).map_elements(lambda x: None if 'http' in str(x) else x, return_dtype=df.schema[col]).alias(col)
 		for col in df.columns
 	])
 

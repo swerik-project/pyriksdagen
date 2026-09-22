@@ -34,7 +34,8 @@ def load_patterns(year=None, phase="segmentation"):
         patterns = patterns.filter(pl.col("start") >= year)
         patterns = patterns.filter(pl.col("end") <= year)
 
-    patterns = patterns.with_columns(pl.lit(None).alias("protocol_id"))
+    #patterns = patterns.with_columns(pl.lit(None).alias("protocol_id"))
+    # 2026-09-22 seems like useless code. delete if no catastrophic failure.
 
     manual_path = "input/" + phase + "/manual.csv"
     if os.path.exists(manual_path):
@@ -187,6 +188,6 @@ def clean_person_duplicates(df):
     cols = list(df.columns)
     df = pl.concat([dupl, df], how="diagonal")
     df = df.select(cols)
-    df = df.unique(subset=list(df.columns))
+    df = df.unique()
     df = df.sort(list(df.columns))
     return df

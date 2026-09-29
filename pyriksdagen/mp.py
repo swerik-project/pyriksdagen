@@ -304,7 +304,11 @@ def add_municipality(mp_db, mun_db):
     end_max = (end_max // 10 + 1) * 10
     for decade in range(start_min, end_max, 10):
         current_mun_db = mun_db.filter(pl.col("decade") == decade)
-        current_mpdb = mp_db.filter((pl.col("end") >= decade) & (pl.col("start") < decade + 10))
+        current_mpdb = (
+            mp_db
+                .filter((pl.col("end") >= decade))
+                .filter(pl.col("start") < decade + 10)
+            )
         if not current_mun_db.is_empty():
             current_mun_db = current_mun_db.select(["name", "municipality"])
 
@@ -333,7 +337,7 @@ def add_municipality(mp_db, mun_db):
             merged = current_mpdb.join(current_mun_db, how="left", on="name")
             merged.write_csv("merged_" + str(decade) + ".csv")
 
-            newnames = set(current_mun_db["name"].to_list())
+            newnames = set(current_mun_db["name"])
             outdfs.append(merged)
             print(
                 "Carl Wilhelm Oskar Höglund in newnames",

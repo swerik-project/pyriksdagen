@@ -74,51 +74,46 @@ def fuzzy_name(name, db):
 	matches = db.filter(pl.col("name").map_elements(lambda x: d(name, x) == 1, return_dtype=pl.Boolean))
 	return matches
 
-### Depreceated functions below
+### Deprecated functions below
 # NEW functions to replace both in_name, subnames_in_mpname, and mpsubnames_in_name
+### 2026-09-22 deprecation warning is very old... functions still used in scripts/src/fuzzy_matching.py
 def subnames_in_mpname(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	indices = [i for i,row in enumerate(db.iter_rows(named=True)) if
 			   all(any(n == subname for n in row["name"].split())
 			   for subname in name.split())]
 	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def mpsubnames_in_name(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	indices = [i for i,row in enumerate(db.iter_rows(named=True)) if
 			   all(any(n == subname for n in name.split())
 			   for subname in row["name"].split())]
 	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def firstname_lastname(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	if len(subnames := name.split()) <= 1: return []
 	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if subnames[0] == row["name"].split()[0] and subnames[-1] == row["name"].split()[-1]]
 	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def firstname_lastname_reversed(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	if len(subnames := name.split()) <= 1: return []
 	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if subnames[0] == row["name"].split()[-1] and subnames[-1] == row["name"].split()[0]]
 	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def two_lastnames(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	if len(subnames := name.split()) <= 1: return []
 	indices = [i for i,row in enumerate(db.iter_rows(named=True)) \
 	if name.split()[-1] == row["name"].split()[-1] and name.split()[-2] == row["name"].split()[1:]]
 	return db.with_row_index().filter(pl.col("index").is_in(indices)).drop("index")
 
 def lastname(name, db):
-	if debug:
-		print(name, len(name))
+	LOGGER.debug(f"{name}, {len(name)}")
 	return db.filter(pl.col("name").str.split(" ").list.last() == name)
 
 def match_mp(person, db, variables, matching_funs):

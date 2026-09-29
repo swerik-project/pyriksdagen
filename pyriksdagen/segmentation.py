@@ -108,7 +108,7 @@ def detect_minister(matched_txt, minister_db, intro_dict):
             )
         if not minister_db.is_empty():
             if len(set(minister_db["id"])) == 1:
-                return minister_db["id"][0]
+                return minister_db["id"].first()
 
     # Match by name
     if 'name' in intro_dict:
@@ -118,7 +118,7 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         name_matches = names_in(name, minister_db)
         if not name_matches.is_empty():
             if len(set(name_matches["id"])) == 1:
-                matched_value = name_matches["id"][0]
+                matched_value = name_matches["id"].first()
                 LOGGER.debug(f"Match by name {matched_value}")
                 return matched_value
 
@@ -129,7 +129,7 @@ def detect_minister(matched_txt, minister_db, intro_dict):
         role_matches = minister_db.filter(pl.col("role").str.contains(r, literal=True))
         if not role_matches.is_empty():
             if len(set(role_matches["id"])) == 1:
-                matched_value = role_matches["id"][0]
+                matched_value = role_matches["id"].first()
                 LOGGER.debug(f"Matched by role {matched_value}")
                 return matched_value
 

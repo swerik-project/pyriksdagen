@@ -29,15 +29,6 @@ def _dataframe_from_rows(rows, columns=None, schema=None):
     return df.select(columns) if columns is not None else df
 
 
-def _normalize_pseudo_nan_dates(db):
-    date_cols = [col for col in ["start", "end"] if col in db.columns]
-    return db.with_columns(
-        pl.when(pl.col(col).str.to_lowercase() == "nan")
-        .then(None)
-        .otherwise(pl.col(col))
-        .alias(col)
-        for col in date_cols
-    )
 
 
 def increase_date_precision(date, start=True):
@@ -70,7 +61,7 @@ def check_date_overlap(start1, end1, start2, end2):
 
 
 def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
-    gov_start = gov_db.filter(pl.col("government") == from_gov)["start"][0]
+    gov_start = gov_db.filter(pl.col("government") == from_gov)["start"].first()
     gov_end = gov_db["end"].max()
     return db.with_columns(
         pl.when(
@@ -86,12 +77,20 @@ def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
 
 def impute_member_dates(db, metadata_folder):
     def _first_start_for_end(end, riksmote):
-        py = riksmote.filter((pl.col('start') <= end) & (pl.col('end') >= end))
-        return None if py.is_empty() else py['start'][0]
+        py = (
+            riksmote
+                .filter(pl.col('start') <= end)
+                .filter(pl.col('end') >= end)
+            )
+        return None if py.is_empty() else py['start'].first()
 
     def _first_end_for_start(start, riksmote):
-        py = riksmote.filter((pl.col('start') <= start) & (pl.col('end') > start))
-        return None if py.is_empty() else py['end'][0]
+        py = (
+            riksmote
+                .filter(pl.col('start') <= start)
+                .filter(pl.col('end') > start)
+            )
+        return None if py.is_empty() else py['end'].first()
 
     def _fallback_end_for_start_year(start, riksmote):
         py = riksmote.filter(pl.col('end').str.starts_with(start[:4]))
@@ -105,7 +104,7 @@ def impute_member_dates(db, metadata_folder):
         py = riksmote.filter(pl.col('end').str.starts_with(str(int(start[:4])+1)))
         if py.is_empty():
             return None
-        return sorted(py['end'].to_list(), reverse=True)[0]
+        return sorted(py['end'].to_list(), reverse=True).first()
 
     def _fill_na(row, **kwargs):
         if row['start'] is None and row['end'] is None:
@@ -167,7 +166,7 @@ def impute_member_dates(db, metadata_folder):
                 return date + '-12-31'
 
     riksmote = pl.read_csv(f"{metadata_folder}/riksdag-year.csv").with_columns(
-        pl.col(["start", "end", "parliament_year"]).cast(pl.String)
+        pl.col(["parliament_year"]).cast(pl.String)
     )
 
     rows = []
@@ -216,8 +215,7 @@ def impute_speaker_date(db):
 
 
 def impute_date(db, metadata_folder):
-    db = db.with_columns(pl.col(["start", "end"]).cast(pl.String))
-    db = _normalize_pseudo_nan_dates(db)
+
     if 'source' in db.columns:
         sources = set(db['source'])
         if 'member_of_parliament' in sources:
@@ -286,13 +284,13 @@ def impute_party(db, party):
 def abbreviate_party(db, party):
     party = {row['party']:row['abbreviation'] for row in party.to_dicts()}
     return db.with_columns(
-        pl.col("party").fill_null("").replace(party, default=None).alias("party_abbrev")
+        pl.col("party").replace(party, default=None).alias("party_abbrev")
     )
 
 
 def clean_name(db):
     return db.with_columns(
-        pl.when(pl.col("name").is_not_null())
+        pl.when(pl.col("name"))F
         .then(
             pl.col("name")
             .str.to_lowercase()
@@ -300,8 +298,6 @@ def clean_name(db):
             .str.replace_all('-', ' ', literal=True)
             .str.replace_all(r'[^a-zåäö\s\-]', '')
         )
-        .otherwise(pl.col("name"))
-        .alias("name")
     )
 
 
@@ -511,7 +507,11 @@ def fetch_person_gender(person_id, corpus):
     """
     if person_id is None or person_id == "unknown":
         return None
-    df = corpus.filter((pl.col("person_id") == person_id) & pl.col("gender").is_not_null())
+    df = (
+        corpus
+            .filter(pl.col("person_id") == person_id)
+            .filter(pl.col("gender").is_not_null())
+        )
     genders = df["gender"].unique()
     if len(genders) == 1:
         return genders[0]
@@ -548,9 +548,17 @@ def fetch_person_party(person_id, corpus, date=None):
     if person_id is None or person_id == "unknown":
         return None
 
-    df = corpus.filter((pl.col("person_id") == person_id) & pl.col("party").is_not_null())
+    df = (
+        corpus
+            .filter(pl.col("person_id") == person_id)
+            .filter(pl.col("party").is_not_null())
+        )
     if date is not None:
-        df_date = df.filter((pl.col("start") <= date) & (pl.col("end") >= date))
+        df_date = (
+            df
+                .filter(pl.col("start") <= date)
+                .filter(pl.col("end") >= date)
+            )
         parties = _party(df_date)
         if parties is not None:
             return parties

@@ -101,7 +101,11 @@ def detect_minister(matched_txt, minister_db, intro_dict):
     # Filter by date
     if 'date' in intro_dict:
 
-        minister_db = minister_db.filter((pl.col("start") <= intro_dict['date']) & (pl.col("end") >= intro_dict['date']))
+        minister_db = (
+            minister_db
+                .filter(pl.col("start") <= intro_dict['date'])
+                .filter(pl.col("end") >= intro_dict['date'])
+            )
         if not minister_db.is_empty():
             if len(set(minister_db["id"])) == 1:
                 return minister_db["id"][0]

@@ -65,7 +65,11 @@ def redetect_protocol(metadata, protocol):
     
     # Introduction patterns
     pattern_db = load_patterns()
-    pattern_db = pattern_db.filter((pl.col("start") <= year) & (pl.col("end") >= year))
+    pattern_db = (
+        pattern_db
+            .filter(pl.col("start") <= year)
+            .filter(pl.col("end") >= year)
+        )
 
     root, unk = detect_mps(
         root,

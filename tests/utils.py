@@ -6,7 +6,11 @@ import unittest
 from pyriksdagen.utils import infer_metadata
 from pyriksdagen.utils import get_formatted_uuid
 from pyriksdagen.segmentation import intro_to_dict
+from pyriksdagen.date_handling import yearize_date
 
+import pandas as pd
+from pathlib import Path
+import os
 
 class TestUtils(unittest.TestCase):
     def test_infer_metadata(self):
@@ -76,6 +80,20 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(d.get("name"), "Ewerlöf", f"'name' should be found in '{intro}' ({d})")
         self.assertEqual(d.get("party"), None, f"'Party' should be found in '{intro}' ({d})")
         self.assertEqual(d.get("other"), None, f"No 'other' should be found in '{intro}' ({d})")
+
+    def test_yearize_date(self):
+        metadata_path = os.environ.get("METADATA_PATH")
+        self.assertIsNotNone(metadata_path)
+        riksmote_path = Path(metadata_path) / "riksdag-year.csv"
+        riksmote = pd.read_csv(riksmote_path)
+
+
+        self.assertEqual(yearize_date("1982-04-13", riksmote), 198182)
+        self.assertEqual(yearize_date("1982-12-05", riksmote), 198283)
+        self.assertEqual(yearize_date("1882-04-13", riksmote), 1882)
+        self.assertEqual(yearize_date("1882-12-05", riksmote), 1882)
+        self.assertEqual(yearize_date("1932-04-13", riksmote), 1932)
+        self.assertEqual(yearize_date("1942-12-05", riksmote), 1942)
 
 if __name__ == "__main__":
     unittest.main()

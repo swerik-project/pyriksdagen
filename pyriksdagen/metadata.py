@@ -61,7 +61,7 @@ def check_date_overlap(start1, end1, start2, end2):
 
 
 def impute_member_date(db, gov_db, from_gov='Regeringen Löfven I'):
-    gov_start = gov_db.filter(pl.col("government") == from_gov)["start"].first()
+    gov_start = gov_db.filter(pl.col("government") == from_gov)["start"].item(0)
     gov_end = gov_db["end"].max()
     return db.with_columns(
         pl.when(

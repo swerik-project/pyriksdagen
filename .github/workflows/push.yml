@@ -37,6 +37,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install .
+    - name: Clone riksdagen-persons 
+      run: |
+        git clone https://github.com/swerik-project/riksdagen-persons.git
+        export METADATA_PATH="riksdagen-persons/data"
     - name: Test utils
       run: |
         python -m unittest tests.utils

@@ -7,6 +7,7 @@ from pyriksdagen.utils import infer_metadata
 from pyriksdagen.utils import get_formatted_uuid
 from pyriksdagen.segmentation import intro_to_dict
 from pyriksdagen.date_handling import yearize_date
+from pyriksdagen.metadata import load_Corpus_metadata
 
 import pandas as pd
 from pathlib import Path
@@ -87,13 +88,18 @@ class TestUtils(unittest.TestCase):
         riksmote_path = Path(metadata_path) / "riksdag-year.csv"
         riksmote = pd.read_csv(riksmote_path)
 
-
         self.assertEqual(yearize_date("1982-04-13", riksmote), 198182)
         self.assertEqual(yearize_date("1982-12-05", riksmote), 198283)
         self.assertEqual(yearize_date("1882-04-13", riksmote), 1882)
         self.assertEqual(yearize_date("1882-12-05", riksmote), 1882)
         self.assertEqual(yearize_date("1932-04-13", riksmote), 1932)
         self.assertEqual(yearize_date("1942-12-05", riksmote), 1942)
+
+    def test_load_Corpus_metadata(self):
+        db = load_Corpus_metadata()
+        print(db)
+        MIN_LEN = 10000
+        self.assertGreaterEqual(len(db), MIN_LEN, f"Persons database should be at least {MIN_LEN} rows, got {len(db)}")
 
 if __name__ == "__main__":
     unittest.main()

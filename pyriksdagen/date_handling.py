@@ -428,17 +428,6 @@ def test_yearize_mandates():
     #print(sorted(m["parliament_year"].unique()))
     m.to_csv("_scripts/chairs/yearized_mandates.csv", index=False)
 
-
-def test_yearize_date():
-    riksmote = pd.read_csv("data/riksdag-year.csv")
-    print(yearize_date("1982-04-13", riksmote))
-    print(yearize_date("1982-12-05", riksmote))
-    print(yearize_date("1882-04-13", riksmote))
-    print(yearize_date("1882-12-05", riksmote))
-    print(yearize_date("1932-04-13", riksmote))
-    print(yearize_date("1942-12-05", riksmote))
-
-
 def main():
     test_yearize_mandates()
     #test_yearize_date()

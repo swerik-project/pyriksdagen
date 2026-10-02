@@ -44,4 +44,4 @@ jobs:
         git clone https://github.com/swerik-project/riksdagen-persons.git
     - name: Test utils
       run: |
-        python -m unittest tests.utils
+        python -m unittest test.utils

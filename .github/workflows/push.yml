@@ -24,6 +24,8 @@ jobs:
         pytest --nbmake **/*ipynb
   unittest:
     runs-on: ubuntu-latest
+    env:
+      METADATA_PATH: riksdagen-persons/data
     strategy:
       matrix:
         python-version: [3.13]
@@ -40,7 +42,6 @@ jobs:
     - name: Clone riksdagen-persons 
       run: |
         git clone https://github.com/swerik-project/riksdagen-persons.git
-        export METADATA_PATH="riksdagen-persons/data"
     - name: Test utils
       run: |
         python -m unittest tests.utils

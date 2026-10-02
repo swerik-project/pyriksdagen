@@ -90,7 +90,7 @@ def impute_member_dates(db, metadata_folder):
                 .filter(pl.col('start') <= start)
                 .filter(pl.col('end') > start)
             )
-        return None if py.is_empty() else py['end'].first()
+        return None if py.is_empty() else py['end'].item(0)
 
     def _fallback_end_for_start_year(start, riksmote):
         py = riksmote.filter(pl.col('end').str.starts_with(start[:4]))

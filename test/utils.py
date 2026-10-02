@@ -1,10 +1,9 @@
-"""Tests for pyriksdagen utility metadata inference."""
-from __future__ import annotations
-
+"""Unit tests for pyriksdagen"""
 import unittest
 
 from pyriksdagen.utils import infer_metadata
 from pyriksdagen.utils import get_formatted_uuid
+from pyriksdagen.utils import get_data_location
 from pyriksdagen.segmentation import intro_to_dict
 from pyriksdagen.date_handling import yearize_date
 from pyriksdagen.metadata import load_Corpus_metadata
@@ -83,7 +82,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(d.get("other"), None, f"No 'other' should be found in '{intro}' ({d})")
 
     def test_yearize_date(self):
-        metadata_path = os.environ.get("METADATA_PATH")
+        metadata_path = get_data_location("metadata")
         self.assertIsNotNone(metadata_path)
         riksmote_path = Path(metadata_path) / "riksdag-year.csv"
         riksmote = pd.read_csv(riksmote_path)

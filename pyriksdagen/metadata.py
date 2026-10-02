@@ -290,7 +290,7 @@ def abbreviate_party(db, party):
 
 def clean_name(db):
     return db.with_columns(
-        pl.when(pl.col("name"))F
+        pl.when(pl.col("name"))
         .then(
             pl.col("name")
             .str.to_lowercase()

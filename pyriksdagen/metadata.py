@@ -290,14 +290,12 @@ def abbreviate_party(db, party):
 
 def clean_name(db):
     return db.with_columns(
-        pl.when(pl.col("name"))
-        .then(
-            pl.col("name")
-            .str.to_lowercase()
-            .map_elements(multiple_replace, return_dtype=pl.String)
-            .str.replace_all('-', ' ', literal=True)
-            .str.replace_all(r'[^a-zåäö\s\-]', '')
-        )
+        pl.col("name")
+        .str.to_lowercase()
+        .map_elements(multiple_replace, return_dtype=pl.String)
+        .str.replace_all("-", "", literal=True)
+        .str.replace_all(r"[^a-zåäö\s\-]", "")
+        .alias("name")
     )
 
 

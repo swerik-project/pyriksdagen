@@ -82,7 +82,7 @@ def impute_member_dates(db, metadata_folder):
                 .filter(pl.col('start') <= end)
                 .filter(pl.col('end') >= end)
             )
-        return None if py.is_empty() else py['start'].first()
+        return None if py.is_empty() else py['start'].item(0)
 
     def _first_end_for_start(start, riksmote):
         py = (

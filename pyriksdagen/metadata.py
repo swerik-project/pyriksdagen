@@ -82,7 +82,7 @@ def impute_member_dates(db, metadata_folder):
                 .filter(pl.col('start') <= end)
                 .filter(pl.col('end') >= end)
             )
-        return None if py.is_empty() else py['start'].item(0)
+        return py['start'].first()
 
     def _first_end_for_start(start, riksmote):
         py = (
@@ -90,21 +90,18 @@ def impute_member_dates(db, metadata_folder):
                 .filter(pl.col('start') <= start)
                 .filter(pl.col('end') > start)
             )
-        return None if py.is_empty() else py['end'].item(0)
+        return py['end'].first()
 
     def _fallback_end_for_start_year(start, riksmote):
         py = riksmote.filter(pl.col('end').str.starts_with(start[:4]))
-        if py.is_empty():
+        end = py['end'].sort(descending=True).first()
+        if end is None:
             return None
-
-        end = sorted(py['end'].to_list(), reverse=True)[0]
-        if end >= start:
+        elif end >= start:
             return end
 
         py = riksmote.filter(pl.col('end').str.starts_with(str(int(start[:4])+1)))
-        if py.is_empty():
-            return None
-        return sorted(py['end'].to_list(), reverse=True).first()
+        return py['end'].sort(descending=True).first()
 
     def _fill_na(row, **kwargs):
         if row['start'] is None and row['end'] is None:

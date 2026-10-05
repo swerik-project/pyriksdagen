@@ -45,3 +45,11 @@ jobs:
     - name: Test utils
       run: |
         python -m unittest test.utils
+    - name: Test that we get exactly correct metadata wrt. riksdagen-persons 0104e06
+      env:
+        RUN_METADATA_REFERENCE_COMPARISON: "1"
+      run: |
+        cd riksdagen-persons
+        git checkout 0104e06fade5b561a95ca9ec043c2f013a78848e
+        cd ..
+        python -m unittest test.utils.TestUtils.test_load_Corpus_metadata_w_ref

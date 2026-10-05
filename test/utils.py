@@ -97,8 +97,27 @@ class TestUtils(unittest.TestCase):
     def test_load_Corpus_metadata(self):
         db = load_Corpus_metadata()
         print(db)
+
+        db.write_csv("test/result/metadata_output.csv")
         MIN_LEN = 10000
         self.assertGreaterEqual(len(db), MIN_LEN, f"Persons database should be at least {MIN_LEN} rows, got {len(db)}")
+
+    @unittest.skipIf(
+        os.getenv("RUN_METADATA_REFERENCE_COMPARISON") != "1",
+        "Check metadata output ONLY if reference is properly specified"
+    )
+    def test_load_Corpus_metadata_w_ref(self):
+        db = load_Corpus_metadata()
+        db.write_csv("test/result/metadata_output.csv")
+        db = pl.read_csv("test/result/metadata_output.csv")
+        db = db.sort(db.columns)
+        db_ref = pl.read_csv("test/result/reference_metadata_output.csv")
+        db_ref = db_ref.sort(db_ref.columns)
+        self.assertEqual(len(db), len(db_ref), f"Persons database should equal lengths, got\n{db}\nvs ref:\n{db_ref}")
+
+        #diff_dfs = []
+        #for 
+        self.assertTrue(db.equals(db_ref), f"Persons database should equal , got\n{db}\nvs ref:\n{db_ref}")
 
 if __name__ == "__main__":
     unittest.main()

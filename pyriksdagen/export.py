@@ -1,7 +1,6 @@
 """
 Parla Clarin generation
 """
-import pandas as pd
 import progressbar, copy
 from lxml import etree
 from pyparlaclarin.create import pc_header, create_parlaclarin
@@ -158,4 +157,3 @@ def zero_pad_prot_nr(protocol_id):
         constituents.append(f"{id_nr}")
         protocol_id = '-'.join(constituents)
     return protocol_id
-

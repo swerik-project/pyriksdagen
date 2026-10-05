@@ -225,46 +225,6 @@ def expression_dicts(pattern_db):
     return expressions, manual
 
 
-def detect_introduction(elem, intro_ids):
-    """
-    Detect whether the current paragraph contains an introduction of a speaker.
-
-    Returns a dict if an intro is detected, otherwise None.
-    """
-    if elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") in intro_ids:
-
-            d = {
-                "pattern": None,
-                "who": None,
-                "segmentation": None,
-                "txt": elem.text,
-            }
-
-            return d
-
-def combine_intros(elem1, elem2, intro_expressions, other_expressions):
-    """
-    Join intros that have been split as an artifact of the data processing.
-    """
-    if elem1.text is None or elem2.text is None:
-        return False
-    combine = False
-    for exp, _ in other_expressions:
-        for m in exp.finditer(elem1.text.strip()):
-            combine = True
-
-    intro = detect_introduction(elem2.text, intro_expressions)
-    combine = combine and intro is not None
-    combine = combine and "Anf" not in elem2.text
-    if combine:
-        if elem1.text.strip()[-1] == "-":
-            elem2.text = elem1.text.strip()[:-1] + "-" + elem2.text.strip()
-        else:
-            elem2.text = elem1.text + " " + elem2.text
-        elem1.text = ""
-
-    return combine
-
 def join_text(text1, text2):
     text1, text2 = list(map(lambda x: ' '.join(x.replace('\n', ' ').split()), [text1, text2]))
     # Account for words split over textblocks with '-'

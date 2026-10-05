@@ -123,7 +123,7 @@ def _get_parliament_years(start, end, start_year, end_year, start_p, end_p, year
                         parliament_years.append(1975)
             elif str(start_year) + str(end_year)[2:] in year_list:
                 df = riksmote.filter(pl.col("parliament_year") == int(str(start_year) + str(end_year)[2:]))
-                if assert df.is_empty():
+                if df.is_empty():
                     raise ValueError("parliament_year df shouldn't be empty")
 
                 df_ends = df["end"].unique()
@@ -132,7 +132,7 @@ def _get_parliament_years(start, end, start_year, end_year, start_p, end_p, year
                     if str(int(start_year)-1) + str(start_year)[2:] in year_list:
                         parliament_years.append(int(str(int(start_year)-1) + str(start_year)[2:]))
                     elif str(start_year) in year_list:
-                        parliament_years.appenr(start_year)
+                        parliament_years.append(start_year)
                     else:
                         if start_year == "2000":
                             parliament_years.append(19992000)
@@ -146,7 +146,7 @@ def _get_parliament_years(start, end, start_year, end_year, start_p, end_p, year
                     elif end_year == "1998":
                         parliament_years.append(19992000)
                     else:
-                        logger.warning(f"{int(str(int(end_year) + 1) + int(str(end_year)[2:]) + 2:02)}, isn't in year list, but maybe it should be")
+                        logger.warning(f"{int(str(int(end_year) + 1)) + int(str(end_year)[2:]) + 2:02)}, isn't in year list, but maybe it should be")
                 parliament_years.append(int(str(start_year) + str(end_year)[2:]))
             else:
                 parliament_years.append(int(start_year))
@@ -402,16 +402,6 @@ def yearize_mandates(debug_id=None, metadata_folder="data"):
 def test_yearize_mandates():
     m = yearize_mandates(debug_id="i-XvpBFhfR9SDB1i9KLCmqX2")
     m.write_csv("_scripts/chairs/yearized_mandates.csv")
-
-
-def test_yearize_date():
-    riksmote = pl.read_csv("data/riksdag-year.csv")
-    print(yearize_date("1982-04-13", riksmote))
-    print(yearize_date("1982-12-05", riksmote))
-    print(yearize_date("1882-04-13", riksmote))
-    print(yearize_date("1882-12-05", riksmote))
-    print(yearize_date("1932-04-13", riksmote))
-    print(yearize_date("1942-12-05", riksmote))
 
 
 def main():

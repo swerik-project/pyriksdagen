@@ -12,7 +12,7 @@ class IntroDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        df_row = self.df.iloc[index]
+        df_row = self.df.row(index, named=True)
         token_info = self.tokenizer.encode_plus(
                                             df_row['text'],                       # Sentence to encode.
                                             add_special_tokens = True,      # Add '[CLS]' and '[SEP]'
@@ -37,7 +37,7 @@ class MergeDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
 
-        df_row = self.df.iloc[index]
+        df_row = self.df.row(index, named=True)
         token_info = self.tokenizer(df_row['text1'],
                                     df_row['text2'],
                                     max_length = 50,

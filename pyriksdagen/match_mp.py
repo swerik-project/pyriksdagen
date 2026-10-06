@@ -7,11 +7,20 @@ from nltk.metrics.distance import edit_distance
 from trainerlog import get_logger
 LOGGER = get_logger("match_mp")
 
-def multiple_replace(text, i_start=192, i_end=383):
-	d = [chr(c) for c in range(i_start, i_end+1)]
-	d = {c:unidecode(c) for c in d if c not in 'åäöÅÄÖ'}
-	regex = re.compile("(%s)" % "|".join(map(re.escape, d.keys())))
-	return regex.sub(lambda mo: d[mo.string[mo.start():mo.end()]], text) 
+#def multiple_replace(text, i_start=192, i_end=383):
+#	d = [chr(c) for c in range(i_start, i_end+1)]
+#	d = {c:unidecode(c) for c in d if c not in 'åäöÅÄÖ'}
+#	regex = re.compile("(%s)" % "|".join(map(re.escape, d.keys())))
+#	return regex.sub(lambda mo: d[mo.string[mo.start():mo.end()]], text) 
+
+# Unidecode conversion table for é -> e etc.
+MULTIPLE_REPLACE_LOOKUP = {
+        c: unidecode(chr(c))
+        for c in range(192, 383 + 1)
+        if chr(c) not in 'åäöÅÄÖ'
+    }
+def multiple_replace(text):
+    return text.translate(MULTIPLE_REPLACE_LOOKUP)
 
 def clean_names(names):
 	if type(names) == str:

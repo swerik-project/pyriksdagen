@@ -13,7 +13,7 @@ import datetime
 import os
 import re
 
-LOGGER = get_logger("metadata")
+LOGGER = get_logger("metadata", splitsec=True)
 
 
 def _dataframe_from_rows(rows, columns=None, schema=None):
@@ -251,8 +251,14 @@ def impute_date(db, metadata_folder):
 
 
 def impute_party(db, party):
-    if 'party' not in db.columns:
-        db = db.with_columns(pl.lit(None, dtype=pl.String).alias("party"))
+    # Vectorized implementation:
+    # Fill values for people who only belong to one party
+    unique_party = party.unique(["person_id", "party"]).select("person_id", "party")
+    unique_party = unique_party.filter(pl.col("person_id").is_unique())
+    db = db.join(unique_party, how="left", on="person_id")
+    db = db.with_columns(pl.col("party").fill_null(pl.col("party_right")))
+    db = db.drop("party_right")
+
     data = []
     rows = db.to_dicts()
     for row in rows:
@@ -267,6 +273,7 @@ def impute_party(db, party):
                         m = row.copy()
                         m['party'] = sow['party']
                         data.append(m)
+
     if data:
         return pl.concat(
             [
@@ -275,6 +282,7 @@ def impute_party(db, party):
             ],
             how="diagonal",
         )
+
     return _dataframe_from_rows(rows, db.columns, db.schema)
 
 
@@ -417,22 +425,33 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
             metadata_folder = get_data_location("metadata")
 
         corpus = Corpus()
-
+        LOGGER.debug("Add MPs")
         corpus = corpus.add_mps(metadata_folder=metadata_folder)
+        LOGGER.debug("Add ministers")
         corpus = corpus.add_ministers(metadata_folder=metadata_folder)
+        LOGGER.debug("Add speakers")
         corpus = corpus.add_speakers(metadata_folder=metadata_folder)
 
+        LOGGER.debug("Add persons")
         corpus = corpus.add_persons(metadata_folder=metadata_folder)
+        LOGGER.debug("Add location_specifiers")
         corpus = corpus.add_location_specifiers(metadata_folder=metadata_folder)
+        LOGGER.debug("Add names")
         corpus = corpus.add_names(metadata_folder=metadata_folder)
 
+        LOGGER.debug("impute dates")
         corpus = corpus.impute_dates(metadata_folder=metadata_folder)
+        LOGGER.debug("impute parties")
         corpus = corpus.impute_parties(metadata_folder=metadata_folder)
+        LOGGER.debug("abbreviate parties")
         corpus = corpus.abbreviate_parties(metadata_folder=metadata_folder)
+        LOGGER.debug("add twitter")
         corpus = corpus.add_twitter(metadata_folder=metadata_folder)
+        LOGGER.debug("clean names")
         corpus = corpus.clean_names()
 
         # Clean up speaker role formatting
+        LOGGER.debug("Clean up speaker role formatting")
         corpus = corpus.with_columns(pl.col("role").replace({
             'Sveriges riksdags talman':'speaker',
             'andra kammarens andre vice talman':'ak_2_vice_speaker',

@@ -273,7 +273,6 @@ def impute_party(db, party):
                         m = row.copy()
                         m['party'] = sow['party']
                         data.append(m)
-
     if data:
         return pl.concat(
             [
@@ -282,7 +281,6 @@ def impute_party(db, party):
             ],
             how="diagonal",
         )
-
     return _dataframe_from_rows(rows, db.columns, db.schema)
 
 

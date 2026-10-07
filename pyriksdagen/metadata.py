@@ -153,37 +153,41 @@ def impute_member_dates(db, metadata_folder):
             or row["end"] is None
         ):
             row = _fill_na(row, riksmote=riksmote)
-        if row["source"] == "member_of_parliament" and row["start"] is not None:
-            row["start"] = _impute_start(row["start"], riksmote=riksmote)
+        #if row["source"] == "member_of_parliament" and row["start"] is not None:
+        #    row["start"] = _impute_start(row["start"], riksmote=riksmote)
         rows.append(row)
 
-    # Optimization: Vectorized imputation of end dates
+    # Optimization: Vectorized imputation of start and end dates
     db = _dataframe_from_rows(rows, db.columns, db.schema)
     db_mp = db.filter(pl.col("source") == "member_of_parliament")
     db_non_mp = db.filter(pl.col("source") != "member_of_parliament")
 
     # 10-character dates do not need processing
-    db_end_10 = db_mp.filter(pl.col("end").str.len_chars() == 10) 
+    db_start_10 = db_mp.filter(pl.col("start").str.len_chars() == 10) 
+
+    def impute_short_dates(df, se="start", keep="first", datelen=7):
+        df_se = db_mp.filter(pl.col(se).str.len_chars() == datelen)
+        riksmote_w_year = riksmote.with_columns(pl.col(se).alias(f"{se}_right"), pl.col(se).str.slice(0, datelen).alias(se))
+        riksmote_w_year = riksmote_w_year.sort(f"{se}_right")
+        riksmote_w_year = riksmote_w_year.unique(se, keep=keep)
+        df_se = df_se.join(riksmote_w_year, how="left", on=se)
+        df_se = df_se.drop(se)
+        df_se = df_se.rename({f"{se}_right": se})
+        return df_se.select(df.columns)
 
     # 7-character dates: Last riksdag year end that matches YYYY-MM-**
-    db_end_7 = db_mp.filter(pl.col("end").str.len_chars() == 7)
-    riksmote_w_year = riksmote.with_columns(pl.col("end").alias("end_right"), pl.col("end").str.slice(0, 7).alias("end"))
-    riksmote_w_year = riksmote_w_year.sort("end_right")
-    riksmote_w_year = riksmote_w_year.unique("end", keep="last")
-    db_end_7 = db_end_7.join(riksmote_w_year, how="left", on="end")
-    db_end_7 = db_end_7.drop("end")
-    db_end_7 = db_end_7.rename({"end_right": "end"})
-    db_end_7 = db_end_7.select(db.columns)
-
+    db_start_7 = impute_short_dates(db_mp, se="start", keep="first", datelen=7)
     # Years only: Last riksdag year end that matches YYYY-**-**
-    db_short_end = db_mp.filter(pl.col("end").str.len_chars() < 7)
-    riksmote_w_year = riksmote.with_columns(pl.col("end").alias("end_right"), pl.col("end").str.slice(0, 4).alias("end"))
-    riksmote_w_year = riksmote_w_year.sort("end_right")
-    riksmote_w_year = riksmote_w_year.unique("end", keep="last")
-    db_short_end = db_short_end.join(riksmote_w_year, how="left", on=["end"])
-    db_short_end = db_short_end.drop("end")
-    db_short_end = db_short_end.rename({"end_right": "end"})
-    db_short_end = db_short_end.select(db.columns)
+    db_short_start = impute_short_dates(db_mp, se="start", keep="first", datelen=4)
+
+    db_mp = pl.concat([db_start_10, db_start_7, db_short_start]).unique()
+
+    # 10-character dates do not need processing
+    db_end_10 = db_mp.filter(pl.col("end").str.len_chars() == 10) 
+    # 7-character dates: Last riksdag year end that matches YYYY-MM-**
+    db_end_7 = impute_short_dates(db_mp, se="end", keep="last", datelen=7)
+    # Years only: Last riksdag year end that matches YYYY-**-**
+    db_short_end = impute_short_dates(db_mp, se="end", keep="last", datelen=4)
 
     db = pl.concat([db_non_mp, db_end_10, db_end_7, db_short_end]).unique()
     return db

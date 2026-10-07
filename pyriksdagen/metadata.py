@@ -142,26 +142,6 @@ def impute_member_dates(db, metadata_folder):
                 LOGGER.debug(f"Problem with start date: {date} not in riksmote")
                 return date + '-01-01'
 
-    def _impute_end(date, **kwargs):
-        riksmote = kwargs['riksmote']
-        if len(date) == 10:
-            return date
-        elif len(date) == 7:
-            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
-            if len(s) > 0:
-                return s[0]
-            else:
-                date_year, date_month = date.split("-")
-                last_day_of_the_month = calendar.monthrange(int(date_year), int(date_month))[1]
-                return date + f'-{last_day_of_the_month}'
-        else:
-            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
-            if len(s) > 0:
-                return s[0]
-            else:
-                LOGGER.debug(f"Problem with end date: {date} not in riksmote")
-                return date + '-12-31'
-
     riksmote = pl.read_csv(f"{metadata_folder}/riksdag-year.csv").with_columns(
         pl.col(["parliament_year"]).cast(pl.String)
     )
@@ -175,14 +155,38 @@ def impute_member_dates(db, metadata_folder):
             row = _fill_na(row, riksmote=riksmote)
         if row["source"] == "member_of_parliament" and row["start"] is not None:
             row["start"] = _impute_start(row["start"], riksmote=riksmote)
-        if (
-            row["source"] == "member_of_parliament"
-            and row["start"] is not None
-            and row["end"] is not None
-        ):
-            row["end"] = _impute_end(row["end"], riksmote=riksmote)
         rows.append(row)
-    return _dataframe_from_rows(rows, db.columns, db.schema)
+
+    # Optimization: Vectorized imputation of end dates
+    db = _dataframe_from_rows(rows, db.columns, db.schema)
+    db_mp = db.filter(pl.col("source") == "member_of_parliament")
+    db_non_mp = db.filter(pl.col("source") != "member_of_parliament")
+
+    # 10-character dates do not need processing
+    db_end_10 = db_mp.filter(pl.col("end").str.len_chars() == 10) 
+
+    # 7-character dates: Last riksdag year end that matches YYYY-MM-**
+    db_end_7 = db_mp.filter(pl.col("end").str.len_chars() == 7)
+    riksmote_w_year = riksmote.with_columns(pl.col("end").alias("end_right"), pl.col("end").str.slice(0, 7).alias("end"))
+    riksmote_w_year = riksmote_w_year.sort("end_right")
+    riksmote_w_year = riksmote_w_year.unique("end", keep="last")
+    db_end_7 = db_end_7.join(riksmote_w_year, how="left", on="end")
+    db_end_7 = db_end_7.drop("end")
+    db_end_7 = db_end_7.rename({"end_right": "end"})
+    db_end_7 = db_end_7.select(db.columns)
+
+    # Years only: Last riksdag year end that matches YYYY-**-**
+    db_short_end = db_mp.filter(pl.col("end").str.len_chars() < 7)
+    riksmote_w_year = riksmote.with_columns(pl.col("end").alias("end_right"), pl.col("end").str.slice(0, 4).alias("end"))
+    riksmote_w_year = riksmote_w_year.sort("end_right")
+    riksmote_w_year = riksmote_w_year.unique("end", keep="last")
+    db_short_end = db_short_end.join(riksmote_w_year, how="left", on=["end"])
+    db_short_end = db_short_end.drop("end")
+    db_short_end = db_short_end.rename({"end_right": "end"})
+    db_short_end = db_short_end.select(db.columns)
+
+    db = pl.concat([db_non_mp, db_end_10, db_end_7, db_short_end]).unique()
+    return db
 
 
 def impute_minister_date(db, gov_db):

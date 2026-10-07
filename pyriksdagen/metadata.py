@@ -124,24 +124,6 @@ def impute_member_dates(db, metadata_folder):
                 LOGGER.debug(f"Could not infer end date for {row['person_id']} from start date {row['start']}.")
         return row
 
-    def _impute_start(date, **kwargs):
-        riksmote = kwargs['riksmote']
-        if len(date) == 10:
-            return date
-        elif len(date) == 7:
-            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
-            if len(s) > 0:
-                return s[0]
-            else:
-                return date + "-01"
-        else:
-            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
-            if len(s) > 0:
-                return s[0]
-            else:
-                LOGGER.debug(f"Problem with start date: {date} not in riksmote")
-                return date + '-01-01'
-
     riksmote = pl.read_csv(f"{metadata_folder}/riksdag-year.csv").with_columns(
         pl.col(["parliament_year"]).cast(pl.String)
     )

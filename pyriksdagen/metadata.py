@@ -300,7 +300,7 @@ def impute_party(db, party):
 def abbreviate_party(db, party):
     party = {row['party']:row['abbreviation'] for row in party.to_dicts()}
     return db.with_columns(
-        pl.col("party").replace(party, default=None).alias("party_abbrev")
+        pl.col("party").replace_strict(party, default=None).alias("party_abbrev")
     )
 
 

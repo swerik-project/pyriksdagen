@@ -251,7 +251,7 @@ def impute_date(db, metadata_folder):
 
 
 def impute_party(db, party):
-    # Vectorized implementation:
+    # Optimization: vectorized implementation.
     # Fill values for people who only belong to one party
     unique_party = party.unique(["person_id", "party"]).select("person_id", "party")
     unique_party = unique_party.filter(pl.col("person_id").is_unique())
@@ -259,29 +259,38 @@ def impute_party(db, party):
     db = db.with_columns(pl.col("party").fill_null(pl.col("party_right")))
     db = db.drop("party_right")
 
+    # Fill values for the rest
     data = []
-    rows = db.to_dicts()
+    db_noparty = db.filter(pl.col("party").is_null())
+    db_hasparty = db.filter(pl.col("party").is_not_null())
+
+    rows = db_noparty.to_dicts()
+
+    # Optimization: avoid filtering the party df by the same person_id repeatedly
+    # by storing the result in a dict instead
+    person_party_dfs = {}
     for row in rows:
-        if row.get('party') is None:
+        parties = person_party_dfs.get(row['person_id'])
+        if parties is None:
             parties = party.filter(pl.col('person_id') == row['person_id'])
-            party_values = set(parties['party'].to_list())
-            if len(party_values) == 1:
-                row['party'] = next(iter(party_values))
-            if len(party_values) >= 2:
-                for sow in parties.to_dicts():
-                    if check_date_overlap(row['start'], row['end'], sow['start'], sow['end']):
-                        m = row.copy()
-                        m['party'] = sow['party']
-                        data.append(m)
+            person_party_dfs[row['person_id']] = parties
+        party_values = set(parties['party'].to_list())
+        if len(party_values) >= 2:
+            for sow in parties.to_dicts():
+                if check_date_overlap(row['start'], row['end'], sow['start'], sow['end']):
+                    m = row.copy()
+                    m['party'] = sow['party']
+                    data.append(m)
     if data:
         return pl.concat(
             [
-                _dataframe_from_rows(rows, db.columns, db.schema),
+                db_noparty,
                 _dataframe_from_rows(data, db.columns, db.schema),
+                db_hasparty
             ],
             how="diagonal",
         )
-    return _dataframe_from_rows(rows, db.columns, db.schema)
+    return pl.concat([db_noparty, db_hasparty])
 
 
 def abbreviate_party(db, party):

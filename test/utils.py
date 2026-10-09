@@ -113,11 +113,13 @@ class TestUtils(unittest.TestCase):
         db = db.sort(db.columns)
         db_ref = pl.read_csv("test/result/reference_metadata_output.csv")
         db_ref = db_ref.sort(db_ref.columns)
-        self.assertEqual(len(db), len(db_ref), f"Persons database should equal lengths, got\n{db}\nvs ref:\n{db_ref}")
+        #self.assertEqual(len(db), len(db_ref), f"Persons database should equal lengths, got\n{db}\nvs ref:\n{db_ref}")
 
         #diff_dfs = []
         #for 
-        self.assertTrue(db.equals(db_ref), f"Persons database should equal , got\n{db}\nvs ref:\n{db_ref}")
+        diff_dfs = pl.concat([db, db_ref])
+        diff_dfs = diff_dfs.filter(~diff_dfs.is_duplicated())
+        self.assertTrue(db.equals(db_ref), f"Persons database should equal , got\n{db}\nvs ref:\n{db_ref}\n{diff_dfs}")
 
 if __name__ == "__main__":
     unittest.main()

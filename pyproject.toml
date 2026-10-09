@@ -1,6 +1,6 @@
 [project]
 name = "pyriksdagen"
-version = "v1.10.2"
+version = "v2.0.0"
 description = "Access the Riksdagen corpus"
 authors = [
     {name="ninpnin", email= "vainoyrjanainen@icloud.com"}

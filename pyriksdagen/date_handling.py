@@ -3,6 +3,9 @@
 Handle issues relating to dates in the corpus and MP/Minister database.
 """
 from tqdm import tqdm
+import pandas as pd
+import datetime
+import re
 from trainerlog import get_logger
 from pyriksdagen.metadata import (
     impute_date,            # db
@@ -17,6 +20,58 @@ import polars as pl
 logger = get_logger(name="pyriksdagen.date_handling")
 LATEST_RIKSMOTE = 202627
 
+
+
+DATE_RE = re.compile(r"^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$")
+
+
+def parse_date_interval(value, is_end):
+    """
+    Parse partial date strings as interval boundaries.
+
+    Start dates are expanded to the first possible day. End dates are expanded
+    to the exclusive upper bound after the last possible day, so interval
+    comparisons can use `start < other_end and end > other_start`.
+
+    Returns:
+        tuple: `(datetime, precision, issue)`, where issue is `"blank"`,
+        `"malformed"`, or `None`.
+    """
+    if pd.isna(value) or str(value).strip() == "":
+        if is_end:
+            return datetime.datetime.max.replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0,
+            ), None, "blank"
+        return None, None, "blank"
+
+    value = str(value).strip()
+    match = DATE_RE.match(value)
+    if match is None:
+        return None, None, "malformed"
+
+    year = int(match.group(1))
+    month = int(match.group(2)) if match.group(2) else None
+    day = int(match.group(3)) if match.group(3) else None
+
+    try:
+        if month is None:
+            if is_end:
+                return datetime.datetime(year + 1, 1, 1), "year", None
+            return datetime.datetime(year, 1, 1), "year", None
+
+        if day is None:
+            if is_end:
+                if month == 12:
+                    return datetime.datetime(year + 1, 1, 1), "month", None
+                return datetime.datetime(year, month + 1, 1), "month", None
+            return datetime.datetime(year, month, 1), "month", None
+
+        return datetime.datetime(year, month, day), "day", None
+    except ValueError:
+        return None, None, "malformed"
 
 
 

@@ -13,7 +13,7 @@ import datetime
 import os
 import re
 
-LOGGER = get_logger("metadata")
+LOGGER = get_logger("metadata", splitsec=True)
 
 
 def _dataframe_from_rows(rows, columns=None, schema=None):
@@ -124,44 +124,6 @@ def impute_member_dates(db, metadata_folder):
                 LOGGER.debug(f"Could not infer end date for {row['person_id']} from start date {row['start']}.")
         return row
 
-    def _impute_start(date, **kwargs):
-        riksmote = kwargs['riksmote']
-        if len(date) == 10:
-            return date
-        elif len(date) == 7:
-            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
-            if len(s) > 0:
-                return s[0]
-            else:
-                return date + "-01"
-        else:
-            s = sorted(riksmote.filter(pl.col('start').str.starts_with(date))['start'].to_list())
-            if len(s) > 0:
-                return s[0]
-            else:
-                LOGGER.debug(f"Problem with start date: {date} not in riksmote")
-                return date + '-01-01'
-
-    def _impute_end(date, **kwargs):
-        riksmote = kwargs['riksmote']
-        if len(date) == 10:
-            return date
-        elif len(date) == 7:
-            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
-            if len(s) > 0:
-                return s[0]
-            else:
-                date_year, date_month = date.split("-")
-                last_day_of_the_month = calendar.monthrange(int(date_year), int(date_month))[1]
-                return date + f'-{last_day_of_the_month}'
-        else:
-            s = sorted(riksmote.filter(pl.col('end').str.starts_with(date))['end'].to_list(), reverse=True)
-            if len(s) > 0:
-                return s[0]
-            else:
-                LOGGER.debug(f"Problem with end date: {date} not in riksmote")
-                return date + '-12-31'
-
     riksmote = pl.read_csv(f"{metadata_folder}/riksdag-year.csv").with_columns(
         pl.col(["parliament_year"]).cast(pl.String)
     )
@@ -173,16 +135,44 @@ def impute_member_dates(db, metadata_folder):
             or row["end"] is None
         ):
             row = _fill_na(row, riksmote=riksmote)
-        if row["source"] == "member_of_parliament" and row["start"] is not None:
-            row["start"] = _impute_start(row["start"], riksmote=riksmote)
-        if (
-            row["source"] == "member_of_parliament"
-            and row["start"] is not None
-            and row["end"] is not None
-        ):
-            row["end"] = _impute_end(row["end"], riksmote=riksmote)
+        #if row["source"] == "member_of_parliament" and row["start"] is not None:
+        #    row["start"] = _impute_start(row["start"], riksmote=riksmote)
         rows.append(row)
-    return _dataframe_from_rows(rows, db.columns, db.schema)
+
+    # Optimization: Vectorized imputation of start and end dates
+    db = _dataframe_from_rows(rows, db.columns, db.schema)
+    db_mp = db.filter(pl.col("source") == "member_of_parliament")
+    db_non_mp = db.filter(pl.col("source") != "member_of_parliament")
+
+    # 10-character dates do not need processing
+    db_start_10 = db_mp.filter(pl.col("start").str.len_chars() == 10) 
+
+    def impute_short_dates(df, se="start", keep="first", datelen=7):
+        df_se = db_mp.filter(pl.col(se).str.len_chars() == datelen)
+        riksmote_w_year = riksmote.with_columns(pl.col(se).alias(f"{se}_right"), pl.col(se).str.slice(0, datelen).alias(se))
+        riksmote_w_year = riksmote_w_year.sort(f"{se}_right")
+        riksmote_w_year = riksmote_w_year.unique(se, keep=keep)
+        df_se = df_se.join(riksmote_w_year, how="left", on=se)
+        df_se = df_se.drop(se)
+        df_se = df_se.rename({f"{se}_right": se})
+        return df_se.select(df.columns)
+
+    # 7-character dates: Last riksdag year end that matches YYYY-MM-**
+    db_start_7 = impute_short_dates(db_mp, se="start", keep="first", datelen=7)
+    # Years only: Last riksdag year end that matches YYYY-**-**
+    db_short_start = impute_short_dates(db_mp, se="start", keep="first", datelen=4)
+
+    db_mp = pl.concat([db_start_10, db_start_7, db_short_start]).unique()
+
+    # 10-character dates do not need processing
+    db_end_10 = db_mp.filter(pl.col("end").str.len_chars() == 10) 
+    # 7-character dates: Last riksdag year end that matches YYYY-MM-**
+    db_end_7 = impute_short_dates(db_mp, se="end", keep="last", datelen=7)
+    # Years only: Last riksdag year end that matches YYYY-**-**
+    db_short_end = impute_short_dates(db_mp, se="end", keep="last", datelen=4)
+
+    db = pl.concat([db_non_mp, db_end_10, db_end_7, db_short_end]).unique()
+    return db
 
 
 def impute_minister_date(db, gov_db):
@@ -251,37 +241,52 @@ def impute_date(db, metadata_folder):
 
 
 def impute_party(db, party):
-    if 'party' not in db.columns:
-        db = db.with_columns(pl.lit(None, dtype=pl.String).alias("party"))
+    # Optimization: vectorized implementation.
+    # Fill values for people who only belong to one party
+    unique_party = party.unique(["person_id", "party"]).select("person_id", "party")
+    unique_party = unique_party.filter(pl.col("person_id").is_unique())
+    db = db.join(unique_party, how="left", on="person_id")
+    db = db.with_columns(pl.col("party").fill_null(pl.col("party_right")))
+    db = db.drop("party_right")
+
+    # Fill values for the rest
     data = []
-    rows = db.to_dicts()
+    db_noparty = db.filter(pl.col("party").is_null())
+    db_hasparty = db.filter(pl.col("party").is_not_null())
+
+    rows = db_noparty.to_dicts()
+
+    # Optimization: avoid filtering the party df by the same person_id repeatedly
+    # by storing the result in a dict instead
+    person_party_dfs = {}
     for row in rows:
-        if row.get('party') is None:
+        parties = person_party_dfs.get(row['person_id'])
+        if parties is None:
             parties = party.filter(pl.col('person_id') == row['person_id'])
-            party_values = set(parties['party'].to_list())
-            if len(party_values) == 1:
-                row['party'] = next(iter(party_values))
-            if len(party_values) >= 2:
-                for sow in parties.to_dicts():
-                    if check_date_overlap(row['start'], row['end'], sow['start'], sow['end']):
-                        m = row.copy()
-                        m['party'] = sow['party']
-                        data.append(m)
+            person_party_dfs[row['person_id']] = parties
+        party_values = set(parties['party'].to_list())
+        if len(party_values) >= 2:
+            for sow in parties.to_dicts():
+                if check_date_overlap(row['start'], row['end'], sow['start'], sow['end']):
+                    m = row.copy()
+                    m['party'] = sow['party']
+                    data.append(m)
     if data:
         return pl.concat(
             [
-                _dataframe_from_rows(rows, db.columns, db.schema),
+                db_noparty,
                 _dataframe_from_rows(data, db.columns, db.schema),
+                db_hasparty
             ],
             how="diagonal",
         )
-    return _dataframe_from_rows(rows, db.columns, db.schema)
+    return pl.concat([db_noparty, db_hasparty])
 
 
 def abbreviate_party(db, party):
     party = {row['party']:row['abbreviation'] for row in party.to_dicts()}
     return db.with_columns(
-        pl.col("party").replace(party, default=None).alias("party_abbrev")
+        pl.col("party").replace_strict(party, default=None).alias("party_abbrev")
     )
 
 
@@ -417,22 +422,33 @@ def load_Corpus_metadata(metadata_folder=None, read_db=False, read_db_from=None)
             metadata_folder = get_data_location("metadata")
 
         corpus = Corpus()
-
+        LOGGER.debug("Add MPs")
         corpus = corpus.add_mps(metadata_folder=metadata_folder)
+        LOGGER.debug("Add ministers")
         corpus = corpus.add_ministers(metadata_folder=metadata_folder)
+        LOGGER.debug("Add speakers")
         corpus = corpus.add_speakers(metadata_folder=metadata_folder)
 
+        LOGGER.debug("Add persons")
         corpus = corpus.add_persons(metadata_folder=metadata_folder)
+        LOGGER.debug("Add location_specifiers")
         corpus = corpus.add_location_specifiers(metadata_folder=metadata_folder)
+        LOGGER.debug("Add names")
         corpus = corpus.add_names(metadata_folder=metadata_folder)
 
+        LOGGER.debug("impute dates")
         corpus = corpus.impute_dates(metadata_folder=metadata_folder)
+        LOGGER.debug("impute parties")
         corpus = corpus.impute_parties(metadata_folder=metadata_folder)
+        LOGGER.debug("abbreviate parties")
         corpus = corpus.abbreviate_parties(metadata_folder=metadata_folder)
+        LOGGER.debug("add twitter")
         corpus = corpus.add_twitter(metadata_folder=metadata_folder)
+        LOGGER.debug("clean names")
         corpus = corpus.clean_names()
 
         # Clean up speaker role formatting
+        LOGGER.debug("Clean up speaker role formatting")
         corpus = corpus.with_columns(pl.col("role").replace({
             'Sveriges riksdags talman':'speaker',
             'andra kammarens andre vice talman':'ak_2_vice_speaker',

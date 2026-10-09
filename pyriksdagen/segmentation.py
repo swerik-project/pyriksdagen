@@ -36,6 +36,23 @@ def classify_paragraph(paragraph, classifier, prior=np.log([0.8, 0.2])):
     pred = classifier["model"].predict(x, batch_size=V)
     return np.sum(pred, axis=0) + prior
 
+def detect_introduction(elem, intro_ids):
+    """
+    Detect whether the current paragraph contains an introduction of a speaker.
+
+    Returns a dict if an intro is detected, otherwise None.
+    """
+    if elem.attrib.get("{http://www.w3.org/XML/1998/namespace}id") in intro_ids:
+
+            d = {
+                "pattern": None,
+                "who": None,
+                "segmentation": None,
+                "txt": elem.text,
+            }
+
+            return d
+
 
 def detect_speaker(matched_txt, speaker_db, metadata=None):
     """

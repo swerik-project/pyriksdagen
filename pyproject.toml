@@ -1,40 +1,42 @@
-[tool.poetry]
+[project]
 name = "pyriksdagen"
 version = "v1.10.2"
 description = "Access the Riksdagen corpus"
-authors = ["ninpnin <vainoyrjanainen@icloud.com>"]
+authors = [
+    {name="ninpnin", email= "vainoyrjanainen@icloud.com"}
+]
 repository = "https://github.com/welfare-state-analytics/riksdagen-corpus"
 readme = "README.md"
 license = "MIT"
 packages = [
     { include = "pyriksdagen", from = "" }
 ]
+requires-python = ">=3.7"
+dependencies = [
+    "pyparlaclarin",
+    "polars",
+    "base58",
+    "kblab-client",
+    "progressbar2",
+    "lxml",
+    "xmlschema",
+    "unidecode",
+    "dateparser",
+    "beautifulsoup4",
+    "requests",
+    "numpy",
+    "SPARQLWrapper",
+    "tqdm",
+    "matplotlib",
+    "importlib_resources",
+    "nltk",
+    "textdistance",
+    "py-markdown-table",
+    "alto-xml",
+    "trainerlog",
+]
 
-[tool.poetry.dependencies]
-python = "^3.7"
-pyparlaclarin = "*"
-polars = "*"
-base58 = "*"
-kblab-client = "*"
-progressbar2 = "*"
-lxml = "*"
-xmlschema = "*"
-unidecode = "*"
-dateparser = "*"
-beautifulsoup4 = "*"
-requests = "*"
-numpy = "*"
-SPARQLWrapper = "*"
-tqdm = "*"
-matplotlib = "*"
-importlib_resources = "*"
-nltk = "*"
-textdistance = "*"
-py-markdown-table = "*"
-alto-xml = "*"
-trainerlog = "*"
-
-[tool.poetry.extras]
+[project.optional-dependencies]
 torch = ["torch", "transformers"]
 
 [tool.poetry.dev-dependencies]

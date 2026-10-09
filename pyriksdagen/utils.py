@@ -16,6 +16,7 @@ from pyriksdagen.io import (
     XML_NS,
 )
 from tqdm import tqdm
+import polars as pl
 from trainerlog import get_logger
 import base58
 import hashlib
@@ -27,6 +28,8 @@ import warnings
 import xmlschema
 import zipfile
 
+
+PROTOCOL_SUFFIX_RE = re.compile(r"--+(\d+)(?:-(\d+))?$")
 
 
 
@@ -81,6 +84,7 @@ def infer_metadata(filename):
             - "secondary_year" (int, optional): Secondary year for multi-year sessions
             - "chamber" (str): Parliamentary chamber
             - "number" (int): Document number
+            - "part" (int or None): Split protocol part number, if present
             - "committee" (str or None): Committee (motions only)
             - "urtima" (bool): Whether the document is an urtima session
     """
@@ -135,6 +139,13 @@ def infer_metadata(filename):
         metadata["committee"] = None
 
     metadata["number"] = int(parts[-1]) if parts[-1].isdigit() else None
+    metadata["part"] = None
+    if metadata["document_type"].lower() == "prot":
+        match = PROTOCOL_SUFFIX_RE.search(Path(filename).stem)
+        if match is not None:
+            metadata["number"] = int(match.group(1))
+            if match.group(2) is not None:
+                metadata["part"] = int(match.group(2))
 
     metadata["protocol"] = fname
 
@@ -595,3 +606,39 @@ def write_protocol(prot_elem, prot_path) -> None:
     """
     warnings.warn("write_protocol is replaced by write_tei() and may be removed in future versions -- use that instead.", DeprecationWarning, stacklevel=2)
     write_tei(prot_elem, prot_path)
+
+
+def first_and_last_names(df_names, df_iort):
+    """
+    Find all first names, last names and iort in the database.
+
+    Args:
+        df_names (pl.DataFrame): the name.csv table
+        df_iort (pl.DataFrame): the location_specifier.csv table
+    
+    Returns:
+        first_names, last_names, iort (Set[str]): three non-intersecting sets of strings
+    """
+    
+    # First names: the first word in each multi-word name
+    first_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
+    first_names = first_names.with_columns(pl.col("name").str.split(" ").list[0])
+    first_names = first_names.filter(pl.col("name").str.len_chars() >= 2)
+    first_names = set(first_names.get_column("name"))
+
+    # Last names: the last word in each multi-word name
+    last_names = df_names.filter(pl.col("name").str.split(" ").list.len() >= 2)
+    last_names = last_names.with_columns(pl.col("name").str.split(" ").list[-1])
+    last_names = last_names.filter(pl.col("name").str.len_chars() >= 2)
+    last_names = set(last_names.get_column("name"))
+    
+    iort = set(df_iort.get_column("location"))
+
+    # Remove any potential multi-category names
+    first_names_clean = (first_names - last_names) - iort
+    last_names_clean = (last_names - first_names) - iort
+    iort_clean = (iort - last_names) - first_names
+    return first_names_clean, last_names_clean, iort_clean
+
+
+

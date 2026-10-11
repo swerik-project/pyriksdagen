@@ -71,7 +71,7 @@ class TestChairSeating(unittest.TestCase):
 
     def test_schematic_rotation_and_dimensions_follow_page_coordinates(self):
         """Chair dimensions and clockwise rotation follow y-down coordinates."""
-        ax = self.render(width=1, height=2).axes[0]
+        ax = self.render(width=1, height=2, fit_symbols=False).axes[0]
         patch = ax.patches[0]
         points = ax.transData.inverted().transform(patch.get_transform().transform([(0, 0), (1, 0)]))
         np.testing.assert_allclose(points, [(2, 3), (2, 4)])
@@ -82,7 +82,8 @@ class TestChairSeating(unittest.TestCase):
 
     def test_top_and_bottom_corner_radii_can_be_configured(self):
         """Top and bottom corner radii can be set independently."""
-        vertices = self.render(width=1, height=2, top_radius=0.1, bottom_radius=0.3).axes[0].patches[0].get_path().vertices
+        vertices = self.render(width=1, height=2, top_radius=0.1, bottom_radius=0.3,
+                               fit_symbols=False).axes[0].patches[0].get_path().vertices
         np.testing.assert_allclose(vertices[0], (-0.5, -0.9))
         np.testing.assert_allclose(vertices[8], (0.5, 0.7))
 
@@ -90,10 +91,10 @@ class TestChairSeating(unittest.TestCase):
         """Both coordinate systems use the same default chair shape."""
         schematic = self.render().axes[0].patches
         vertices = schematic[0].get_path().vertices
-        np.testing.assert_allclose(vertices.min(axis=0), (-0.3, -0.3))
-        np.testing.assert_allclose(vertices.max(axis=0), (0.3, 0.3))
-        np.testing.assert_allclose(vertices[0], (-0.3, -0.3))
-        np.testing.assert_allclose(vertices[8], (0.3, 0.12))
+        np.testing.assert_allclose(vertices.min(axis=0), (-0.375, -0.375))
+        np.testing.assert_allclose(vertices.max(axis=0), (0.375, 0.375))
+        np.testing.assert_allclose(vertices[0], (-0.375, -0.375))
+        np.testing.assert_allclose(vertices[8], (0.375, 0.195))
         self.use_local_grids()
         self.plans[0]["label"] = "Another plan"
         for patch in [*schematic, *self.render().axes[0].patches]:
@@ -127,7 +128,7 @@ class TestChairSeating(unittest.TestCase):
         """Invalid chair dimensions and corner radii raise ValueError."""
         for style in ({"width": 0}, {"height": -1}, {"width": float("nan")},
                       {"height": float("inf")}, {"width": None}, {"height": "wide"},
-                      {"top_radius": -0.1}, {"bottom_radius": 0.31}, {"top_radius": float("nan")},
+                      {"top_radius": -0.1}, {"bottom_radius": 0.38}, {"top_radius": float("nan")},
                       {"bottom_radius": float("inf")}):
             with self.subTest(style=style), self.assertRaisesRegex(ValueError, "[Cc]hair-symbol"):
                 self.render(**style)
@@ -141,7 +142,7 @@ class TestChairSeating(unittest.TestCase):
         ax = figure.axes[0]
         renderer = figure.canvas.get_renderer()
         labels = [text for text in ax.texts if (text.get_gid() or "").endswith("-label")]
-        available = 0.6 * abs(ax.transData.transform((1, 0))[0] - ax.transData.transform((0, 0))[0])
+        available = 0.75 * abs(ax.transData.transform((1, 0))[0] - ax.transData.transform((0, 0))[0])
         self.assertEqual(len({text.get_fontsize() for text in labels}), 1)
         self.assertLess(labels[0].get_fontsize(), 5.5)
         for text in labels:
@@ -154,6 +155,89 @@ class TestChairSeating(unittest.TestCase):
         patches = {patch.get_gid(): patch for patch in self.render().axes[0].patches}
         self.assertEqual(patches["seat-4"].get_linestyle(), "--")
         self.assertNotEqual(patches["seat-4"].get_facecolor(), patches["seat-1"].get_facecolor())
+
+    def test_dense_rotated_chairs_shrink_uniformly_without_moving(self):
+        """Automatic fitting separates rotated symbols without changing their centres."""
+        for i, seat in enumerate(self.positions):
+            seat.update(x=str(i * 0.6), y="0", orientation="45")
+        ax = self.render().axes[0]
+        width = 0.9 * 0.6 / np.sqrt(2)
+        for patch in ax.patches:
+            np.testing.assert_allclose(np.ptp(patch.get_path().vertices, axis=0), (width, width))
+            seat = next(s for s in self.positions if s["chair_seat_position_id"] == patch.get_gid())
+            centre = ax.transData.inverted().transform(patch.get_transform().transform((0, 0)))
+            np.testing.assert_allclose(centre, (float(seat["x"]), 0), atol=1e-10)
+        self.assertLess(width * np.sqrt(2), 0.6)
+
+    def test_hidden_chairs_do_not_constrain_symbol_size(self):
+        """Hidden slots do not shrink visible symbols even at the same centre."""
+        self.positions[1].update(x=self.positions[0]["x"], y=self.positions[0]["y"])
+        vertices = self.render().axes[0].patches[0].get_path().vertices
+        np.testing.assert_allclose(np.ptp(vertices, axis=0), (0.75, 0.75))
+
+    def test_fitting_separates_rectangles_with_different_rotations(self):
+        """Mixed rotations and nonsquare symbols retain disjoint bounding rectangles."""
+        from matplotlib.path import Path as DrawingPath
+
+        for i, (seat, angle) in enumerate(zip(self.positions, (0, 30, 90, 165))):
+            seat.update(x=str(i * 0.6), y=str(i * 0.1), orientation=str(angle))
+        ax = self.render(width=0.75, height=1.2).axes[0]
+        rectangles = []
+        for patch in ax.patches:
+            xmin, ymin = patch.get_path().vertices.min(axis=0)
+            xmax, ymax = patch.get_path().vertices.max(axis=0)
+            corners = [(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax), (xmin, ymin)]
+            rectangles.append(DrawingPath(patch.get_transform().transform(corners), closed=True))
+        for i, rectangle in enumerate(rectangles):
+            for other in rectangles[i + 1:]:
+                self.assertFalse(rectangle.intersects_path(other, filled=True))
+
+    def test_coincident_visible_chairs_cannot_be_fitted(self):
+        """Coincident visible centres raise an actionable error instead of hiding a chair."""
+        self.positions[2].update(x=self.positions[0]["x"], y=self.positions[0]["y"])
+        with self.assertRaisesRegex(ValueError, "share a centre"):
+            self.render()
+
+    def test_local_grid_style_overrides_are_fitted_to_cell_spacing(self):
+        """Large local-grid symbols shrink together and report their rendered size."""
+        self.use_local_grids()
+        figure = self.render(width=2, height=2)
+        for patch in figure.axes[0].patches:
+            np.testing.assert_allclose(np.ptp(patch.get_path().vertices, axis=0), (0.9, 0.9))
+        self.assertIn("0.900 x 0.900", figure.texts[-1].get_text())
+        self.assertIn("auto-fit", figure.texts[-1].get_text())
+
+    def test_single_unnumbered_podium_chair_uses_group_caption(self):
+        """A single unnumbered podium chair is captioned without adding a chair number."""
+        self.groups.append(dict(chair_seating_plan_id="plan-1", chair_group_id="speaker",
+                                parent_group_id="root", label="Speaker (Talman)"))
+        for group in self.groups:
+            group["group_type"] = "podium" if group["chair_group_id"] == "speaker" else "bank"
+        self.positions[2]["chair_group_id"] = "speaker"
+        ax = self.render().axes[0]
+        captions = {text.get_gid(): text.get_text() for text in ax.texts}
+        self.assertEqual(captions["speaker-caption"], "Speaker (Talman)")
+        self.assertNotIn("seat-3-label", captions)
+        self.assertEqual(len(ax.patches), 3)
+
+    def test_hidden_or_multi_seat_podium_is_not_given_a_single_chair_caption(self):
+        """Podium captions only identify a single unnumbered position."""
+        for group in self.groups:
+            group["group_type"] = "podium"
+        self.assertFalse(any((text.get_gid() or "").endswith("-caption")
+                             for text in self.render().axes[0].texts))
+        self.positions = [self.positions[1]]
+        self.numbering = [self.numbering[1]]
+        self.assertFalse(any((text.get_gid() or "").endswith("-caption")
+                             for text in self.render().axes[0].texts))
+
+    def test_labels_remain_upright_for_chairs_facing_down_the_page(self):
+        """Turning a chair toward a bottom-of-page podium does not invert its number."""
+        for angle, expected in ((180, 0), (135, 45), (225, 315)):
+            with self.subTest(angle=angle):
+                self.positions[0]["orientation"] = str(angle)
+                label = next(text for text in self.render().axes[0].texts if text.get_gid() == "seat-1-label")
+                self.assertEqual(label.get_rotation(), expected)
 
     def test_local_grids_keep_gaps_and_warn_against_geometric_use(self):
         """Local grids preserve gaps and display a floor-plan disclaimer."""

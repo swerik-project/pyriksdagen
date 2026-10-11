@@ -80,7 +80,7 @@ def _draw_seat(ax, seat, state, geometry, style):
     label = "?" if unknown else state["label"]
     if label:
         x, y, angle = geometry[:3]
-        ax.text(x, y, label, ha="center", va="center", rotation=-angle,
+        ax.text(x, y, label, ha="center", va="center", rotation=(90 - angle) % 180 - 90,
                 fontsize=5.5, color="#68717c" if unknown else "#172b4d",
                 family="DejaVu Sans", gid=seat["chair_seat_position_id"] + "-label")
 
@@ -104,7 +104,61 @@ def _fit_seat_labels(figure, ax, style):
         text.set_fontsize(font_size)
 
 
-def _schematic(ax, positions, numbering, style):
+def _fit_symbol_style(geometries, style):
+    """Uniformly shrink symbols to leave a gap between rotated bounding rectangles."""
+    import numpy as np
+
+    geometry = np.asarray(geometries, dtype=float)
+    if len(geometry) < 2:
+        return style
+    angles = np.radians(geometry[:, 2])
+    sides = np.column_stack((np.cos(angles), np.sin(angles)))
+    downs = np.column_stack((-np.sin(angles), np.cos(angles)))
+    scale = 1.0
+    # Separating-axis projections give the first contact scale for each pair.
+    # Keep 10% of the projected centre separation clear on at least one axis.
+    for i in range(len(geometry) - 1):
+        other_sides, other_downs = sides[i + 1:], downs[i + 1:]
+        axes = np.stack((np.broadcast_to(sides[i], other_sides.shape),
+                         np.broadcast_to(downs[i], other_downs.shape),
+                         other_sides, other_downs), axis=1)
+        distances = np.abs(np.einsum("ni,nki->nk", geometry[i + 1:, :2] - geometry[i, :2], axes))
+        extents = (style[0] / 2 * (np.abs(axes @ sides[i])
+                   + np.abs(np.einsum("nki,ni->nk", axes, other_sides)))
+                   + style[1] / 2 * (np.abs(axes @ downs[i])
+                   + np.abs(np.einsum("nki,ni->nk", axes, other_downs))))
+        contact = np.max(distances / extents, axis=1).min()
+        scale = min(scale, 0.9 * float(contact))
+    if scale <= 0:
+        raise ValueError("Visible chairs share a centre; cannot fit non-touching symbols")
+    return tuple(value * scale for value in style)
+
+
+def _draw_positions(ax, placements, numbering, style, fit_symbols):
+    if fit_symbols:
+        style = _fit_symbol_style([geometry for seat, geometry in placements
+                                   if numbering[seat["chair_seat_position_id"]]["status"] != "hidden"], style)
+    for seat, geometry in placements:
+        _draw_seat(ax, seat, numbering[seat["chair_seat_position_id"]], geometry, style)
+    return style
+
+
+def _label_single_podium_chairs(ax, positions, numbering, groups, style):
+    podiums = defaultdict(list)
+    for seat in positions:
+        if groups[seat["chair_group_id"]].get("group_type") == "podium":
+            podiums[seat["chair_group_id"]].append(seat)
+    for group_id, seats in podiums.items():
+        if len(seats) == 1 and numbering[seats[0]["chair_seat_position_id"]]["status"] == "unnumbered":
+            seat = seats[0]
+            ax.annotate(groups[group_id]["label"], (float(seat["x"]), float(seat["y"])),
+                        xytext=(9 + 36 * style[0], 0), textcoords="offset points",
+                        ha="left", va="center", fontsize=8, color="#283b46",
+                        gid=group_id + "-caption")
+
+
+def _schematic(ax, positions, numbering, groups, style, fit_symbols):
+    placements = []
     for seat in positions:
         try:
             geometry = tuple(float(seat[key]) for key in _GEOMETRY)
@@ -112,12 +166,15 @@ def _schematic(ax, positions, numbering, style):
             raise ValueError("Incomplete geometry for " + seat["chair_seat_position_id"]) from error
         if not all(math.isfinite(value) for value in geometry) or not 0 <= geometry[2] < 360:
             raise ValueError("Invalid geometry for " + seat["chair_seat_position_id"])
-        _draw_seat(ax, seat, numbering[seat["chair_seat_position_id"]], geometry, style)
+        placements.append((seat, geometry))
+    style = _draw_positions(ax, placements, numbering, style, fit_symbols)
+    _label_single_podium_chairs(ax, positions, numbering, groups, style)
     ax.autoscale_view()
     ax.margins(0.04)
+    return style
 
 
-def _local_grids(ax, positions, numbering, groups, style):
+def _local_grids(ax, positions, numbering, groups, style, fit_symbols):
     banks = defaultdict(list)
     paths = {}
     cells = set()
@@ -147,6 +204,7 @@ def _local_grids(ax, positions, numbering, groups, style):
         sections[paths[group_id][:-1]].append(group_id)
     # Pack panels for legibility only. These offsets are never source geometry.
     page_width, y = 50, 0
+    placements = []
     for section in sorted(sections, key=lambda p: _natural_key(" / ".join(p))):
         heading = textwrap.fill(" / ".join(section) or "Local banks", width=100)
         ax.text(0, y, heading, va="top", fontsize=9, fontweight="bold", color="#283b46")
@@ -164,17 +222,19 @@ def _local_grids(ax, positions, numbering, groups, style):
             for seat in seats:
                 geometry = (x + int(seat["column"]) - 0.5,
                             y + int(seat["row"]) + 0.6, 0)
-                _draw_seat(ax, seat, numbering[seat["chair_seat_position_id"]], geometry, style)
+                placements.append((seat, geometry))
             x += width + 1.25
             line_height = max(line_height, height)
         y += line_height + 2
+    style = _draw_positions(ax, placements, numbering, style, fit_symbols)
     ax.set_xlim(-0.75, page_width + 0.75)
     ax.set_ylim(-0.75, max(y - 1, 1))
-    return page_width, y
+    return page_width, y, style
 
 
 def render_chair_seating_plan(data_dir, plan_id, output=None, *, dpi=180,
-                             width=0.6, height=0.6, top_radius=0.0, bottom_radius=0.18):
+                             width=0.75, height=0.75, top_radius=0.0, bottom_radius=0.18,
+                             fit_symbols=True):
     """Create a chair-plan figure using only the four seating CSV tables.
 
     Args:
@@ -187,13 +247,17 @@ def render_chair_seating_plan(data_dir, plan_id, output=None, *, dpi=180,
             Parent directories are created and an existing file is overwritten.
             Omit to obtain a figure without writing a file.
         dpi (int): Raster resolution when saving; defaults to 180.
-        width (float): Chair-symbol width in drawing units; defaults to 0.6.
-        height (float): Chair-symbol height in drawing units; defaults to 0.6.
+        width (float): Chair-symbol width in drawing units; defaults to 0.75.
+        height (float): Chair-symbol height in drawing units; defaults to 0.75.
         top_radius (float): Rounding of the symbol's local top corners;
             defaults to 0.0 (square corners).
         bottom_radius (float): Rounding of the symbol's local bottom corners;
             defaults to 0.18. Radii must be nonnegative and no greater than
             half the smaller symbol dimension.
+        fit_symbols (bool): Uniformly reduce symbol dimensions and radii within
+            a figure when necessary to keep visible chairs apart; defaults to
+            True. Uses rotated bounding rectangles with a 10% separation margin.
+            False preserves the requested dimensions exactly and may overlap.
 
     Returns:
         matplotlib.figure.Figure: Figure for display, inspection or saving.
@@ -211,9 +275,13 @@ def render_chair_seating_plan(data_dir, plan_id, output=None, *, dpi=180,
     rendering settings for every plan and both coordinate systems, not source
     measurements. Only x, y and orientation are read as geometry; legacy
     size/radius CSV columns are ignored. Style overrides never change stored
-    coordinates. Very large symbols may overlap neighbouring positions.
+    coordinates. Automatic fitting only shrinks symbols, never moves seats;
+    all visible symbols within a figure retain the same dimensions. The footer
+    reports the rendered size. Coincident visible centres cannot be fitted.
     Seat labels share a font size within each figure, reduced to fit symbols
-    at that figure's drawing scale when necessary.
+    at that figure's drawing scale when necessary, and are kept upright.
+    A podium group containing a single unnumbered chair is captioned with its
+    group label, for example "Speaker (Talman)"; no MP-chair number is invented.
     Figures are titled "SWERIK schematic" and include the plan ID. Source
     attribution is maintained separately in the data repository's references.
     Local-grid plans are **not floor plans**: separate bank panels preserve
@@ -281,11 +349,11 @@ def render_chair_seating_plan(data_dir, plan_id, output=None, *, dpi=180,
     FigureCanvasAgg(figure)
     ax = figure.add_axes([0.04, 0.09, 0.92, 0.80])
     if system == "schematic":
-        _schematic(ax, positions, numbering, style)
+        style = _schematic(ax, positions, numbering, groups, style, fit_symbols)
         subtitle = "SCHEMATIC RECONSTRUCTION | Source drawing units, not measured distances"
         note = "Group membership is retained in the CSVs. Gaps do not establish aisles or aisle widths."
     else:
-        grid_width, grid_height = _local_grids(ax, positions, numbering, groups, style)
+        grid_width, grid_height, style = _local_grids(ax, positions, numbering, groups, style, fit_symbols)
         figure.set_size_inches(max(14, grid_width * 0.28), max(8, grid_height * 0.28 + 2))
         subtitle = "LOCAL GRIDS ONLY | Partial reconstruction, not a chamber floor plan"
         note = "Banks are separate panels; panel placement and spacing do not represent the room."
@@ -301,7 +369,11 @@ def render_chair_seating_plan(data_dir, plan_id, output=None, *, dpi=180,
     legend = " | ".join("{} {}".format(counts[state], state) for state in _STATES)
     figure.text(0.5, 0.070, legend + " | ? = unresolved slot, not a confirmed chair", ha="center", fontsize=8)
     figure.text(0.5, 0.051, note, ha="center", fontsize=8)
-    figure.text(0.5, 0.032, "Plan: " + plan["chair_seating_plan_id"], ha="center", fontsize=7, color="#56636c")
+    size_note = " | Symbols: {:.3f} x {:.3f} drawing units".format(*style[:2])
+    if style[:2] != (width, height):
+        size_note += " (auto-fit)"
+    figure.text(0.5, 0.032, "Plan: " + plan["chair_seating_plan_id"] + size_note,
+                ha="center", fontsize=7, color="#56636c")
     _fit_seat_labels(figure, ax, style)
     if output is not None:
         output = Path(output)

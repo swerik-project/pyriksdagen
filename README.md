@@ -36,13 +36,24 @@ in the data repository's reference records, separate from the seating CSVs.
 Scan-based global plans, such as the two Samlingsrum reconstructions, use the
 same function; their centre coordinates and orientation come from the CSVs.
 
-All plans share the same symbol defaults: `width=0.6`, `height=0.6`,
+All plans share the same symbol defaults: `width=0.75`, `height=0.75`,
 `top_radius=0.0`, `bottom_radius=0.18`, in drawing units. These are rendering
 choices, not physical chair dimensions or CSV columns. Pass these keyword
 arguments to override the appearance for a figure; radii must be between
 zero and half the smaller dimension. Existing size/radius CSV columns are
-ignored. A plan's drawing scale is not a common physical scale across plans.
-Seat labels use one font size per figure, reduced as needed to fit the symbols.
+ignored. With the default `fit_symbols=True`, the renderer uniformly reduces
+dimensions and radii within a figure when needed to prevent visible symbols
+from touching. It checks rotated bounding rectangles, leaving 10% of the
+projected centre separation clear on at least one separating axis. Hidden
+slots do not constrain sizing. No centres, angles or group spacing are changed.
+The footer reports the actual symbol dimensions; `fit_symbols=False` keeps
+the requested dimensions exactly, but can produce overlaps. Coincident
+visible centres raise an error when fitting is enabled.
+A plan's drawing scale is not a common physical scale across plans.
+Seat labels stay upright and use one font size per figure, reduced as needed
+to fit the symbols. A single unnumbered chair in a `podium` group is captioned
+with that group's label, such as `Speaker (Talman)`, without inventing a seat
+number or MP-chair link. Multi-chair podium groups are not given this caption.
 
 - **Schematic plans:** preserve source centres and rotations in drawing units,
   not metres; symbol size and corner rounding come from the renderer.

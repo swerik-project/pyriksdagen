@@ -20,8 +20,7 @@ class TestChairSeating(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.data = Path(temporary.name)
         self.plans = [dict(chair_seating_plan_id="plan-1", coordinate_system="schematic",
-                           source_locator="EXAMPLE", label="Example seating plan",
-                           source="references/example.swift")]
+                           label="Example seating plan", start="", end="")]
         self.groups = [dict(chair_seating_plan_id="plan-1", chair_group_id="root",
                             parent_group_id="", label="Chamber"),
                        dict(chair_seating_plan_id="plan-1", chair_group_id="bank",
@@ -32,7 +31,7 @@ class TestChairSeating(unittest.TestCase):
             self.positions.append(dict(
                 chair_seating_plan_id="plan-1", chair_seat_position_id="seat-" + str(i),
                 chair_group_id="bank", row="1", column=str(i), x=str(i * 2), y="3",
-                orientation="90", width="1", height="2", top_radius="0.1", bottom_radius="0.3"))
+                orientation="90"))
             self.numbering.append(dict(
                 chair_seating_plan_id="plan-1", chair_seat_position_id="seat-" + str(i),
                 status=status, label="42" if status == "numbered" else "", chair_id=""))
@@ -47,16 +46,16 @@ class TestChairSeating(unittest.TestCase):
                 writer.writeheader()
                 writer.writerows(rows)
 
-    def render(self, selector="plan-1", output=None):
+    def render(self, selector="plan-1", output=None, **style):
         self.write_fixture()
-        figure = render_chair_seating_plan(self.data, selector, output)
+        figure = render_chair_seating_plan(self.data, selector, output, **style)
         self.addCleanup(figure.clear)
         return figure
 
     def use_local_grids(self):
         self.plans[0]["coordinate_system"] = "local_grid"
         for position in self.positions:
-            for field in ("x", "y", "orientation", "width", "height", "top_radius", "bottom_radius"):
+            for field in ("x", "y", "orientation"):
                 position[field] = ""
 
     def test_numbered_and_unnumbered_states_are_not_confused(self):
@@ -76,7 +75,7 @@ class TestChairSeating(unittest.TestCase):
 
     def test_schematic_rotation_and_dimensions_follow_page_coordinates(self):
         """Guarantee: clockwise rotation and y-down coordinates are preserved."""
-        ax = self.render().axes[0]
+        ax = self.render(width=1, height=2).axes[0]
         patch = ax.patches[0]
         points = ax.transData.inverted().transform(patch.get_transform().transform([(0, 0), (1, 0)]))
         np.testing.assert_allclose(points, [(2, 3), (2, 4)])
@@ -85,11 +84,74 @@ class TestChairSeating(unittest.TestCase):
         np.testing.assert_allclose(vertices.min(axis=0), (-0.5, -1))
         np.testing.assert_allclose(vertices.max(axis=0), (0.5, 1))
 
-    def test_top_and_bottom_corner_radii_are_distinct(self):
-        """Guarantee: asymmetric source corner radii survive rendering."""
-        vertices = self.render().axes[0].patches[0].get_path().vertices
+    def test_top_and_bottom_corner_radii_can_be_configured(self):
+        """Guarantee: caller-supplied top and bottom rounding is applied independently."""
+        vertices = self.render(width=1, height=2, top_radius=0.1, bottom_radius=0.3).axes[0].patches[0].get_path().vertices
         np.testing.assert_allclose(vertices[0], (-0.5, -0.9))
         np.testing.assert_allclose(vertices[8], (0.5, 0.7))
+
+    def test_all_plans_and_coordinate_systems_share_default_symbols(self):
+        """Guarantee: every visible chair uses the same default shape without size/radius CSV columns."""
+        schematic = self.render().axes[0].patches
+        vertices = schematic[0].get_path().vertices
+        np.testing.assert_allclose(vertices.min(axis=0), (-0.3, -0.3))
+        np.testing.assert_allclose(vertices.max(axis=0), (0.3, 0.3))
+        np.testing.assert_allclose(vertices[0], (-0.3, -0.3))
+        np.testing.assert_allclose(vertices[8], (0.3, 0.12))
+        self.use_local_grids()
+        self.plans[0]["label"] = "Another plan"
+        for patch in [*schematic, *self.render().axes[0].patches]:
+            np.testing.assert_allclose(patch.get_path().vertices, vertices)
+
+    def test_legacy_csv_styles_do_not_override_shared_defaults(self):
+        """Guarantee: old size/radius columns cannot silently override the renderer's shared settings."""
+        expected = self.render().axes[0].patches[0].get_path().vertices.copy()
+        for index, position in enumerate(self.positions):
+            position.update(width=str(index + 10), height="20", top_radius="1", bottom_radius="2")
+        for patch in self.render().axes[0].patches:
+            np.testing.assert_allclose(patch.get_path().vertices, expected)
+        self.use_local_grids()
+        for patch in self.render().axes[0].patches:
+            np.testing.assert_allclose(patch.get_path().vertices, expected)
+
+    def test_style_overrides_apply_to_both_coordinate_systems(self):
+        """Guarantee: rendering options style every visible chair, including local grids and unknown slots."""
+        style = dict(width=0.8, height=0.7, top_radius=0.1, bottom_radius=0.2)
+        schematic = self.render(**style).axes[0].patches
+        vertices = schematic[0].get_path().vertices
+        np.testing.assert_allclose(vertices.min(axis=0), (-0.4, -0.35))
+        np.testing.assert_allclose(vertices.max(axis=0), (0.4, 0.35))
+        np.testing.assert_allclose(vertices[0], (-0.4, -0.25))
+        np.testing.assert_allclose(vertices[8], (0.4, 0.15))
+        self.use_local_grids()
+        for patch in [*schematic, *self.render(**style).axes[0].patches]:
+            np.testing.assert_allclose(patch.get_path().vertices, vertices)
+
+    def test_invalid_symbol_styles_are_rejected(self):
+        """Guarantee: invalid drawing options fail before producing misleading or missing symbols."""
+        for style in ({"width": 0}, {"height": -1}, {"width": float("nan")},
+                      {"height": float("inf")}, {"width": None}, {"height": "wide"},
+                      {"top_radius": -0.1}, {"bottom_radius": 0.31}, {"top_radius": float("nan")},
+                      {"bottom_radius": float("inf")}):
+            with self.subTest(style=style), self.assertRaisesRegex(ValueError, "[Cc]hair-symbol"):
+                self.render(**style)
+
+    def test_seat_labels_fit_shared_symbols_in_dense_plans(self):
+        """Guarantee: dense schematics shrink labels uniformly instead of overflowing the common symbols."""
+        self.positions[-1]["x"] = "100"
+        self.numbering[0]["label"] = "349"
+        figure = self.render()
+        figure.canvas.draw()
+        ax = figure.axes[0]
+        renderer = figure.canvas.get_renderer()
+        labels = [text for text in ax.texts if (text.get_gid() or "").endswith("-label")]
+        available = 0.6 * abs(ax.transData.transform((1, 0))[0] - ax.transData.transform((0, 0))[0])
+        self.assertEqual(len({text.get_fontsize() for text in labels}), 1)
+        self.assertLess(labels[0].get_fontsize(), 5.5)
+        for text in labels:
+            width, height, descent = renderer.get_text_width_height_descent(
+                text.get_text(), text.get_fontproperties(), ismath=False)
+            self.assertLessEqual(max(width, height + abs(descent)), available)
 
     def test_unknown_slots_are_visually_distinct(self):
         """Guarantee: unresolved slots are dashed placeholders, not ordinary chairs."""
@@ -117,15 +179,20 @@ class TestChairSeating(unittest.TestCase):
         self.groups[1]["parent_group_id"] = "section"
         self.assertIn("Left section", [text.get_text() for text in self.render().axes[0].texts])
 
-    def test_ambiguous_locator_is_rejected(self):
-        """Guarantee: shared source locators never silently select one plan."""
+    def test_ambiguous_label_is_rejected(self):
+        """Guarantee: shared plan labels never silently select one plan."""
         self.plans.append(dict(self.plans[0], chair_seating_plan_id="plan-2"))
         with self.assertRaisesRegex(ValueError, "unique"):
-            self.render("EXAMPLE")
+            self.render("Example seating plan")
 
-    def test_unique_locator_selects_the_plan(self):
-        """Guarantee: a unique source locator is accepted as a convenience selector."""
-        self.assertEqual(len(self.render("EXAMPLE").axes[0].patches), 3)
+    def test_unique_label_selects_the_plan(self):
+        """Guarantee: an exact unique label is accepted without source columns."""
+        self.assertEqual(len(self.render("Example seating plan").axes[0].patches), 3)
+
+    def test_unknown_selector_is_rejected_without_source_columns(self):
+        """Guarantee: missing selectors report a selection error, not a missing source column."""
+        with self.assertRaisesRegex(ValueError, "unique chair_seating_plan_id or label"):
+            self.render("missing-plan")
 
     def test_missing_numbering_is_rejected(self):
         """Guarantee: unmatched position/state records cannot silently disappear."""
@@ -194,8 +261,8 @@ class TestChairSeating(unittest.TestCase):
                 self.render(output=output)
                 self.assertTrue(output.read_bytes().startswith(signature))
 
-    def test_all_figure_titles_use_swerik_without_erasing_source_attribution(self):
-        """Guarantee: figure titles say SWERIK schematic once, while source references remain intact."""
+    def test_all_figure_titles_use_swerik_and_retain_plan_identity(self):
+        """Guarantee: figure titles say SWERIK schematic once and identify the plan without source columns."""
         for label in ("EXAMPLE: potmo schematic", "EXAMPLE: SWERIK schematic", "EXAMPLE"):
             with self.subTest(label=label):
                 self.plans[0]["label"] = label
@@ -203,7 +270,7 @@ class TestChairSeating(unittest.TestCase):
                 title = figure.texts[0].get_text()
                 self.assertNotIn("potmo schematic", title)
                 self.assertEqual(title.count("SWERIK schematic"), 1)
-                self.assertIn("example.swift", figure.texts[-1].get_text())
+                self.assertIn("Plan: plan-1", figure.texts[-1].get_text())
         self.use_local_grids()
         self.assertIn("SWERIK schematic", self.render().texts[0].get_text())
 

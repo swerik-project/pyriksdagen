@@ -13,13 +13,14 @@ Render the source-specific chair plans in `riksdagen-persons/data`:
 from pyriksdagen.chair_seating import render_chair_seating_plan
 
 figure = render_chair_seating_plan(
-    "../riksdagen-persons/data", "EK1985", "EK1985.png"
+    "../riksdagen-persons/data", "EK1985: SWERIK schematic", "EK1985.png"
 )
 figure.clear()
 ```
 
 The first argument is the **data directory**, not the repository root. Select
-a `chair_seating_plan_id` or a unique `source_locator` such as `AK1965`.
+a `chair_seating_plan_id` or an exact unique `label` such as
+`AK1965: SWERIK schematic`.
 PNG, SVG and PDF output are supported; `dpi=180` is the raster default.
 Omit the output argument to obtain a Matplotlib figure for a notebook or
 further customization. This does not change the global plotting backend.
@@ -30,12 +31,21 @@ images, Swift installation, network connection or occupancy data. Matplotlib
 is already a package dependency.
 
 All figure titles use **SWERIK schematic**, including older tables labelled
-"potmo schematic". Source attribution is retained in the footer and metadata.
+"potmo schematic". The footer identifies the plan; source attribution remains
+in the data repository's reference records, separate from the seating CSVs.
 Scan-based global plans, such as the two Samlingsrum reconstructions, use the
-same function; their coordinates and cell dimensions come from the CSVs.
+same function; their centre coordinates and orientation come from the CSVs.
 
-- **Schematic plans:** preserve source centres, rotations, dimensions and
-  corner radii in drawing units, not metres.
+All plans share the same symbol defaults: `width=0.6`, `height=0.6`,
+`top_radius=0.0`, `bottom_radius=0.18`, in drawing units. These are rendering
+choices, not physical chair dimensions or CSV columns. Pass these keyword
+arguments to override the appearance for a figure; radii must be between
+zero and half the smaller dimension. Existing size/radius CSV columns are
+ignored. A plan's drawing scale is not a common physical scale across plans.
+Seat labels use one font size per figure, reduced as needed to fit the symbols.
+
+- **Schematic plans:** preserve source centres and rotations in drawing units,
+  not metres; symbol size and corner rounding come from the renderer.
 - **Local-grid plans:** show grouped bank panels with local row/column order.
   Panel placement is for readability, **not a reconstructed room layout**.
 - Numbered labels and unnumbered chairs are retained; hidden slots are not

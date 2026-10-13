@@ -608,7 +608,7 @@ def write_protocol(prot_elem, prot_path) -> None:
     write_tei(prot_elem, prot_path)
 
 
-def first_and_last_names(df_names, df_iort):
+def first_and_last_names(df_names, df_iort, return_all_combos=False):
     """
     Find all first names, last names and iort in the database.
 
@@ -638,7 +638,12 @@ def first_and_last_names(df_names, df_iort):
     first_names_clean = (first_names - last_names) - iort
     last_names_clean = (last_names - first_names) - iort
     iort_clean = (iort - last_names) - first_names
-    return first_names_clean, last_names_clean, iort_clean
-
+    if not return_all_combos:
+        return first_names_clean, last_names_clean, iort_clean
+    else:
+        any_names = first_names.union(last_names) - iort
+        last_name_or_iort = last_names.union(iort) - first_names
+        all_proper_names = first_names.union(last_names).union(iort)
+        return first_names_clean, last_names_clean, iort_clean, any_names, last_name_or_iort, all_proper_names
 
 

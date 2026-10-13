@@ -43,7 +43,8 @@ def increase_date_precision(date, start=True):
     if len(date) == 7 and start:
         return date + '-01'
     if len(date) == 7 and not start:
-        last_day = calendar.monthrange(int(date[0]), int(date[1]))[1]
+        date_year, date_month = date.split("-")
+        last_day = calendar.monthrange(int(date_year), int(date_month))[1]
         return date + f'-{last_day}'
     # Day
     if len(date) == 10:

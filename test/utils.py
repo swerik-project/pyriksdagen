@@ -7,6 +7,7 @@ from pyriksdagen.utils import get_data_location
 from pyriksdagen.segmentation import intro_to_dict
 from pyriksdagen.date_handling import yearize_date
 from pyriksdagen.metadata import load_Corpus_metadata
+from pyriksdagen.metadata import increase_date_precision
 
 import polars as pl
 from pathlib import Path
@@ -107,19 +108,54 @@ class TestUtils(unittest.TestCase):
         "Check metadata output ONLY if reference is properly specified"
     )
     def test_load_Corpus_metadata_w_ref(self):
+        """
+        Guarantee: load_Corpus_metadata perfectly replicates its reference behavior on real data.
+
+        The environtment variable RUN_METADATA_REFERENCE_COMPARISON needs to be set for this to run.
+        The environtment variable METADATA_PATH needs to be set to path/to/riksdagen-persons/data 
+        for this to run properly, and riksdagen-persons needs to be checked out to the commit
+        with the hash 0104e06fade5b561a95ca9ec043c2f013a78848e for an apples-to-apples comparison.
+
+        As the output is written to test/result/metadata_output.csv, git diff test/result/metadata_output.csv
+        enumerates all differing rows between the reference output and the obtained output.
+        """
         db = load_Corpus_metadata()
+        db = db.sort(db.columns)
         db.write_csv("test/result/metadata_output.csv")
         db = pl.read_csv("test/result/metadata_output.csv")
         db = db.sort(db.columns)
         db_ref = pl.read_csv("test/result/reference_metadata_output.csv")
         db_ref = db_ref.sort(db_ref.columns)
-        #self.assertEqual(len(db), len(db_ref), f"Persons database should equal lengths, got\n{db}\nvs ref:\n{db_ref}")
+        is_equal = db.equals(db_ref)
+        orig_columns = list(db.columns)
+        db = db.with_columns(pl.lit("generated").alias("reference")).sort(db.columns)
+        db_ref = db_ref.with_columns(pl.lit("reference").alias("reference")).sort(db.columns)
 
-        #diff_dfs = []
-        #for 
         diff_dfs = pl.concat([db, db_ref])
-        diff_dfs = diff_dfs.filter(~diff_dfs.is_duplicated())
-        self.assertTrue(db.equals(db_ref), f"Persons database should equal , got\n{db}\nvs ref:\n{db_ref}\n{diff_dfs}")
+        diff_dfs = diff_dfs.filter(~diff_dfs.select(orig_columns).is_duplicated()).sort(orig_columns)
+
+        diff_ids = set(diff_dfs["person_id"])
+
+        all_rows = pl.concat([db, db_ref])
+        all_rows = all_rows.filter(pl.col("person_id").is_in(diff_ids)).sort(orig_columns)
+
+        self.assertTrue(is_equal, f"Persons database should equal to reference, got\n{db}\nvs ref:\n{db_ref}\n{diff_dfs}\nAll people with inconsistencies:\n{all_rows}")
+
+    def test_increase_date_precision(self):
+        """Guarantee: date precision is increased correctly for year and month levels, while not altering full dates."""
+        test_values = {("1918", True): "1918-01-01",
+                        ("1918", False): "1918-12-31",
+                        ("1900-02",False): "1900-02-28",
+                        ("1920-02",False): "1920-02-29",
+                        ("2025-07",True): "2025-07-01",
+                        ("1999-02-15",True): "1999-02-15",
+                        ("1973-11-30",False): "1973-11-30"
+                        }
+        for input, start in test_values:
+            ref_output = test_values[(input,start)]
+            output = increase_date_precision(input, start=start)
+            self.assertEqual(output, ref_output, f"Mismatch between output {output} and correct value {ref_output} (input: {input}, start: {start})")
+
 
 if __name__ == "__main__":
     unittest.main()

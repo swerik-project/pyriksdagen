@@ -1,4 +1,4 @@
-name: "Pyriksdagen: run example notebook"
+name: "Pyriksdagen: run tests and example notebook"
 
 on: [push]
 
@@ -22,6 +22,7 @@ jobs:
       run: |
         pip install pytest nbmake
         pytest --nbmake **/*ipynb
+
   unittest:
     runs-on: ubuntu-latest
     env:
@@ -53,3 +54,7 @@ jobs:
         git checkout 0104e06fade5b561a95ca9ec043c2f013a78848e
         cd ..
         python -m unittest test.utils.TestUtils.test_load_Corpus_metadata_w_ref
+    - name: Test that DCAT export yields sensible output
+      run: |
+        python -m unittest test.dcat_repository_info
+

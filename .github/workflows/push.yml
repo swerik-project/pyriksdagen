@@ -56,5 +56,5 @@ jobs:
         python -m unittest test.utils.TestUtils.test_load_Corpus_metadata_w_ref
     - name: Test that DCAT export yields sensible output
       run: |
-        python -m unittest test.dcat_repository_info.py
+        python -m unittest test.dcat_repository_info
 

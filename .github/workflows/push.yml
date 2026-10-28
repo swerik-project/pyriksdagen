@@ -1,4 +1,4 @@
-name: "Pyriksdagen: run example notebook"
+name: "Pyriksdagen: run tests and example notebook"
 
 on: [push]
 
@@ -55,5 +55,6 @@ jobs:
         cd ..
         python -m unittest test.utils.TestUtils.test_load_Corpus_metadata_w_ref
     - name: Test that DCAT export yields sensible output
+      run: |
         python -m unittest test.dcat_repository_info.py
 

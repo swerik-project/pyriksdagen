@@ -5,12 +5,13 @@ Local grids are displayed as separate banks; their placement on the output
 page never asserts a physical relationship between banks.
 """
 
-import csv
 import math
 import re
 import textwrap
 from collections import Counter, defaultdict
 from pathlib import Path
+
+import polars as pl
 
 
 _GEOMETRY = ("x", "y", "orientation")
@@ -18,8 +19,8 @@ _STATES = ("numbered", "unnumbered", "hidden", "unknown")
 
 
 def _read_rows(data_dir, name):
-    with (data_dir / name).open(encoding="utf-8", newline="") as stream:
-        return list(csv.DictReader(stream))
+    # Keep identifiers and labels as text, including leading zeroes.
+    return pl.read_csv(data_dir / name, infer_schema_length=0).to_dicts()
 
 
 def _index(rows, key):

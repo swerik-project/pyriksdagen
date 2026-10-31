@@ -1,11 +1,11 @@
 """Unit tests for seating-plan rendering using self-contained CSV fixtures."""
 
-import csv
 import tempfile
 import unittest
 from pathlib import Path
 
 import numpy as np
+import polars as pl
 
 from pyriksdagen.chair_seating import render_chair_seating_plan
 
@@ -16,9 +16,9 @@ class TestChairSeating(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         self.data = Path(temporary.name)
         self.plans = [dict(chair_seating_plan_id="plan-1", coordinate_system="schematic",
-                           label="Example seating plan", start="", end="")]
+                           label="Example seating plan", start=None, end=None)]
         self.groups = [dict(chair_seating_plan_id="plan-1", chair_group_id="root",
-                            parent_group_id="", label="Chamber"),
+                            parent_group_id=None, label="Chamber"),
                        dict(chair_seating_plan_id="plan-1", chair_group_id="bank",
                             parent_group_id="root", label="Bank 1")]
         self.positions = []
@@ -30,17 +30,14 @@ class TestChairSeating(unittest.TestCase):
                 orientation="90"))
             self.numbering.append(dict(
                 chair_seating_plan_id="plan-1", chair_seat_position_id="seat-" + str(i),
-                status=status, label="42" if status == "numbered" else "", chair_id=""))
+                status=status, label="042" if status == "numbered" else None, chair_id=None))
 
     def write_fixture(self):
         for filename, rows in (("chair_seating_plans.csv", self.plans),
                                ("chair_groups.csv", self.groups),
                                ("chair_seat_positions.csv", self.positions),
                                ("chair_seat_numbering.csv", self.numbering)):
-            with (self.data / filename).open("w", encoding="utf-8", newline="") as stream:
-                writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
-                writer.writeheader()
-                writer.writerows(rows)
+            pl.DataFrame(rows).write_csv(self.data / filename)
 
     def render(self, selector="plan-1", output=None, **style):
         self.write_fixture()
@@ -52,13 +49,13 @@ class TestChairSeating(unittest.TestCase):
         self.plans[0]["coordinate_system"] = "local_grid"
         for position in self.positions:
             for field in ("x", "y", "orientation"):
-                position[field] = ""
+                position[field] = None
 
     def test_numbered_and_unnumbered_states_are_not_confused(self):
         """Only numbered chairs receive source labels."""
         ax = self.render().axes[0]
         labels = {text.get_gid(): text.get_text() for text in ax.texts}
-        self.assertEqual(labels, {"seat-1-label": "42", "seat-4-label": "?"})
+        self.assertEqual(labels, {"seat-1-label": "042", "seat-4-label": "?"})
         self.assertIn("seat-3", [patch.get_gid() for patch in ax.patches])
 
     def test_hidden_slots_do_not_shift_other_chairs(self):
@@ -300,7 +297,7 @@ class TestChairSeating(unittest.TestCase):
 
     def test_missing_geometry_is_rejected(self):
         """A missing schematic coordinate raises ValueError identifying the seat."""
-        self.positions[0]["x"] = ""
+        self.positions[0]["x"] = None
         with self.assertRaisesRegex(ValueError, "Incomplete geometry.*seat-1"):
             self.render()
 

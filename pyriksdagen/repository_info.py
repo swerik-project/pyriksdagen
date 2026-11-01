@@ -4,8 +4,8 @@ Generate publication metadata artifacts from SWERIK repository info YAML.
 
 from pathlib import Path
 from urllib.parse import quote
-from xml.etree import ElementTree as ET
 
+from lxml import etree as ET
 import yaml
 
 
@@ -26,9 +26,6 @@ NS = {
     "vcard": VCARD_NS,
     "xsd": XSD_NS,
 }
-
-for prefix, uri in NS.items():
-    ET.register_namespace(prefix, uri)
 
 
 def qname(namespace, tag):
@@ -82,15 +79,13 @@ def load_repository_info(info_path):
 
 
 def repository_info_to_dcat_rdf(info):
+    """Build RDF/XML from repository information without repository-specific defaults."""
     repository = info["repository"]
     dataset = info["dataset"]
     publisher = info["publisher"]
     contact = info["contact"]
-    documentation = info.get("documentation", {})
-    citation = info.get("citation", {})
-    relations = info.get("relations", {})
 
-    root = ET.Element(qname(RDF_NS, "RDF"))
+    root = ET.Element(qname(RDF_NS, "RDF"), nsmap=NS)
 
     catalog_uri = f"{repository['url']}#catalog"
     catalog_element = ET.SubElement(root, qname(DCAT_NS, "Catalog"))
@@ -138,10 +133,10 @@ def repository_info_to_dcat_rdf(info):
 
     resource_element(dataset_element, DCT_NS, "publisher", publisher.get("url", ""))
     resource_element(dataset_element, DCAT_NS, "contactPoint", contact.get("url", ""))
-    for documentation_url in documentation.values():
+    for documentation_url in info.get("documentation", {}).values():
         resource_element(dataset_element, DCT_NS, "isReferencedBy", documentation_url)
-    resource_element(dataset_element, DCT_NS, "isReferencedBy", citation.get("cff_url", ""))
-    for related_repository in relations.get("related_repositories", []):
+    resource_element(dataset_element, DCT_NS, "isReferencedBy", info.get("citation", {}).get("cff_url", ""))
+    for related_repository in info.get("relations", {}).get("related_repositories", []):
         resource_element(dataset_element, DCT_NS, "relation", related_repository)
 
     publisher_uri = publisher.get("url", "")
@@ -184,9 +179,15 @@ def repository_info_to_dcat_rdf(info):
 
 
 def write_dcat_rdf(info_path, output_path):
+    """Export a repository-info YAML file to RDF/XML and return the output Path.
+
+    Repository metadata belongs in ``docs/[repo-name]-info.yml``. 
+    Both paths are explicit so the same writer can be
+    used by each data repository. The output directory is created if needed.
+    """
     info = load_repository_info(info_path)
     tree = repository_info_to_dcat_rdf(info)
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    tree.write(output_path, encoding="utf-8", xml_declaration=True)
+    tree.write(output_path, encoding="utf-8", xml_declaration=True, pretty_print=True)
     return output_path

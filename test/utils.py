@@ -15,7 +15,7 @@ import polars as pl
 from pathlib import Path
 import os
 
-class TestUtils(unittest.TestCase):
+class PyriksdagenUtilitiesTest(unittest.TestCase):
     def test_pre_1875_protocol_filename_date_is_returned_as_datetime(self):
         """Guarantee: pre-1875 MMDD filenames yield sitting datetimes at midnight."""
         cases = {

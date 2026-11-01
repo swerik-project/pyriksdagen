@@ -1,4 +1,5 @@
 """Unit tests for pyriksdagen"""
+from datetime import datetime
 import unittest
 
 from pyriksdagen.utils import infer_metadata
@@ -15,12 +16,12 @@ from pathlib import Path
 import os
 
 class TestUtils(unittest.TestCase):
-    def test_pre_1875_protocol_filename_date_is_returned_as_iso_date(self):
-        """Guarantee: pre-1875 MMDD filenames yield their ISO sitting dates."""
+    def test_pre_1875_protocol_filename_date_is_returned_as_datetime(self):
+        """Guarantee: pre-1875 MMDD filenames yield sitting datetimes at midnight."""
         cases = {
-            "data/1867/prot-1867--ak--0204.xml": "1867-02-04",
-            "data/1871/prot-1871-urtima-fk--1007.xml": "1871-10-07",
-            Path("data/1872/prot_1872_ak_0229.xml"): "1872-02-29",
+            "data/1867/prot-1867--ak--0204.xml": datetime(1867, 2, 4),
+            "data/1871/prot-1871-urtima-fk--1007.xml": datetime(1871, 10, 7),
+            Path("data/1872/prot_1872_ak_0229.xml"): datetime(1872, 2, 29),
         }
 
         for filename, expected_date in cases.items():
@@ -37,7 +38,7 @@ class TestUtils(unittest.TestCase):
                 "prot-unknown--fk--1231.xml",
                 year="1868",
             ),
-            "1868-12-31",
+            datetime(1868, 12, 31),
             "Expected the explicit year to supply the missing protocol year",
         )
 

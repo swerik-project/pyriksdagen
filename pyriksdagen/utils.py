@@ -167,8 +167,8 @@ def expected_pre_1875_date_from_filename(filename, year=None):
             from the filename.
 
     Returns:
-        str or None: The ISO date (YYYY-MM-DD), or None when the filename does
-        not encode a valid pre-1875 protocol date.
+        datetime.datetime or None: The sitting date at midnight, or None when
+        the filename does not encode a valid pre-1875 protocol date.
     """
     metadata = infer_metadata(filename)
     if metadata.get("document_type") != "prot":
@@ -189,8 +189,7 @@ def expected_pre_1875_date_from_filename(filename, year=None):
 
     mmdd = match.group(1)
     try:
-        expected_date = datetime(protocol_year, int(mmdd[:2]), int(mmdd[2:]))
-        return expected_date.strftime("%Y-%m-%d")
+        return datetime(protocol_year, int(mmdd[:2]), int(mmdd[2:]))
     except ValueError:
         return None
 

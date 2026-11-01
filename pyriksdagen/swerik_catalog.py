@@ -2,7 +2,7 @@
 Functions relating to the Swerik Catalog.
 """
 import json
-import pandas as pd
+import polars as pl
 
 
 def _json_template(i:str, v:str, now:str) -> dict:
@@ -43,12 +43,12 @@ def _json_template(i:str, v:str, now:str) -> dict:
     }
 
 
-def _party_template(row:pd.core.series.Series) -> dict:
+def _party_template(row:dict) -> dict:
     """
     Returns instance of party affiliation.
 
     Args:
-        row (pd.core.series.Series): a row
+        row (dict): a row
 
     Returns:
         dict: info about party affiliation
@@ -63,12 +63,12 @@ def _party_template(row:pd.core.series.Series) -> dict:
     }
 
 
-def _position_template(row:pd.core.series.Series) -> dict:
+def _position_template(row:dict) -> dict:
     """
     Returns instance of a position held
 
     Args:
-        row (pd.core.series.Series): a row
+        row (dict): a row
 
     Returns:
         dict: info about position
@@ -164,20 +164,20 @@ def _verify_J(J:dict) -> bool:
     return not_empty
 
 
-def _add_party(r:pd.core.series.Series, J:dict) -> bool:
+def _add_party(r:dict, J:dict) -> bool:
     """
     Checks whether a party affiliation can be added to a person dict
 
     Args:
-        r (pd.core.series.Series): row
+        r (dict): row
         J (dict): Person dict
 
     Returns:
         bool: can add
     """
     if (
-        pd.notnull(r['start'])
-        and pd.notnull(r['end'])
+        r['start'] is not None
+        and r['end'] is not None
         and r['party'] not in [_['party']['name'] for _ in J['party-affiliations']]
         ):
         return True
@@ -187,7 +187,7 @@ def _add_party(r:pd.core.series.Series, J:dict) -> bool:
 
 def jsonize_person_data(
         person_id:str,
-        Corpus_metadata:pd.core.frame.DataFrame,
+        Corpus_metadata:pl.DataFrame,
         peripheral_metadata:dict,
         v:str,
         now:str) -> dict:
@@ -196,7 +196,7 @@ def jsonize_person_data(
 
     Args:
         person_id (str): person ID
-        Corpus_metadata (pd.core.frame.DataFrame): corpus metadata (pyriksdagen.metadata.Corpus)
+        Corpus_metadata (pl.DataFrame): corpus metadata (pyriksdagen.metadata.Corpus)
         peripheral_metadata (dict): metadata dict from non-core queries
         v (str): data version
         now (str): string formatted timestamp
@@ -208,7 +208,7 @@ def jsonize_person_data(
     J = _json_template(person_id, v, now)
 
     # process core metadata
-    primary_name = C.loc[C["primary_name"] == True, 'name'].unique()
+    primary_name = C.filter(pl.col("primary_name") == True)["name"].unique().to_list()
     if len(primary_name) == 1:
         J["name"] = primary_name[0]
     elif len(primary_name) == 0:
@@ -216,70 +216,68 @@ def jsonize_person_data(
     else:
         print(f">>{person_id} -- MULTIPLE PRIMARY NAMES : {len(primary_name)} : {primary_name}")
 
-    born = C.loc[pd.notnull(C["born"]), "born"].unique()
+    born = C.filter(pl.col("born").is_not_null())["born"].unique().to_list()
     if len(born) > 1:
         print(f">>{person_id} -- MULTIPLE BIRTHDATES : {len(born)} : {born}")
         J["DOB"] = str(born[0])
     elif len(born) == 1:
         J["DOB"] = str(born[0])
 
-    dead = C.loc[pd.notnull(C["dead"]), "dead"].unique()
+    dead = C.filter(pl.col("dead").is_not_null())["dead"].unique().to_list()
     if len(dead) > 1:
         print(f">>{person_id} -- MULTIPLE DEATHDATES : {len(dead)} : {dead}")
         J["DOD"] = str(dead[0])
     elif len(dead) == 1:
         J["DOD"] = str(dead[0])
 
-    gender = C.loc[pd.notnull(C["gender"]), "gender"].unique()
+    gender = C.filter(pl.col("gender").is_not_null())["gender"].unique().to_list()
     if len(gender) > 1:
         print(f"MULTIPLE GENDERS : {len(gender)} : {gender}")
         J["gender"] = gender[0]
     elif len(gender) == 1:
         J["gender"] = gender[0]
 
-    alt_names = C.loc[C["primary_name"] == False, "name"].unique()
+    alt_names = C.filter(pl.col("primary_name") == False)["name"].unique().to_list()
     for alt_name in alt_names:
         if alt_name != J["name"]:
             J["alt-names"].append(alt_name)
 
-    iorter = C.loc[pd.notnull(C["location"]), "location"].unique()
+    iorter = C.filter(pl.col("location").is_not_null())["location"].unique().to_list()
     for iort in iorter:
         J["iorter"].append(iort)
 
-    positions = C.drop_duplicates(['start', 'end', 'role', "source", 'chamber', 'government'])
-    if positions is not None and not positions.empty:
-        positions = positions.sort_values(by="start", ascending=False).copy()
-        positions = positions.drop_duplicates().copy()
-        for i, r in positions.iterrows():
+    positions = C.unique(subset=['start', 'end', 'role', "source", 'chamber', 'government'])
+    if positions is not None and not positions.is_empty():
+        positions = positions.sort("start", descending=True).unique()
+        for r in positions.iter_rows(named=True):
             J['positions'].append(_position_template(r))
 
     # process periperal metadata
     PA = peripheral_metadata["party_affiliation"]
     if PA is not None and len(PA) > 0:
-        PA.sort_values(by="start", ascending=False, inplace=True)
-        PA = PA.drop_duplicates().copy()
-        for i, r in PA.iterrows():
+        PA = PA.sort("start", descending=True).unique()
+        for r in PA.iter_rows(named=True):
             if _add_party(r, J):
                 J["party-affiliations"].append(_party_template(r))
 
     EI = peripheral_metadata["external_identifiers"]
     if EI is not None and len(EI) > 0:
-        for i, r in EI.iterrows():
+        for r in EI.iter_rows(named=True):
             J["identifiers"].append(_identifier_template(r["authority"], r['identifier']))
 
     PB = peripheral_metadata["place_of_birth"]
     if PB is not None and len(PB) > 0:
-        J["place-of-birth"]["place"] = PB.at[0, "place"]
-        J["place-of-birth"]["link"] = PB.at[0, "link"]
+        J["place-of-birth"]["place"] = PB["place"][0]
+        J["place-of-birth"]["link"] = PB["link"][0]
 
     PD = peripheral_metadata["place_of_death"]
-    if PD is not None and not PD.empty:
-        J["place-of-death"]["place"] = peripheral_metadata["place_of_death"].at[0, "place"]
-        J["place-of-death"]["link"] = peripheral_metadata["place_of_death"].at[0, "link"]
+    if PD is not None and not PD.is_empty():
+        J["place-of-death"]["place"] = peripheral_metadata["place_of_death"]["place"][0]
+        J["place-of-death"]["link"] = peripheral_metadata["place_of_death"]["link"][0]
 
     PO = peripheral_metadata["portraits"]
     if PO is not None and len(PO) > 0:
-        for i, r in peripheral_metadata["portraits"].iterrows():
+        for r in peripheral_metadata["portraits"].iter_rows(named=True):
             J["portraits"].append(r["portrait"])
 
     # populate info into J

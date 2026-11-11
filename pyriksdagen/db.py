@@ -113,10 +113,13 @@ def load_metadata(metadata_location=None, processed_metadata_folder=None):
     minister_db = minister_db.rename({'person_id':'id'})
     speaker_db = speaker_db.rename({'person_id':'id'})
 
-    # Datetime format
-    mp_db = mp_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
-    minister_db = minister_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
-    speaker_db = speaker_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
+    # Convert start and end to date format if not already
+    if mp_db.get_column("start").dtype != pl.Date:
+        mp_db = mp_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
+    if minister_db.get_column("start").dtype != pl.Date:
+        minister_db = minister_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
+    if speaker_db.get_column("start").dtype != pl.Date:
+        speaker_db = speaker_db.with_columns(pl.col(["start", "end"]).str.to_date(strict=False))
 
     return party_mapping, mp_db, minister_db, speaker_db
 

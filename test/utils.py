@@ -7,6 +7,7 @@ from pyriksdagen.utils import get_data_location
 from pyriksdagen.segmentation import intro_to_dict
 from pyriksdagen.date_handling import yearize_date
 from pyriksdagen.metadata import load_Corpus_metadata
+from pyriksdagen.db import load_metadata
 from pyriksdagen.metadata import increase_date_precision
 
 import polars as pl
@@ -140,6 +141,21 @@ class TestUtils(unittest.TestCase):
         all_rows = all_rows.filter(pl.col("person_id").is_in(diff_ids)).sort(orig_columns)
 
         self.assertTrue(is_equal, f"Persons database should equal to reference, got\n{db}\nvs ref:\n{db_ref}\n{diff_dfs}\nAll people with inconsistencies:\n{all_rows}")
+
+    def test_load_metadata(self):
+        """
+        Test that load_metadata runs and yields nonempty mp_db, minister_db, and speaker_db
+        """
+        party_mapping, mp_db, minister_db, speaker_db = load_metadata()
+
+        MIN_LEN = 10000
+        self.assertGreaterEqual(len(mp_db), MIN_LEN, f"MP database should be at least {MIN_LEN} rows, got {len(mp_db)}")
+
+        MIN_LEN = 100
+        self.assertGreaterEqual(len(minister_db), MIN_LEN, f"Minister database should be at least {MIN_LEN} rows, got {len(minister_db)}")
+
+        MIN_LEN = 10
+        self.assertGreaterEqual(len(speaker_db), MIN_LEN, f"Speaker database should be at least {MIN_LEN} rows, got {len(speaker_db)}")
 
     def test_increase_date_precision(self):
         """Guarantee: date precision is increased correctly for year and month levels, while not altering full dates."""

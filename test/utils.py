@@ -1,9 +1,11 @@
 """Unit tests for pyriksdagen"""
+from datetime import datetime
 import unittest
 
 from pyriksdagen.utils import infer_metadata
 from pyriksdagen.utils import get_formatted_uuid
 from pyriksdagen.utils import get_data_location
+from pyriksdagen.utils import expected_pre_1875_date_from_filename
 from pyriksdagen.segmentation import intro_to_dict
 from pyriksdagen.date_handling import yearize_date
 from pyriksdagen.metadata import load_Corpus_metadata
@@ -14,7 +16,49 @@ import polars as pl
 from pathlib import Path
 import os
 
-class TestUtils(unittest.TestCase):
+class PyriksdagenUtilitiesTest(unittest.TestCase):
+    def test_pre_1875_protocol_filename_date_is_returned_as_datetime(self):
+        """Guarantee: pre-1875 MMDD filenames yield sitting datetimes at midnight."""
+        cases = {
+            "data/1867/prot-1867--ak--0204.xml": datetime(1867, 2, 4),
+            "data/1871/prot-1871-urtima-fk--1007.xml": datetime(1871, 10, 7),
+            Path("data/1872/prot_1872_ak_0229.xml"): datetime(1872, 2, 29),
+        }
+
+        for filename, expected_date in cases.items():
+            self.assertEqual(
+                expected_pre_1875_date_from_filename(filename),
+                expected_date,
+                f"Expected the MMDD suffix in {filename} to yield {expected_date}",
+            )
+
+    def test_explicit_year_can_supply_protocol_year(self):
+        """Guarantee: an explicit year supplies a missing filename year."""
+        self.assertEqual(
+            expected_pre_1875_date_from_filename(
+                "prot-unknown--fk--1231.xml",
+                year="1868",
+            ),
+            datetime(1868, 12, 31),
+            "Expected the explicit year to supply the missing protocol year",
+        )
+
+    def test_non_date_protocol_filenames_return_none(self):
+        """Guarantee: modern numbers, invalid dates, and motions yield no date."""
+        cases = [
+            "data/1875/prot-1875--ak--0204.xml",
+            "data/198081/prot-198081--0123.xml",
+            "data/1867/prot-1867--ak--007.xml",
+            "data/1871/prot-1871--ak--0230.xml",
+            "data/1867/mot-1867--ak--0204.xml",
+        ]
+
+        for filename in cases:
+            self.assertIsNone(
+                expected_pre_1875_date_from_filename(filename),
+                f"Expected no pre-1875 protocol date for {filename}",
+            )
+
     def test_infer_metadata(self):
         metadata = infer_metadata("data/200809/prot-200809--041.xml")
 

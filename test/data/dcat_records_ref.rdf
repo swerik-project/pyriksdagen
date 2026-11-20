@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<rdf:RDF xmlns:dcat="http://www.w3.org/ns/dcat#" xmlns:dct="http://purl.org/dc/terms/" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:vcard="http://www.w3.org/2006/vcard/ns#">
+  <dcat:Catalog rdf:about="https://github.com/swerik-project/riksdagen-records#catalog">
+    <dct:title xml:lang="en">The Swedish Parliament Corpus: Riksdagen Records metadata catalog</dct:title>
+    <dct:title xml:lang="sv">Sveriges riksdagskorpus: Riksdagsprotokoll metadata catalog</dct:title>
+    <dct:description xml:lang="en">DCAT-AP-SE metadata catalog for The Swedish Parliament Corpus: Riksdagen Records.</dct:description>
+    <dct:description xml:lang="sv">DCAT-AP-SE metadata catalog for Sveriges riksdagskorpus: Riksdagsprotokoll.</dct:description>
+    <dct:publisher rdf:resource="https://www.uu.se/"/>
+    <dcat:dataset rdf:resource="https://github.com/swerik-project/riksdagen-records"/>
+    <dcat:themeTaxonomy rdf:resource="http://publications.europa.eu/resource/authority/data-theme"/>
+  </dcat:Catalog>
+  <dcat:Dataset rdf:about="https://github.com/swerik-project/riksdagen-records">
+    <dct:title xml:lang="en">The Swedish Parliament Corpus: Riksdagen Records</dct:title>
+    <dct:title xml:lang="sv">Sveriges riksdagskorpus: Riksdagsprotokoll</dct:title>
+    <dct:description xml:lang="en">Parliamentary records of the Swedish Riksdag from 1867 onwards, encoded as TEI/Parla-CLARIN XML and linked to person metadata in the Swedish Parliament Corpus.</dct:description>
+    <dct:description xml:lang="sv">Riksdagsprotokoll från 1867 och framåt, kodade i TEI/Parla-CLARIN XML och länkade till personmetadata i Sveriges riksdagskorpus.</dct:description>
+    <dct:identifier>riksdagen-records</dct:identifier>
+    <dct:type>dataset</dct:type>
+    <dcat:landingPage rdf:resource="https://github.com/swerik-project/the-swedish-parliament-corpus"/>
+    <dct:temporal rdf:resource="https://github.com/swerik-project/riksdagen-records#temporal-coverage"/>
+    <dct:language>sv</dct:language>
+    <dcat:keyword xml:lang="en">parliamentary records</dcat:keyword>
+    <dcat:keyword xml:lang="en">Swedish parliament</dcat:keyword>
+    <dcat:keyword xml:lang="en">corpus</dcat:keyword>
+    <dcat:keyword xml:lang="sv">riksdagsprotokoll</dcat:keyword>
+    <dcat:keyword xml:lang="sv">Sveriges riksdag</dcat:keyword>
+    <dcat:keyword xml:lang="sv">korpus</dcat:keyword>
+    <dcat:theme rdf:resource="http://publications.europa.eu/resource/authority/data-theme/GOVE"/>
+    <dct:publisher rdf:resource="https://www.uu.se/"/>
+    <dcat:contactPoint rdf:resource="https://github.com/orgs/swerik-project/discussions"/>
+    <dct:isReferencedBy rdf:resource="https://github.com/swerik-project/riksdagen-records#readme"/>
+    <dct:isReferencedBy rdf:resource="https://github.com/swerik-project/riksdagen-records/blob/main/CITATION.cff"/>
+    <dct:relation rdf:resource="https://github.com/swerik-project/riksdagen-persons"/>
+    <dcat:distribution rdf:resource="https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip"/>
+  </dcat:Dataset>
+  <foaf:Agent rdf:about="https://www.uu.se/">
+    <foaf:name xml:lang="en">Uppsala University</foaf:name>
+    <foaf:name xml:lang="sv">Uppsala universitet</foaf:name>
+  </foaf:Agent>
+  <vcard:Organization rdf:about="https://github.com/orgs/swerik-project/discussions">
+    <vcard:fn>SWERIK project</vcard:fn>
+  </vcard:Organization>
+  <dct:PeriodOfTime rdf:about="https://github.com/swerik-project/riksdagen-records#temporal-coverage">
+    <dcat:startDate rdf:datatype="http://www.w3.org/2001/XMLSchema#gYear">1867</dcat:startDate>
+  </dct:PeriodOfTime>
+  <dcat:Distribution rdf:about="https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip">
+    <dct:title>records.zip</dct:title>
+    <dcat:accessURL rdf:resource="https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip"/>
+    <dcat:downloadURL rdf:resource="https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip"/>
+    <dcat:mediaType>application/zip</dcat:mediaType>
+    <dct:format>ZIP</dct:format>
+  </dcat:Distribution>
+</rdf:RDF>

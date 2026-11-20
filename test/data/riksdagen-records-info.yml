@@ -1,0 +1,72 @@
+# Self-contained repository-info example for DCAT export regression tests.
+# Example values are based on the riksdagen-records citation, README and release workflow.
+# This fixture is maintained here, rather than copied from a canonical repo-info file.
+metadata_type: repository_information
+metadata_version: 1
+
+repository:
+  name: riksdagen-records
+  url: https://github.com/swerik-project/riksdagen-records
+  issue_tracker_url: https://github.com/swerik-project/riksdagen-records/issues
+
+dataset:
+  identifier: riksdagen-records
+  title:
+    en: "The Swedish Parliament Corpus: Riksdagen Records"
+    sv: "Sveriges riksdagskorpus: Riksdagsprotokoll"
+  description:
+    en: >-
+      Parliamentary records of the Swedish Riksdag from 1867 onwards,
+      encoded as TEI/Parla-CLARIN XML and linked to person metadata in
+      the Swedish Parliament Corpus.
+    sv: >-
+      Riksdagsprotokoll från 1867 och framåt, kodade i TEI/Parla-CLARIN XML
+      och länkade till personmetadata i Sveriges riksdagskorpus.
+  languages:
+    - sv
+  keywords:
+    en:
+      - parliamentary records
+      - Swedish parliament
+      - corpus
+    sv:
+      - riksdagsprotokoll
+      - Sveriges riksdag
+      - korpus
+  themes:
+    - http://publications.europa.eu/resource/authority/data-theme/GOVE
+  type: dataset
+  landing_page_url: https://github.com/swerik-project/the-swedish-parliament-corpus
+  # Confirm the dataset licence before catalogue publication.
+  license: ""
+  temporal_coverage:
+    start: "1867"
+
+publisher:
+  name:
+    en: Uppsala University
+    sv: Uppsala universitet
+  identifier: ""
+  url: https://www.uu.se/
+
+contact:
+  name: SWERIK project
+  email: ""
+  url: https://github.com/orgs/swerik-project/discussions
+
+documentation:
+  readme_url: https://github.com/swerik-project/riksdagen-records#readme
+
+citation:
+  cff_url: https://github.com/swerik-project/riksdagen-records/blob/main/CITATION.cff
+
+relations:
+  related_repositories:
+    - https://github.com/swerik-project/riksdagen-persons
+
+distributions:
+  - name: records.zip
+    access_url: https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip
+    download_url: https://github.com/swerik-project/riksdagen-records/releases/latest/download/records.zip
+    media_type: application/zip
+    format: ZIP

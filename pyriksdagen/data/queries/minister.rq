@@ -27,6 +27,8 @@ WHERE {
   OPTIONAL { ?posheld pqv:P580 [wikibase:timePrecision ?startPrecision; wikibase:timeValue ?start ] }
   OPTIONAL { ?posheld pqv:P582 [wikibase:timePrecision ?endPrecision; wikibase:timeValue ?end ] }
   }
+
+  OPTIONAL { ?wiki_id wdt:P12192 ?person_id. }
     
   SERVICE wikibase:label { bd:serviceParam wikibase:language "sv". }
 #  ?MinisterQ rdfs:label ?minister. Filter(lang(?minister)="sv")

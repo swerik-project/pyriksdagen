@@ -112,7 +112,8 @@ def query2df(query_name, source=None):
 	query = get_query_string(query_name)
 	source = impute_query_string(source)
 	query = query.replace('PLACEHOLDER', source)
-	sparql = SPARQLWrapper("https://query.wikidata.org/sparql", agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11")
+	WD_SPARQL_URL = "https://query-next.wikidata.org/sparql"
+	sparql = SPARQLWrapper(WD_SPARQL_URL, agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11")
 	sparql.setQuery(query)
 	sparql.setReturnFormat(JSON)
 	try:

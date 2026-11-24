@@ -3,6 +3,9 @@ import numpy as np
 import polars as pl
 from importlib_resources import files
 import re
+from trainerlog import get_logger
+
+LOGGER = get_logger("wikidata")
 
 def impute_query_string(source=None):
 	# Defaults to all individuals
@@ -110,12 +113,12 @@ def query2df(query_name, source=None):
 	source = impute_query_string(source)
 	query = query.replace('PLACEHOLDER', source)
 	sparql = SPARQLWrapper("https://query.wikidata.org/sparql", agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11")
-	sparql.setQuery(query)	
+	sparql.setQuery(query)
 	sparql.setReturnFormat(JSON)
 	try:
 		results = sparql.query().convert()
-	except:
-		print(f"Query {query_name} failed")
+	except Exception as ex:
+		LOGGER.error(f"Query {query_name} failed:\n{ex}")
 	df = _json_normalize_sparql_bindings(results['results']['bindings'])
 	df = clean_sparql_df(df, query_name)
 	return df
